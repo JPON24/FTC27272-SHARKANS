@@ -174,19 +174,19 @@ public class AutonomousRight extends LinearOpMode
     
     private void CommandSequence()
     {
-        ActivateGrab();
-        CloseClaw();
+        ActivateGrab(); //grab sample
+        CloseClaw(); //grab sample
         sleep(2000);
-        RotateArm(90);
+        RotateArm(90);//lift sample
         Extend(1.8);//simultaneous
         sleep(2500);
-        MoveForward(0.8,0);
+        MoveForward(0.8,0);//go to submersible
         sleep(550);
         Stop();
         sleep(1000);
-        RotateArm(70);
+        RotateArm(70);//start to clip sample
         sleep(1000);
-        RotateArm(60);
+        RotateArm(60);//pull 
         sleep(1000);
         Retract(0.5);// latch
         sleep(400);
