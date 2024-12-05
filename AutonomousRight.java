@@ -182,7 +182,7 @@ public class AutonomousRight extends LinearOpMode
         sleep(2500);
         MoveForward(0.8,0);//go to submersible
         sleep(550);
-        Stop();
+        Stop();//reset wheels 
         sleep(1000);
         RotateArm(70);//start to clip sample
         sleep(1000);
@@ -190,13 +190,13 @@ public class AutonomousRight extends LinearOpMode
         sleep(1000);
         Retract(0.5);// latch
         sleep(400);
-        Retract(0);
-        OpenClaw();
-        DeactivateGrab();
+        Retract(0);//secure latch
+        OpenClaw();//release specimen
+        DeactivateGrab();//release specime
         sleep(500);
-        MoveBackward(0.9,0);
+        MoveBackward(0.9,0);//prepare to get samples
         sleep(290);
-        Stop();
+        Stop();//reset wheels
         sleep(400);
         Retract(1);//simultaneous
         sleep(200);
