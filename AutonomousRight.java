@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.robot.Robot;
@@ -126,19 +125,20 @@ public class AutonomousRight extends LinearOpMode
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         double yaw = orientation.getYaw(AngleUnit.DEGREES);
 
-        int lenience = 5;
+        int lenience = 2; //lenience in degrees
         if (yaw > tgt - lenience && yaw < tgt + lenience)
         {
             return 0;
         }
-        else if (yaw < tgt)
+        else if (yaw < tgt - lenience)
         {
-            return -1;
+            return -0.2; //turn speed
         }
-        else if (yaw > tgt)
+        else if (yaw > tgt + lenience)
         {
-            return 1;
+            return 0.2; //turn speed
         }
+        return 0;
     }
 
     private void IMU_RotationControl(int tgt, double speed, String dir)
