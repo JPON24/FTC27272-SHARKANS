@@ -36,25 +36,29 @@ public class AutonomousRight extends LinearOpMode
     {
         moving = true;
     }
-    private void MoveForward(double speed)
+    private void MoveForward(double speed, double rot)
     {
-        dt.translate(0,-speed,0);
+        double rotationRequired = GetRequiredCorrection(rot);
+        dt.translate(0,-speed,rotationRequired * speed);
         UpdateClaw();
     }
-    private void MoveBackward(double speed)
+    private void MoveBackward(double speed,double rot)
     {
-        dt.translate(0,speed,0);
+        double rotationRequired = GetRequiredCorrection(rot);
+        dt.translate(0,speed,rotationRequired * speed);
         UpdateClaw();
     }
     
-    private void MoveLeft(double speed)
+    private void MoveLeft(double speed, double rot)
     {
-        dt.translate(-speed,0,0);
+        double rotationRequired = GetRequiredCorrection(rot);
+        dt.translate(-speed,0,rotationRequired * speed);
         UpdateClaw();
     }
-    private void MoveRight(double speed)
+    private void MoveRight(double speed, double rot)
     {
-        dt.translate(speed,0,0);
+        double rotationRequired = GetRequiredCorrection(rot);
+        dt.translate(speed,0,rotationRequired * speed);
         UpdateClaw();  
     }
     
@@ -116,7 +120,27 @@ public class AutonomousRight extends LinearOpMode
     {
         cs.update();
     }
-    
+
+    private double GetRequiredCorrection(double tgt)
+    {
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        double yaw = orientation.getYaw(AngleUnit.DEGREES);
+
+        int lenience = 5;
+        if (yaw > tgt - lenience && yaw < tgt + lenience)
+        {
+            return 0;
+        }
+        else if (yaw < tgt)
+        {
+            return -1;
+        }
+        else if (yaw > tgt)
+        {
+            return 1;
+        }
+    }
+
     private void IMU_RotationControl(int tgt, double speed, String dir)
     {
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
@@ -156,7 +180,7 @@ public class AutonomousRight extends LinearOpMode
         RotateArm(90);
         Extend(1.8);//simultaneous
         sleep(2500);
-        MoveForward(0.8);
+        MoveForward(0.8,0);
         sleep(550);
         Stop();
         sleep(1000);
@@ -170,7 +194,7 @@ public class AutonomousRight extends LinearOpMode
         OpenClaw();
         DeactivateGrab();
         sleep(500);
-        MoveBackward(0.9);
+        MoveBackward(0.9,0);
         sleep(290);
         Stop();
         sleep(400);
@@ -178,57 +202,53 @@ public class AutonomousRight extends LinearOpMode
         sleep(200);
         Retract(0);
         RotateArm(30);//simultaneous
-        MoveRight(0.8);//simultaneous
+        MoveRight(0.8,0);//simultaneous
         sleep(800);
-        Stop();
-        sleep(400);
-        IMU_RotationControl(0,0.8,"R");
+        IMU_RotationControl(0,1,"R");
         sleep(200);
-        MoveForward(0.8);
+        MoveForward(0.8,0);
         sleep(750);
         Stop();
         sleep(500);
-        MoveRight(0.6);
+        MoveRight(0.6,0);
         sleep(350);
         Stop();
         sleep(400);
-        MoveBackward(0.8);// first sample
+        MoveBackward(0.8,0);// first sample
         
         sleep(900);
         Stop();
         sleep(300);
-        MoveLeft(0.5);
+        MoveLeft(0.5,0);
         sleep(150);
         Stop();
         sleep(100);
-        MoveForward(0.8);
+        MoveForward(0.8,0);
         sleep(900);
         Stop();
         sleep(200);
-        MoveRight(0.6);
+        MoveRight(0.6,0);
         sleep(500);
         Stop();
         sleep(100);
-        MoveBackward(0.8);
+        MoveBackward(0.8,0);
         
         sleep(900);
         Stop();
         sleep(300);
-        MoveLeft(0.5);
+        MoveLeft(0.5,0);
         sleep(150);
         Stop();
         sleep(100);
-        MoveForward(0.8);
+        MoveForward(0.8,0);
         sleep(900);
-        Stop();
-        sleep(200);
         IMU_RotationControl(0,0.8,"R");
-        sleep(700);
-        MoveRight(0.6);
+        sleep(200);
+        MoveRight(0.6,0);
         sleep(500);
         Stop();
         sleep(100);
-        MoveBackward(0.8);
+        MoveBackward(0.8,0);
         sleep(1000);
         Stop();
         moving = false;
@@ -255,12 +275,13 @@ public class AutonomousRight extends LinearOpMode
         {
             if (moving)
             {
-                //CommandSequence();
+                CommandSequence();
+                /* 
                 IMU_RotationControl(85,1,"L");
                 YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
                 double yaw = orientation.getYaw(AngleUnit.DEGREES);
                 telemetry.addData("yaw",yaw);
-                telemetry.update();
+                telemetry.update();*/
             }
         }
     }
