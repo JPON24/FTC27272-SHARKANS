@@ -178,7 +178,7 @@ public class AutonomousRight extends LinearOpMode
         CloseClaw(); //grab sample
         sleep(2000);
         RotateArm(90);//lift sample
-        Extend(1.8);//simultaneous
+        Extend(1.8);//try to reach high chamber
         sleep(2500);
         MoveForward(0.8,0);//go to submersible
         sleep(550);
@@ -198,21 +198,21 @@ public class AutonomousRight extends LinearOpMode
         sleep(290);
         Stop();//reset wheels
         sleep(400);
-        Retract(1);//simultaneous
+        Retract(1);//reset arm
         sleep(200);
         Retract(0);
-        RotateArm(30);//simultaneous
-        MoveRight(0.8,0);//simultaneous
+        RotateArm(30);//reset arm 
+        MoveRight(0.8,0);//move to samples
         sleep(800);
-        IMU_RotationControl(0,1,"R");
+        IMU_RotationControl(0,1,"R");//turn right
         sleep(200);
-        MoveForward(0.8,0);
+        MoveForward(0.8,0);//prepare to push samples
         sleep(750);
-        Stop();
+        Stop();//reset wheels
         sleep(500);
-        MoveRight(0.6,0);
+        MoveRight(0.6,0);//line up with samples
         sleep(350);
-        Stop();
+        Stop();//reset wheels
         sleep(400);
         MoveBackward(0.8,0);// first sample
         
