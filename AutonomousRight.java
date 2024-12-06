@@ -242,7 +242,6 @@ public class AutonomousRight extends LinearOpMode
         sleep(100);
         MoveForward(0.8,0);//go to sample
         sleep(900);
-        IMU_RotationControl(0,0.8,"R");//turn right
         sleep(200);
         MoveRight(0.6,0//line up with sample
         sleep(500);
