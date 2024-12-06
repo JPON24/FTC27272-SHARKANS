@@ -217,41 +217,41 @@ public class AutonomousRight extends LinearOpMode
         MoveBackward(0.8,0);// first sample
         
         sleep(900);
-        Stop();
+        Stop();//reset wheels
         sleep(300);
-        MoveLeft(0.5,0);
+        MoveLeft(0.5,0);//prepare for next sample
         sleep(150);
-        Stop();
+        Stop();//reset wheels
         sleep(100);
-        MoveForward(0.8,0);
+        MoveForward(0.8,0);//go to samples
         sleep(900);
-        Stop();
+        Stop();//reset wheels
         sleep(200);
-        MoveRight(0.6,0);
+        MoveRight(0.6,0);//line up with sample
         sleep(500);
-        Stop();
+        Stop();//reset wheels
         sleep(100);
-        MoveBackward(0.8,0);
+        MoveBackward(0.8,0);//second sample
         
         sleep(900);
-        Stop();
+        Stop();//reset wheels
         sleep(300);
-        MoveLeft(0.5,0);
+        MoveLeft(0.5,0);//prepare for next sample
         sleep(150);
-        Stop();
+        Stop();//reset wheels
         sleep(100);
-        MoveForward(0.8,0);
+        MoveForward(0.8,0);//go to sample
         sleep(900);
-        IMU_RotationControl(0,0.8,"R");
+        IMU_RotationControl(0,0.8,"R");//turn right
         sleep(200);
-        MoveRight(0.6,0);
+        MoveRight(0.6,0//line up with sample
         sleep(500);
-        Stop();
+        Stop();//reset wheels
         sleep(100);
-        MoveBackward(0.8,0);
+        MoveBackward(0.8,0);//sample 3 and park
         sleep(1000);
-        Stop();
-        moving = false;
+        Stop();//reset wheels
+        moving = false;//stop driving, finish auto
     }
  
     @Override
