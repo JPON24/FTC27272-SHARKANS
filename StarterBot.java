@@ -6,12 +6,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.ArmLiftMotor;
 import org.firstinspires.ftc.teamcode.ClawServo;
@@ -45,7 +43,7 @@ public class StarterBot extends LinearOpMode{
         
         boolean canShiftArm = true;
         double currentArmSpeed = 1.0;
-        double armSpeedInterval = 0.1;
+        double armSpeedInterval = 0.8;
             
         dt.init(hardwareMap);
         cs.init(hardwareMap);
@@ -55,8 +53,6 @@ public class StarterBot extends LinearOpMode{
         
         while(opModeIsActive())
         {
-            //angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            //drivetrain
             double targetPowerX = gamepad1.left_stick_x;
             double targetPowerY = -gamepad1.left_stick_y;
             double targetRotation = gamepad1.right_stick_x;
@@ -72,9 +68,14 @@ public class StarterBot extends LinearOpMode{
             double armExtendInput = -gamepad2.right_stick_y;
             
             boolean dpadUp2 = gamepad2.dpad_up;
+            boolean dpadLeft2 = gamepad2.dpad_left;
             boolean leftBumperPressed2 = gamepad2.left_bumper;
             boolean rightBumperPressed2 = gamepad2.right_bumper;
             
+            double leftTrigger2 = gamepad2.left_trigger;
+            double rightTrigger2 = gamepad2.right_trigger;
+            
+            //claw
             if (xButtonPressed == true)
             {
                 cs.clawMove(false);
@@ -84,6 +85,9 @@ public class StarterBot extends LinearOpMode{
                 cs.clawMove(true);
             }
             
+            cs.update();
+            
+            // drive
             if (leftBumperPressed)
             {
                 if (canShift && currentSpeed - speedInterval > 0)
@@ -112,6 +116,7 @@ public class StarterBot extends LinearOpMode{
                 imu.resetYaw();
             }
             
+            //arm
             if (leftBumperPressed2)
             {
                 if (canShiftArm && currentArmSpeed - armSpeedInterval > 0)
@@ -135,17 +140,32 @@ public class StarterBot extends LinearOpMode{
                 canShiftArm = true;
             }
             
-            if(dpadUp2)
+            if(dpadUp2)//reset arm pos
             {
                 am.ResetEncoders();
+            }
+            else if (dpadLeft2)//fix extension pos
+            {
+                e1.ResetEncoders();
             }
             
             //dt.translate(targetPowerX,targetPowerY,targetRotation);
             dt.fieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation);
+            
+            if (rightTrigger2 > 0.8)
+            {
+                armLiftInput = 1;
+                armExtendInput = 1;
+            }
+            else if (leftTrigger2 > 0.8)
+            {
+                armLiftInput = -1;
+                armExtendInput = -1;
+            }
+            
             am.rotate(armLiftInput, "T");
             if (armExtendInput > 0.1)
             {
-                
                 e1.move(armExtendInput,775, "T");
             }
             else if (armExtendInput < -0.1)
@@ -156,13 +176,13 @@ public class StarterBot extends LinearOpMode{
             {
                 e1.move(0,extension.getCurrentPosition(),"T");
             }
-            cs.update();
+            /*
             telemetry.addData("extensionDistance", extension.getCurrentPosition());
             telemetry.addData("clawPosition", claw.getPosition());
             telemetry.addData("x",targetPowerX);
             telemetry.addData("y",targetPowerY);
             telemetry.addData("rot",targetRotation);
-            telemetry.update();
+            telemetry.update();*/
         }
     }
 }
