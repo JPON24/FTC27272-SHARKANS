@@ -148,9 +148,9 @@ public class Drivetrain{
         if ((power + Math.abs(rotation)) > 1)
         {
             flPower /=power + rotation;
-            frPower /=power + rotation;
+            frPower /=power - rotation;
             blPower /=power + rotation;
-            brPower /=power + rotation;
+            brPower /=power - rotation;
         }
         
         //sets power of each motor
