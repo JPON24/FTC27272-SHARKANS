@@ -56,36 +56,64 @@ public class Drivetrain{
 
     public void fieldOrientedTranslate(double targetPowerX, double targetPowerY, double rotation)
     {
+        // get yaw
         Orientation o;
         o = imu.getRobotOrientation(AxesReference.INTRINSIC,AxesOrder.ZYX,AngleUnit.DEGREES);
         double yaw = o.firstAngle;
         
         double stickRotation = 0;
-        if (targetPowerY < 0 && targetPowerX < 0)
+        int sameSignFlip = 1;
+        if (targetPowerY > 0 && targetPowerX < 0) //quad2
         {
-            stickRotation = (Math.atan2(targetPowerY,targetPowerX) - Math.PI) * 180/Math.PI;
+            sameSignFlip = -1;
+            stickRotation = (Math.atan2(targetPowerY,targetPowerX) - Math.PI) * 180/Math.PI;   
         }
-        else if (targetPowerY > 0 && targetPowerX > 0)
+        else if (targetPowerY < 0 && targetPowerX < 0) //quad3
         {
+            sameSignFlip = -1;
             stickRotation = (Math.atan2(targetPowerY,targetPowerX) + Math.PI) * 180/Math.PI;
         }
-        else
+        else //quad1 and quad4
         {
+            sameSignFlip = 1;
             stickRotation = Math.atan2(targetPowerY,targetPowerX) * 180/Math.PI;
         }
         
+        // angle of imu yaw supplemented by the stick's rotation, determined by atan
         double theta = (360-yaw) + stickRotation;
-        double power = Math.hypot(targetPowerX,targetPowerY);
+        double power = Math.hypot(targetPowerX,targetPowerY); //get hypotenuse of x and y tgt, getting the power
         
+        double speedScalarLocal = 0.5; // static speed scalar, can be adjusted as seen fit
+        
+        
+        // if at max power diag, limit to magnitude of 1
+        // with the normalizing code, the diag movement had a bug where max power (being magnitude sqrt(2))-- 
+        // --would cause wheels to flip polarity
+        // to counteract this the power is limited to a proper magnitude
+        if (power > 1)
+        {
+            power = 1;
+        }
+        else if (power < -1) 
+        {
+            power = -1;
+        }
+        
+        //get the sin and cos of theta
+        //math.pi/4 represents 45 degrees, accounting for angular offset of mechanum
         double sin = Math.sin((theta * (Math.PI/180)) - (Math.PI/4));
         double cos = Math.cos((theta * (Math.PI/180)) - (Math.PI/4));
+        //max of sin and cos, used to normalize the values for maximum efficiency
         double maxSinCos = Math.max(Math.abs(sin),Math.abs(cos));
-
-        double flPower = power*cos/maxSinCos+rotation;
-        double frPower = power*sin/maxSinCos-rotation;
-        double blPower = power*sin/maxSinCos+rotation;
-        double brPower = power*cos/maxSinCos-rotation;
+    
+        //same sign flip is to account for the inability of atan2, it typically only works for quadrants 1 and 4
+        //by flipping the polarity when x < 0, we can use atan for every quadrant
+        double flPower = (power*cos/maxSinCos+rotation) * sameSignFlip;
+        double frPower = (power*sin/maxSinCos-rotation) * sameSignFlip;
+        double blPower = (power*sin/maxSinCos+rotation) * sameSignFlip;
+        double brPower = (power*cos/maxSinCos-rotation) * sameSignFlip;
         
+        //another normalization
         if ((power + Math.abs(rotation)) > 1)
         {
             flPower /= power + rotation;
@@ -94,6 +122,7 @@ public class Drivetrain{
             brPower /= -power - rotation;
         }
         
+        //set speed to calculated values * the speedScalar(determined by bumpers)
         frontLeft.setPower(flPower * speedScalar);
         frontRight.setPower(frPower * speedScalar);
         backLeft.setPower(blPower * speedScalar);
