@@ -1,5 +1,12 @@
+//package org.firstinspires.ftc.teamcode;
 package org.firstinspires.ftc.teamcode;
+import org.firstinspires.ftc.robotcore.external.*;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
+
 import com.qualcomm.robotcore.robot.Robot;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -40,50 +47,88 @@ public class Drivetrain{
         frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontRight.setDirection(DcMotor.Direction.FORWARD);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.FORWARD);
     }
 
     public void fieldOrientedTranslate(double targetPowerX, double targetPowerY, double rotation)
     {
-        //get rotation from imu
-        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-        double yaw = orientation.getYaw(AngleUnit.DEGREES);
+        Orientation o;
+        o = imu.getRobotOrientation(AxesReference.INTRINSIC,AxesOrder.ZYX,AngleUnit.DEGREES);
+        double yaw = o.firstAngle;
+        
+        double stickRotation = 0;
+        if (targetPowerY < 0 && targetPowerX < 0)
+        {
+            stickRotation = (Math.atan2(targetPowerY,targetPowerX) - Math.PI) * 180/Math.PI;
+        }
+        else if (targetPowerY > 0 && targetPowerX > 0)
+        {
+            stickRotation = (Math.atan2(targetPowerY,targetPowerX) + Math.PI) * 180/Math.PI;
+        }
+        else
+        {
+            stickRotation = Math.atan2(targetPowerY,targetPowerX) * 180/Math.PI;
+        }
+        
+        double theta = (360-yaw) + stickRotation;
+        double power = Math.hypot(targetPowerX,targetPowerY);
+        
+        double sin = Math.sin((theta * (Math.PI/180)) - (Math.PI/4));
+        double cos = Math.cos((theta * (Math.PI/180)) - (Math.PI/4));
+        double maxSinCos = Math.max(Math.abs(sin),Math.abs(cos));
 
-        double polarControllerInput = Math.atan2(targetPowerY,targetPowerX) * 180/PI; // get controller stick dir
-
-        double theta = (180 - polarControllerInput) + yaw; //convert to -180<=x<=180 and add offset
-
-        //scale based on theta
-        double flScalar = sin(theta);
-        double frScalar = cos(theta);
-        double blScalar = cos(theta);
-        double brScalar = sin(theta);
-
-        //apply scalars + basic code
-        double frontLeftPower = (-rotation + targetPowerY -targetPowerX) * flScalar;
-        double frontRightPower = (-rotation -targetPowerY -targetPowerX) * frScalar;
-        double backLeftPower = (-rotation + targetPowerY + targetPowerX) * blScalar;
-        double backRightPower = (-rotation -targetPowerY + targetPowerX) * brScalar;
-
-        //set speed * speed scalar
-        frontLeft.setPower(frontLeftPower * speedScalar);
-        frontRight.setPower(frontRightPower * speedScalar);
-        backLeft.setPower(backLeftPower * speedScalar);
-        backRight.setPower(backRightPower * speedScalar);
+        double flPower = power*cos/maxSinCos+rotation;
+        double frPower = power*sin/maxSinCos-rotation;
+        double blPower = power*sin/maxSinCos+rotation;
+        double brPower = power*cos/maxSinCos-rotation;
+        
+        if ((power + Math.abs(rotation)) > 1)
+        {
+            flPower /= power + rotation;
+            frPower /= -power - rotation;
+            blPower /= power + rotation;
+            brPower /= -power - rotation;
+        }
+        
+        frontLeft.setPower(flPower * speedScalar);
+        frontRight.setPower(frPower * speedScalar);
+        backLeft.setPower(blPower * speedScalar);
+        backRight.setPower(brPower * speedScalar);
     }
     
     public void translate(double targetPowerX, double targetPowerY, double rotation)
     {
         // inputs target power on x and y, outputs proper power distribution
-        double frontLeftPower = -rotation + targetPowerY -targetPowerX;
-        double frontRightPower = -rotation -targetPowerY -targetPowerX;
-        double backLeftPower = -rotation + targetPowerY + targetPowerX;
-        double backRightPower = -rotation -targetPowerY + targetPowerX;
+        
+        double theta = Math.atan2(targetPowerY, targetPowerX);
+        double power = Math.hypot(targetPowerX, targetPowerY);
+        
+        double sin = Math.sin(theta - Math.PI/4);
+        double cos = Math.cos(theta - Math.PI/4);
+        double max = Math.max(Math.abs(sin),Math.abs(cos));
+        
+        double flPower = power * cos/max + rotation;
+        double frPower = power * sin/max - rotation;
+        double blPower = power * sin/max + rotation;
+        double brPower = power * cos/max - rotation;
 
+        if ((power + Math.abs(rotation)) > 1)
+        {
+            flPower /=power + rotation;
+            frPower /=power + rotation;
+            blPower /=power + rotation;
+            brPower /=power + rotation;
+        }
+        
         //sets power of each motor
-        frontLeft.setPower(frontLeftPower * speedScalar);
-        frontRight.setPower(frontRightPower * speedScalar);
-        backLeft.setPower(backLeftPower * speedScalar);
-        backRight.setPower(backRightPower * speedScalar);
+        frontLeft.setPower(flPower * speedScalar);
+        frontRight.setPower(frPower * speedScalar);
+        backLeft.setPower(blPower * speedScalar);
+        backRight.setPower(brPower * speedScalar);
     }
     
     public void SetSpeedScalar(double change)
