@@ -36,6 +36,32 @@ public class ArmLiftMotor {
         armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     
+    /*public void UpwardPosition()
+    {
+        armLift.setTargetPosition(-2200);
+        if (armLift.getCurrentPosition() > -2200)
+        {
+            armLift.setPower(speed);
+        }
+        else
+        {
+            armLift.setPower(0);
+        }
+    }
+    
+    public void DownwardPosition()
+    {
+        armLift.setTargetPosition(300);
+        if (armLift.getCurrentPosition() < 300)
+        {
+            armLift.setPower(-speed);
+        }
+        else
+        {
+            armLift.setPower(0);
+        }
+    }*/
+    
     public void SetSpeed(double change)
     {
         speed = change;
@@ -161,7 +187,7 @@ public class ArmLiftMotor {
                     break;
                 case 90:
                     armLift.setTargetPosition(-2200);
-                    if (armLift.getCurrentPosition()>-2497){
+                    if (armLift.getCurrentPosition()>-2200){
                         armLift.setPower(-speed);
                     }
                     else
