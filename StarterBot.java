@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -24,20 +26,26 @@ public class StarterBot extends LinearOpMode{
     ArmLiftMotor am = new ArmLiftMotor();
     Extension_1 e1 = new Extension_1();
     //private DcMotor LiftMotor = null;
-    //private DcMotor extension = null;
+    private DcMotor extension = null;
     private Servo claw = null;
+    IMU imu;
     
     @Override
     public void runOpMode()
     {
         
         //LiftMotor = hardwareMap.get(DcMotor.class, "armLiftMotor");
-        //extension = hardwareMap.get(DcMotor.class, "extension_1");
+        extension = hardwareMap.get(DcMotor.class, "extension_1");
         claw = hardwareMap.get(Servo.class, "claw");
+        imu = hardwareMap.get(IMU.class, "imu");
         
         boolean canShift = true;
         double currentSpeed = 1.0;
         double speedInterval = 0.4;
+        
+        boolean canShiftArm = true;
+        double currentArmSpeed = 1.0;
+        double armSpeedInterval = 0.1;
             
         dt.init(hardwareMap);
         cs.init(hardwareMap);
@@ -50,17 +58,23 @@ public class StarterBot extends LinearOpMode{
             //angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             //drivetrain
             double targetPowerX = gamepad1.left_stick_x;
-            double targetPowerY = gamepad1.left_stick_y;
+            double targetPowerY = -gamepad1.left_stick_y;
             double targetRotation = gamepad1.right_stick_x;
             
             boolean leftBumperPressed = gamepad1.left_bumper;
             boolean rightBumperPressed = gamepad1.right_bumper;
+            boolean dpadUp = gamepad1.dpad_up;
             
             //arm
             boolean xButtonPressed = gamepad2.x;
             boolean aButtonPressed = gamepad2.a;
             double armLiftInput = -gamepad2.left_stick_y;
             double armExtendInput = -gamepad2.right_stick_y;
+            
+            boolean dpadUp2 = gamepad2.dpad_up;
+            boolean leftBumperPressed2 = gamepad2.left_bumper;
+            boolean rightBumperPressed2 = gamepad2.right_bumper;
+            
             if (xButtonPressed == true)
             {
                 cs.clawMove(false);
@@ -93,14 +107,61 @@ public class StarterBot extends LinearOpMode{
                 canShift = true;
             }
             
-            dt.translate(targetPowerX,targetPowerY,targetRotation);
+            if (dpadUp)
+            {
+                imu.resetYaw();
+            }
+            
+            if (leftBumperPressed2)
+            {
+                if (canShiftArm && currentArmSpeed - armSpeedInterval > 0)
+                {
+                    currentArmSpeed -= armSpeedInterval;
+                    am.SetSpeed(currentArmSpeed);
+                    canShiftArm = false;
+                }
+            }
+            else if (rightBumperPressed2)
+            {
+                if (canShiftArm && currentArmSpeed + armSpeedInterval <=1)
+                {
+                    currentArmSpeed += armSpeedInterval;
+                    am.SetSpeed(currentArmSpeed);
+                    canShiftArm = false;
+                }
+            }
+            else
+            {
+                canShiftArm = true;
+            }
+            
+            if(dpadUp2)
+            {
+                am.ResetEncoders();
+            }
+            
+            //dt.translate(targetPowerX,targetPowerY,targetRotation);
+            dt.fieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation);
             am.rotate(armLiftInput, "T");
-            e1.move(armExtendInput);
+            if (armExtendInput > 0.1)
+            {
+                
+                e1.move(armExtendInput,775, "T");
+            }
+            else if (armExtendInput < -0.1)
+            {
+                e1.move(armExtendInput,25,"T");
+            }
+            else
+            {
+                e1.move(0,extension.getCurrentPosition(),"T");
+            }
             cs.update();
-            //telemetry.addData("currentPosition", LiftMotor.getCurrentPosition());
-            //telemetry.addData("motorPower", LiftMotor.getPower());
-            //telemetry.addData("extensionDistance", extension.getCurrentPosition());
+            telemetry.addData("extensionDistance", extension.getCurrentPosition());
             telemetry.addData("clawPosition", claw.getPosition());
+            telemetry.addData("x",targetPowerX);
+            telemetry.addData("y",targetPowerY);
+            telemetry.addData("rot",targetRotation);
             telemetry.update();
         }
     }
