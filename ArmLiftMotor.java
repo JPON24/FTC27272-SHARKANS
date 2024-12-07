@@ -29,22 +29,32 @@ public class ArmLiftMotor {
         
         extension = hwMap.get(DcMotor.class, "extension_1");
     }
+    
+    public void ResetEncoders()
+    {
+        armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+    
+    public void SetSpeed(double change)
+    {
+        speed = change;
+    }
    
     public void rotate(double targetPower, String mode)
     {    
         int armPosition = 0;
         if (mode == "T")
         {
-            armPosition = (int)(countsPerDegree * 90);
             if (targetPower > 0.1)
             {
-                armLift.setTargetPosition(armLift.getCurrentPosition() - armPosition);
+                armLift.setTargetPosition(-2500);
                 armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armLift.setPower(speed);
             }
             else if (targetPower < -0.1)
             {
-                armLift.setTargetPosition(armLift.getCurrentPosition() + armPosition);
+                armLift.setTargetPosition(300);
                 armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armLift.setPower(speed);
             }
@@ -57,7 +67,7 @@ public class ArmLiftMotor {
                 }
                 else
                 {*/
-                    armLift.setTargetPosition(armLift.getCurrentPosition());
+                    armLift.setTargetPosition(armLift.getCurrentPosition() + ((int)countsPerDegree * 1));
                     armLift.setPower(speed);
                 //}
             }
@@ -73,10 +83,22 @@ public class ArmLiftMotor {
         70: -1901
         90: -2497
         */
+        //278
             //armPosition = (int)(countsPerDegree * targetPower);
             //armLift.setTargetPosition(armPosition);
             armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             switch ((int)targetPower){
+                case -15:
+                    armLift.setTargetPosition(278);
+                    if (armLift.getCurrentPosition() < 278 && extension.getCurrentPosition() > 150)
+                    {
+                        armLift.setPower(-speed);
+                    }
+                    else
+                    {
+                        armLift.setPower(speed);
+                    }
+                    break;
                 case 5:
                     armLift.setTargetPosition(-17);
                     if (armLift.getCurrentPosition()>-17){
