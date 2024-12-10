@@ -72,6 +72,7 @@ public class StarterBot extends LinearOpMode{
             double armExtendInput = -gamepad2.right_stick_y;
             
             boolean dpadUp2 = gamepad2.dpad_up;
+            boolean dpadDown2 = gamepad2.dpad_down;
             boolean dpadLeft2 = gamepad2.dpad_left;
             boolean leftBumperPressed2 = gamepad2.left_bumper;
             boolean rightBumperPressed2 = gamepad2.right_bumper;
@@ -151,6 +152,10 @@ public class StarterBot extends LinearOpMode{
             else if (dpadLeft2)//fix extension pos
             {
                 e1.ResetEncoders();
+            }
+            else if (dpadDown2)
+            {
+                am.ResetEncodersUp();
             }
 
             if (aButtonPressed1)
