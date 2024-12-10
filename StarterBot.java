@@ -27,6 +27,8 @@ public class StarterBot extends LinearOpMode{
     private DcMotor extension = null;
     private Servo claw = null;
     IMU imu;
+
+    boolean fieldOriented = false;
     
     @Override
     public void runOpMode()
@@ -60,6 +62,8 @@ public class StarterBot extends LinearOpMode{
             boolean leftBumperPressed = gamepad1.left_bumper;
             boolean rightBumperPressed = gamepad1.right_bumper;
             boolean dpadUp = gamepad1.dpad_up;
+            boolean aButtonPressed1 = gamepad1.a;
+            boolean xButtonPressed = gamepad1.x;
             
             //arm
             boolean xButtonPressed = gamepad2.x;
@@ -148,9 +152,23 @@ public class StarterBot extends LinearOpMode{
             {
                 e1.ResetEncoders();
             }
-            
-            //dt.translate(targetPowerX,targetPowerY,targetRotation);
-            dt.fieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation);
+
+            if (aButtonPressed1)
+            {
+                fieldOriented = true;
+            }
+            else if (xButtonPressed1)
+            {
+                fieldOriented = false;
+            }
+            if (fieldOriented)
+            {
+                dt.fieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation);
+            }
+            else
+            {
+                dt.translate(targetPowerX,targetPowerY,targetRotation);
+            }
             
             if (rightTrigger2 > 0.8)
             {
