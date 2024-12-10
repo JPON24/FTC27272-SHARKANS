@@ -17,6 +17,9 @@ public class ArmLiftMotor {
     double countsPerDegree = countsPerGearRev/360;
 
     double speed = 1;
+
+    int topLimit = -2500;
+    int bottomLimit = 300;
     
     public void init(HardwareMap hwMap)
     {
@@ -32,8 +35,16 @@ public class ArmLiftMotor {
     
     public void ResetEncoders()
     {
+        topLimit = -2500;
+        bottomLimit = 300;
         armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+    public void ResetEncodersUp()
+    {
+        ResetEncoders();
+        topLimit = 0;
+        bottomLimit = 2800;
     }
     
     /*public void UpwardPosition()
@@ -74,13 +85,13 @@ public class ArmLiftMotor {
         {
             if (targetPower > 0.1)
             {
-                armLift.setTargetPosition(-2500);
+                armLift.setTargetPosition(topLimit);
                 armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armLift.setPower(speed);
             }
             else if (targetPower < -0.1)
             {
-                armLift.setTargetPosition(300);
+                armLift.setTargetPosition(bottomLimit);
                 armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 armLift.setPower(speed);
             }
