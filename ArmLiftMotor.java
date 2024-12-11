@@ -166,6 +166,17 @@ public class ArmLiftMotor {
                         armLift.setPower(speed);
                     }
                     break;
+                case 50:
+                    armLift.setTargetPosition(-1550);
+                    if(armLift.getCurrentPosition()>-1550){
+                        armLift.setPower(-speed);
+                        
+                    }
+                    else 
+                    {
+                        armLift.setPower(speed);
+                    }
+                    break;
                 case 60:
                     armLift.setTargetPosition(-1700);
                     if (armLift.getCurrentPosition()>-1700){
