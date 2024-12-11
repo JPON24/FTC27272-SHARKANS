@@ -120,7 +120,7 @@ public class AutonomousRight extends LinearOpMode
     
     private void UpdateClaw()
     {
-        //cs.update();
+        cs.update();
     }
 
     private double GetRequiredCorrection(double tgt)
@@ -184,69 +184,70 @@ public class AutonomousRight extends LinearOpMode
         Extend(1,150);
         sleep(1000);
         RotateArm(90);//lift sample
-        Extend(1, 700);//try to reach high chamber
+        Extend(1, 750);//try to reach high chamber
         sleep(2500);
-        MoveForward(0.8,0);//go to submersible
+        MoveForward(0.5,0);//go to submersible
         sleep(575);
         Stop();//reset wheels 
         sleep(1000);
         RotateArm(70);//start to clip sample
-        sleep(1000);
-        Retract(1, 600);// latch
         sleep(400);
         RotateArm(60);//pull 
         sleep(1000);
+        RotateArm(50);//pull
+        sleep(500);
         Retract(1,450);//secure latch
         sleep(1000);
         OpenClaw();//release specimen
-        DeactivateGrab();//release specime
+        DeactivateGrab();//release specimen
         sleep(500);
         
-        MoveBackward(0.9,0);//prepare to get samples
+        MoveBackward(0.5,0);//prepare to get samples
         sleep(290);
         Stop();//reset wheels
         sleep(400);
         Retract(1,150);
         RotateArm(30);//reset arm 
-        MoveRight(0.8,0);//move to samples
+        MoveRight(0.5,0);//move to samples
+        sleep(1000);
+        MoveForward(0.5,0);//prepare to push samples
         sleep(800);
-        MoveForward(0.8,0);//prepare to push samples
-        sleep(900);
         Stop();//reset wheels
         sleep(500);
-        MoveRight(0.8,0);//line up with samples
-        sleep(250);
+        MoveRight(0.5,0);//line up with samples
+        sleep(400);
         Stop();//reset wheels
         sleep(400);
-        MoveBackward(0.8,0);// first sample
-        sleep(1000);
+        MoveBackward(0.5,0);// first sample
+        sleep(1250);
         Stop();//reset wheels
         sleep(100);
-        MoveForward(0.8,0);//go to samples
-        sleep(850);
+        MoveForward(0.5,0);//go to samples
+        sleep(1200);
         Stop();//reset wheels
         sleep(200);
         MoveRight(0.6,0);//line up with sample
-        sleep(400);
+        sleep(200);
         Stop();//reset wheels
         sleep(100);
-        MoveBackward(0.8,0);//second sample
-        
-        sleep(1000);
+        MoveBackward(0.5,0);//second sample
+        sleep(1250);
+        moving= false;
+        /*sleep(1000);
         Stop();//reset wheels
         sleep(300);
-        MoveForward(0.8,0);//go to sample
+        MoveForward(0.5,0);//go to sample
         sleep(900);
         Stop();
         sleep(200);
         MoveRight(0.6,0);//line up with sample
-        sleep(300);
+        sleep(200);
         Stop();//reset wheels
         sleep(100);
-        MoveBackward(0.8,0);//sample 3 and park
+        MoveBackward(0.5,0);//sample 3 and park
         sleep(900);
         Stop();//reset wheels
-        moving = false;//stop driving, finish auto
+        moving = false;//stop driving, finish auto*/
     }
  
     @Override
