@@ -186,18 +186,18 @@ public class StarterBot extends LinearOpMode{
                 armExtendInput = -1;
             }
             
-            am.rotate(armLiftInput, "T");
+            am.rotate(armLiftInput, "T",0);
             if (armExtendInput > 0.1)
             {
-                e1.move(armExtendInput,775, "T");
+                e1.move(armExtendInput,775, "T",0);
             }
             else if (armExtendInput < -0.1)
             {
-                e1.move(armExtendInput,25,"T");
+                e1.move(armExtendInput,25,"T",0);
             }
             else
             {
-                e1.move(0,extension.getCurrentPosition(),"T");
+                e1.move(0,extension.getCurrentPosition(),"T",0);
             }
             /*
             telemetry.addData("extensionDistance", extension.getCurrentPosition());
