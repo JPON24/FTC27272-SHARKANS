@@ -63,7 +63,7 @@ public class StarterBot extends LinearOpMode{
             boolean rightBumperPressed = gamepad1.right_bumper;
             boolean dpadUp = gamepad1.dpad_up;
             boolean aButtonPressed1 = gamepad1.a;
-            boolean xButtonPressed = gamepad1.x;
+            boolean xButtonPressed1 = gamepad1.x;
             
             //arm
             boolean xButtonPressed = gamepad2.x;
@@ -206,6 +206,12 @@ public class StarterBot extends LinearOpMode{
             telemetry.addData("y",targetPowerY);
             telemetry.addData("rot",targetRotation);
             telemetry.update();*/
+            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+            double yaw = orientation.getYaw(AngleUnit.DEGREES);
+            telemetry.addData("yaw",yaw);
+            telemetry.addData("lastvalidyaw",dt.getLastValidYaw());
+            telemetry.update();
         }
     }
+    
 }
