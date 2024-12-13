@@ -25,10 +25,12 @@ public class BasketAuton extends LinearOpMode
     ClawServo cs = new ClawServo();
     ArmLiftMotor am = new ArmLiftMotor();
     Extension_1 e1 = new Extension_1();
+    ActionHandler action = new ActionHandler();
     
     IMU imu;
 
     double collisionDetectionRadius = 6.5;
+    int id = 0;
     boolean moving = true;
     boolean grabbing = true;
 
@@ -94,19 +96,22 @@ public class BasketAuton extends LinearOpMode
     
     private void Extend(double power, int tgt)
     {
-        e1.move(power,tgt,"A");
+        e1.move(power,tgt,"A",id);
         UpdateClaw();
+        id++;
     }
     private void Retract(double power, int tgt)
     {
-        e1.move(-power,tgt,"A");
+        e1.move(-power,tgt,"A",id);
         UpdateClaw();
+        id++;
     }
     
     private void RotateArm(double rotation)
     {
-        am.rotate(rotation,"A");
+        am.rotate(rotation,"A",id);
         UpdateClaw();
+        id++;
     }
     
     private void ActivateGrab()
