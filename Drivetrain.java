@@ -15,6 +15,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 public class Drivetrain{
     private double speedScalar = 1; // used to control speed with bumpers
     
@@ -25,6 +27,14 @@ public class Drivetrain{
     private DcMotor backRight = null;
 
     IMU imu;
+    
+    private ElapsedTime runtime = new ElapsedTime();
+    double lastValidYaw = 0;
+    double initialTime = 0;
+    double waitTime = 0.2;
+    boolean canSetInit = true;
+    boolean canOverrideFieldOrient = false;
+    boolean overrideFieldOrient = false;
     
     public void init(HardwareMap hwMap)
     {
@@ -40,6 +50,7 @@ public class Drivetrain{
         RevHubOrientationOnRobot.UsbFacingDirection usbDir = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
         RevHubOrientationOnRobot robotOrientationInit = new RevHubOrientationOnRobot(logoDir,usbDir);
         imu.initialize(new IMU.Parameters(robotOrientationInit));
+        
         imu.resetYaw();
 
         //set their run modes to run without encoder, meaning they will not be using setTargetPos
@@ -53,6 +64,98 @@ public class Drivetrain{
         backLeft.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.FORWARD);
     }
+    
+    private void CheckZero()
+    {
+        Orientation o;
+        o = imu.getRobotOrientation(AxesReference.INTRINSIC,AxesOrder.ZYX,AngleUnit.DEGREES);
+        double yaw = o.firstAngle;
+        
+        if(!canOverrideFieldOrient)
+        {
+            return;
+        }
+        
+        if (!(yaw==0||yaw==-0))
+        {
+            lastValidYaw = yaw;
+            canSetInit = true;
+            return;
+        }
+        else
+        {
+            if (canSetInit)
+            {
+                initialTime = runtime.seconds();
+                canSetInit = false;
+            }
+        }
+        if (runtime.seconds() >= initialTime + waitTime)
+        {
+            overrideFieldOrient = true;
+        }
+    }
+    
+    /*
+    public void SnapToOrthogonal()
+    {
+        Orientation o;
+        o = imu.getRobotOrientation(AxesReference.INTRINSIC,AxesOrder.ZYX,AngleUnit.DEGREES);
+        double yaw = o.firstAngle;
+        double yawIn360 = 0;
+        
+        if (yaw < 0)
+        {
+            yawIn360 = (180 - Math.abs(yaw)) + 180;
+        }
+        
+        double closestYaw = 90;
+        
+        for (int i = 0; i < 5; i++)
+        {
+            if (Math.abs(yawIn360 - i*90) < closestYaw)
+            {
+                closestYaw = Math.abs(yawIn360 - i*90);
+            }
+        }
+        
+        /*if (closestYaw > 180)
+        {
+            closestYaw = (180 - (closestYaw - 180)) * -1;
+        }
+        
+        double tgt = closestYaw;
+        double lenience = 5; //lenience in degrees
+        String turnDir = "";
+        if (yaw > tgt - lenience && yaw < tgt + lenience)
+        {
+            if (turnDir == "R")
+            {
+                translate(0,0,-1);
+                turnDir = "";
+            }
+            else if (turnDir == "L")
+            {
+                translate(0,0,1);
+                turnDir = "";
+            }
+            else
+            {
+                return;
+            }
+        }
+        else if (yaw < tgt - lenience)
+        {
+            translate(0,0,0.5); //turn speed
+            turnDir = "R";
+        }
+        else if (yaw > tgt + lenience)
+        {
+            translate(0,0,-0.5); //turn speed
+            turnDir = "L";
+        }
+    }*/
+    //increase theta by that thing
 
     public void fieldOrientedTranslate(double targetPowerX, double targetPowerY, double rotation)
     {
@@ -60,6 +163,13 @@ public class Drivetrain{
         Orientation o;
         o = imu.getRobotOrientation(AxesReference.INTRINSIC,AxesOrder.ZYX,AngleUnit.DEGREES);
         double yaw = o.firstAngle;
+        
+        CheckZero();
+        
+        if(overrideFieldOrient)
+        {
+            yaw += lastValidYaw;
+        }
         
         double stickRotation = 0;
         int sameSignFlip = 1;
@@ -92,6 +202,7 @@ public class Drivetrain{
         // to counteract this the power is limited to a proper magnitude
         if (power > 1)
         {
+            canOverrideFieldOrient = true;
             power = 1;
         }
         else if (power < -1) 
@@ -117,9 +228,9 @@ public class Drivetrain{
         if ((power + Math.abs(rotation)) > 1)
         {
             flPower /= power + rotation;
-            frPower /= -power - rotation;
+            frPower /= power - rotation;
             blPower /= power + rotation;
-            brPower /= -power - rotation;
+            brPower /= power - rotation;
         }
         
         //set speed to calculated values * the speedScalar(determined by bumpers)
@@ -164,5 +275,10 @@ public class Drivetrain{
     {
         //sets the speed scalar of the motors to a specified value in starter bot
         speedScalar = change;
+    }
+    
+    public double getLastValidYaw()
+    {
+        return lastValidYaw;
     }
 }
