@@ -1,4 +1,4 @@
-/*package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -29,6 +29,7 @@ public class AutonomousRight extends LinearOpMode
     ArmLiftMotor am = new ArmLiftMotor();
     Extension_1 e1 = new Extension_1();
     Sensor1 s1 = new Sensor1(); 
+    ActionHandler action = new ActionHandler();
     
     IMU imu;
 
@@ -100,19 +101,25 @@ public class AutonomousRight extends LinearOpMode
     
     private void Extend(double power, int tgt)
     {
-        e1.move(power,tgt,"A");
         UpdateClaw();
+        id++;
+        if (action.GetActionId() != id) {return;}
+        e1.move(power,tgt,"A",id);
     }
     private void Retract(double power, int tgt)
     {
-        e1.move(-power,tgt,"A");
         UpdateClaw();
+        id++;
+        if(action.GetActionId()!=id){return;}
+        e1.move(-power,tgt,"A",id);
     }
     
     private void RotateArm(double rotation)
     {
-        am.rotate(rotation,"A");
         UpdateClaw();
+        id++;
+        if(action.GetActionId()!=id){return;}
+        am.rotate(rotation,"A",id);
     }
     
     private void ActivateGrab()
@@ -129,10 +136,11 @@ public class AutonomousRight extends LinearOpMode
         cs.update();
     }
     
-    private void MoveToPosition(double tgt, char dir)
+    private void MoveToPosition(double tgt, char dir,double spd)
     {
-        s1.moveToPositionR(tgt,dir,id);
         id++;
+        if (action.GetActionId()!=id){return;}
+        s1.moveToPositionR(tgt,spd,dir,id);
     }
 
     private double GetRequiredCorrection(double tgt)
@@ -158,9 +166,11 @@ public class AutonomousRight extends LinearOpMode
 
     private void IMU_RotationControl(int tgt, double speed, String dir)
     {
+        id++;
+        if (id != action.GetActionId()) {return;}
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
         double yaw = orientation.getYaw(AngleUnit.DEGREES);
-        double lenience = 2;
+        double lenience = 3;
         if (dir == "R")
         {
             if (!(yaw > tgt - lenience && yaw < tgt + lenience))
@@ -169,6 +179,9 @@ public class AutonomousRight extends LinearOpMode
             }
             else
             {
+                LeftRotate(speed);
+                sleep(50);
+                action.IncrementActionId();
                 Stop();
             }
         }
@@ -182,8 +195,8 @@ public class AutonomousRight extends LinearOpMode
             {
                 RightRotate(speed);
                 sleep(50);
+                action.IncrementActionId();
                 Stop();
-                moving = false;
             }
         }
     }
@@ -199,7 +212,7 @@ public class AutonomousRight extends LinearOpMode
         Extend(1, 750);//try to reach high chamber
         sleep(2500);
         MoveForward(0.55,0);//go to submersible
-        //MoveToPosition(30,"F");
+        //MoveToPosition(30,0.5,"F");
         sleep(575);
         Stop();//reset wheels 
         sleep(1000);
@@ -216,45 +229,74 @@ public class AutonomousRight extends LinearOpMode
         sleep(500);
         
         MoveBackward(0.5,0);//prepare to get samples\
-        //MoveToPosition(14,"B");
+        //MoveToPosition(14,0.5,"B");
         sleep(290);
         Stop();//reset wheels
         sleep(400);
         Retract(1,150);
         RotateArm(30);//reset arm 
         MoveRight(0.5,0);//move to samples
-        //MoveToPosition(27,"R");
+        //MoveToPosition(27,0.5,"R");
+        
+        //second specimen
+        /*RotateArm(-15)
+        MoveToPosition(10,0.5,"R");
+        IMU_RotationControl(-90,1,"R");
+        MoveToPosition(10,"R");
+        ActivateGrab();
+        CloseClaw();
+        sleep(1000);
+        IMU_RotationControl(0,1,"L");
+        RotateArm(30);
+        Extend(1,750);
+        MoveToPosition(20,0.5,"L");
+        RotateArm(90);
+        Extend(1,750);
+        MoveToPosition(14,0.5,"F");
+        RotateArm(70);//start to clip sample
+        sleep(400);
+        RotateArm(60);//pull 
+        sleep(1000);
+        RotateArm(50);//pull
+        sleep(500);
+        Retract(1,450);//secure latch
+        sleep(1500);
+        OpenClaw();//release specimen
+        DeactivateGrab();//release specimen
+        sleep(500);
+        MoveToPosition(14,0.5,"B");*/
+        
+        
         sleep(1000);
         MoveForward(0.5,0);//prepare to push samples
-        //MoveToPosition(40,"F");
+        //MoveToPosition(40,0.5,"F");
         sleep(800);
         Stop();//reset wheels
         sleep(500);
         MoveRight(0.5,0);//line up with samples
-        //MoveToPosition(8,"R");
+        //MoveToPosition(8,0.5,"R");
         sleep(400);
         Stop();//reset wheels
         sleep(400);
         MoveBackward(0.5,0);// first sample
-        //MoveToPosition(48,"B");
+        //MoveToPosition(48,0.5,"B");
         sleep(1250);
         Stop();//reset wheels
         sleep(100);
         MoveForward(0.5,0);//go to samples
-        //MoveToPosition(48,"F");
+        //MoveToPosition(48,0.5,"F");
         sleep(1200);
         Stop();//reset wheels
         sleep(200);
         MoveRight(0.6,0);//line up with sample
-        //MoveToPosition(8,"R");
+        //MoveToPosition(8,0.5,"R");
         sleep(200);
         Stop();//reset wheels
         sleep(100);
         MoveBackward(0.5,0);//second sample
-        //MoveToPosition(48,"B");
+        //MoveToPosition(48,0.5,"B");
         sleep(1250);
         Stop();
-        moving = false;
         id = 0;
     }
  
@@ -290,8 +332,8 @@ public class AutonomousRight extends LinearOpMode
                 telemetry.addData("yaw",yaw);
                 telemetry.update();*/
                 /*telemetry.addData("extension pos", extension.getCurrentPosition());
-                telemetry.update()
+                telemetry.update()*/
             }
         }
     }
-}*/
+}
