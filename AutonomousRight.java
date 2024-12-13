@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+/*package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -6,16 +6,19 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.robot.Robot;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.robotcore.hardware.IMU;
 //import org.firstinspires.ftc.robotcore.external.navigation;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import org.firstinspires.ftc.teamcode.Drivetrain;
 import org.firstinspires.ftc.teamcode.ClawServo;
 import org.firstinspires.ftc.teamcode.Extension_1;
 import org.firstinspires.ftc.teamcode.ArmLiftMotor;
+import org.firstinspires.ftc.teamcode.Sensor1;
 
 @Autonomous
 
@@ -25,12 +28,15 @@ public class AutonomousRight extends LinearOpMode
     ClawServo cs = new ClawServo();
     ArmLiftMotor am = new ArmLiftMotor();
     Extension_1 e1 = new Extension_1();
+    Sensor1 s1 = new Sensor1(); 
     
     IMU imu;
 
     double collisionDetectionRadius = 6.5;
     boolean moving = true;
     boolean grabbing = true;
+    
+    int id = 0;
 
     DcMotor extension;
     
@@ -122,6 +128,12 @@ public class AutonomousRight extends LinearOpMode
     {
         cs.update();
     }
+    
+    private void MoveToPosition(double tgt, char dir)
+    {
+        s1.moveToPositionR(tgt,dir,id);
+        id++;
+    }
 
     private double GetRequiredCorrection(double tgt)
     {
@@ -186,7 +198,8 @@ public class AutonomousRight extends LinearOpMode
         RotateArm(90);//lift sample
         Extend(1, 750);//try to reach high chamber
         sleep(2500);
-        MoveForward(0.5,0);//go to submersible
+        MoveForward(0.55,0);//go to submersible
+        //MoveToPosition(30,"F");
         sleep(575);
         Stop();//reset wheels 
         sleep(1000);
@@ -197,57 +210,52 @@ public class AutonomousRight extends LinearOpMode
         RotateArm(50);//pull
         sleep(500);
         Retract(1,450);//secure latch
-        sleep(1000);
+        sleep(1500);
         OpenClaw();//release specimen
         DeactivateGrab();//release specimen
         sleep(500);
         
-        MoveBackward(0.5,0);//prepare to get samples
+        MoveBackward(0.5,0);//prepare to get samples\
+        //MoveToPosition(14,"B");
         sleep(290);
         Stop();//reset wheels
         sleep(400);
         Retract(1,150);
         RotateArm(30);//reset arm 
         MoveRight(0.5,0);//move to samples
+        //MoveToPosition(27,"R");
         sleep(1000);
         MoveForward(0.5,0);//prepare to push samples
+        //MoveToPosition(40,"F");
         sleep(800);
         Stop();//reset wheels
         sleep(500);
         MoveRight(0.5,0);//line up with samples
+        //MoveToPosition(8,"R");
         sleep(400);
         Stop();//reset wheels
         sleep(400);
         MoveBackward(0.5,0);// first sample
+        //MoveToPosition(48,"B");
         sleep(1250);
         Stop();//reset wheels
         sleep(100);
         MoveForward(0.5,0);//go to samples
+        //MoveToPosition(48,"F");
         sleep(1200);
         Stop();//reset wheels
         sleep(200);
         MoveRight(0.6,0);//line up with sample
+        //MoveToPosition(8,"R");
         sleep(200);
         Stop();//reset wheels
         sleep(100);
         MoveBackward(0.5,0);//second sample
+        //MoveToPosition(48,"B");
         sleep(1250);
-        moving= false;
-        /*sleep(1000);
-        Stop();//reset wheels
-        sleep(300);
-        MoveForward(0.5,0);//go to sample
-        sleep(900);
         Stop();
-        sleep(200);
-        MoveRight(0.6,0);//line up with sample
-        sleep(200);
-        Stop();//reset wheels
-        sleep(100);
-        MoveBackward(0.5,0);//sample 3 and park
-        sleep(900);
-        Stop();//reset wheels
-        moving = false;//stop driving, finish auto*/
+        moving = false;
+        id = 0;
     }
  
     @Override
@@ -257,6 +265,7 @@ public class AutonomousRight extends LinearOpMode
         cs.init(hardwareMap);
         am.init(hardwareMap);
         e1.init(hardwareMap);
+        s1.init(hardwareMap);
         
         imu = hardwareMap.get(IMU.class, "imu");
         extension = hardwareMap.get(DcMotor.class, "extension_1");
@@ -280,9 +289,9 @@ public class AutonomousRight extends LinearOpMode
                 double yaw = orientation.getYaw(AngleUnit.DEGREES);
                 telemetry.addData("yaw",yaw);
                 telemetry.update();*/
-                telemetry.addData("extension pos", extension.getCurrentPosition());
-                telemetry.update();
+                /*telemetry.addData("extension pos", extension.getCurrentPosition());
+                telemetry.update()
             }
         }
     }
-}
+}*/
