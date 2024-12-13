@@ -164,7 +164,7 @@ public class Drivetrain{
         o = imu.getRobotOrientation(AxesReference.INTRINSIC,AxesOrder.ZYX,AngleUnit.DEGREES);
         double yaw = o.firstAngle;
         
-        CheckZero();
+        //CheckZero();
         
         if(overrideFieldOrient)
         {
