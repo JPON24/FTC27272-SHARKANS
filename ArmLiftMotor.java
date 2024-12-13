@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 public class ArmLiftMotor {
+    ActionHandler action = new ActionHandler();
     
     private DcMotor armLift = null;
     private DcMotor extension = null;
@@ -47,38 +48,12 @@ public class ArmLiftMotor {
         bottomLimit = 2800;
     }
     
-    /*public void UpwardPosition()
-    {
-        armLift.setTargetPosition(-2200);
-        if (armLift.getCurrentPosition() > -2200)
-        {
-            armLift.setPower(speed);
-        }
-        else
-        {
-            armLift.setPower(0);
-        }
-    }
-    
-    public void DownwardPosition()
-    {
-        armLift.setTargetPosition(300);
-        if (armLift.getCurrentPosition() < 300)
-        {
-            armLift.setPower(-speed);
-        }
-        else
-        {
-            armLift.setPower(0);
-        }
-    }*/
-    
     public void SetSpeed(double change)
     {
         speed = change;
     }
    
-    public void rotate(double targetPower, String mode)
+    public void rotate(double targetPower, String mode,int id)
     {    
         int armPosition = 0;
         if (mode == "T")
@@ -97,16 +72,8 @@ public class ArmLiftMotor {
             }
             else
             {
-                /*if (armLift.getCurrentPosition() < 100 || armLift.getCurrentPosition() > 700) // tune values?
-                {
-                    armLift.setTargetPosition(0);
-                    armLift.setPower(0);
-                }
-                else
-                {*/
-                    armLift.setTargetPosition(armLift.getCurrentPosition() + ((int)countsPerDegree * 1));
-                    armLift.setPower(speed);
-                //}
+                armLift.setTargetPosition(armLift.getCurrentPosition() + ((int)countsPerDegree * 1));
+                armLift.setPower(speed);
             }
         }
         else if (mode == "A")
@@ -120,9 +87,6 @@ public class ArmLiftMotor {
         70: -1901
         90: -2497
         */
-        //278
-            //armPosition = (int)(countsPerDegree * targetPower);
-            //armLift.setTargetPosition(armPosition);
             armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             switch ((int)targetPower){
                 case -15:
@@ -133,6 +97,7 @@ public class ArmLiftMotor {
                     }
                     else
                     {
+                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -143,6 +108,7 @@ public class ArmLiftMotor {
                     }
                     else
                     {
+                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -153,6 +119,7 @@ public class ArmLiftMotor {
                     }
                     else
                     {
+                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -163,6 +130,7 @@ public class ArmLiftMotor {
                     }
                     else
                     {
+                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -174,6 +142,7 @@ public class ArmLiftMotor {
                     }
                     else 
                     {
+                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -184,6 +153,7 @@ public class ArmLiftMotor {
                     }
                     else
                     {
+                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -194,6 +164,7 @@ public class ArmLiftMotor {
                     }
                     else
                     {
+                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -204,6 +175,7 @@ public class ArmLiftMotor {
                     }
                     else
                     {
+                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -214,18 +186,11 @@ public class ArmLiftMotor {
                     }
                     else
                     {
+                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
             }
-            /*if (armLift.getCurrentPosition() < armPosition)
-            {
-                armLift.setPower(-speed);
-            }
-            else
-            {
-                armLift.setPower(speed);
-            }*/
         }
     }
 }
