@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.Drivetrain;
 
 public class Sensor1 {
     Drivetrain dt = new Drivetrain();
+    ActionHandler action = new ActionHandler();
     
     MaxSonarI2CXL leftSensor = null;
     MaxSonarI2CXL backSensor = null;
@@ -19,8 +20,6 @@ public class Sensor1 {
     static double initialDistanceL = 0;
     static double initialDistanceB = 0;
     static double initialDistanceR = 0;
-    
-    static public int actionId = 0;
     
     int updateSpeed = 50;
     
@@ -40,14 +39,13 @@ public class Sensor1 {
         initialDistanceR = rightSensor.getDistanceSync(updateSpeed,DistanceUnit.INCH);
     }
     
-    //dir: 0 = up; 1 = up; 2 = down; 3 = right;
-    public void moveToPositionR(double targetPosition, char dir,int id)
+    //dir: 0 = up; speed = up; 2 = down; 3 = right;
+    public void moveToPositionR(double targetPosition,double speed, char dir,int id)
     {
         if(!calibrating)
         {
             Calibrate();
         }
-        if (id != actionId) {return;}
         double currentDistanceR = rightSensor.getDistanceSync(updateSpeed,DistanceUnit.INCH);
         double currentDistanceB = backSensor.getDistanceSync(updateSpeed,DistanceUnit.INCH);
         if(dir == 'F' || dir == 'B')//forward and back
@@ -58,26 +56,26 @@ public class Sensor1 {
                     if(currentDistanceB < initialDistanceB + targetPosition)
                     {
                         //currentDistanceB = backSensor.getDistance(DistanceUnit.INCH);
-                        dt.fieldOrientedTranslate(0,-1,0);
+                        dt.fieldOrientedTranslate(0,-speed,0);
                     }
                     else
                     {
                         dt.fieldOrientedTranslate(0,0,0);
                         calibrating = false;
-                        actionId++;
+                        action.IncrementActionId();
                     }
                     break;
                 case 'B':
                     if (currentDistanceB > initialDistanceB - targetPosition)
                     {
                         //currentDistanceB = backSensor.getDistance(DistanceUnit.INCH);
-                        dt.fieldOrientedTranslate(0,1,0);
+                        dt.fieldOrientedTranslate(0,speed,0);
                     }
                     else
                     {
                         dt.fieldOrientedTranslate(0,0,0);
                         calibrating = false;
-                        actionId++;
+                        action.IncrementActionId();
                     }
                     break;
             }
@@ -90,39 +88,39 @@ public class Sensor1 {
                     if (currentDistanceR > initialDistanceR - targetPosition)
                     {
                         //currentDistanceS = sideSensor.getDistance(DistanceUnit.INCH);
-                        dt.fieldOrientedTranslate(1,0,0);
+                        dt.fieldOrientedTranslate(speed,0,0);
                     }
                     else
                     {
                         dt.fieldOrientedTranslate(0,0,0);
                         calibrating = false;
-                        actionId++;
+                        action.IncrementActionId();
                     }
                     break;
                 case 'R':
                     if (currentDistanceR < initialDistanceR + targetPosition)
                     {
                         //currentDistanceS = sideSensor.getDistance(DistanceUnit.INCH);
-                        dt.fieldOrientedTranslate(-1,0,0); 
+                        dt.fieldOrientedTranslate(-speed,0,0); 
                     }
                     else
                     {
                         calibrating = false;
                         dt.fieldOrientedTranslate(0,0,0);
-                        actionId++;
+                        action.IncrementActionId();
                     }
                     break;
             }
         }
     }
     
-    public void moveToPositionL(double targetPosition, char dir,int id)
+    public void moveToPositionL(double targetPosition,double speed, char dir,int id)
     {
         if(!calibrating)
         {
             Calibrate();
         }
-        if (id != actionId) {return;}
+        if (id != action.GetActionId()) {return;}
         double currentDistanceL = leftSensor.getDistanceSync(updateSpeed,DistanceUnit.INCH);
         double currentDistanceB = backSensor.getDistanceSync(updateSpeed,DistanceUnit.INCH);
         if(dir == 'F' || dir == 'B')//forward and back
@@ -133,26 +131,26 @@ public class Sensor1 {
                     if(currentDistanceB < initialDistanceB + targetPosition)
                     {
                         //currentDistanceB = backSensor.getDistance(DistanceUnit.INCH);
-                        dt.fieldOrientedTranslate(0,-1,0);
+                        dt.fieldOrientedTranslate(0,-speed,0);
                     }
                     else
                     {
                         dt.fieldOrientedTranslate(0,0,0);
                         calibrating = false;
-                        actionId++;
+                        action.IncrementActionId();
                     }
                     break;
                 case 'B':
                     if (currentDistanceB > initialDistanceB - targetPosition)
                     {
                         //currentDistanceB = backSensor.getDistance(DistanceUnit.INCH);
-                        dt.fieldOrientedTranslate(0,1,0);
+                        dt.fieldOrientedTranslate(0,speed,0);
                     }
                     else
                     {
                         dt.fieldOrientedTranslate(0,0,0);
                         calibrating = false;
-                        actionId++;
+                        action.IncrementActionId();
                     }
                     break;
             }
@@ -165,26 +163,26 @@ public class Sensor1 {
                     if (currentDistanceL > initialDistanceL - targetPosition)
                     {
                         //currentDistanceS = sideSensor.getDistance(DistanceUnit.INCH);
-                        dt.fieldOrientedTranslate(1,0,0);
+                        dt.fieldOrientedTranslate(speed,0,0);
                     }
                     else
                     {
                         dt.fieldOrientedTranslate(0,0,0);
                         calibrating = false;
-                        actionId++;
+                        action.IncrementActionId();
                     }
                     break;
                 case 'R':
                     if (currentDistanceL < initialDistanceL + targetPosition)
                     {
                         //currentDistanceS = sideSensor.getDistance(DistanceUnit.INCH);
-                        dt.fieldOrientedTranslate(-1,0,0); 
+                        dt.fieldOrientedTranslate(-speed,0,0); 
                     }
                     else
                     {
                         calibrating = false;
                         dt.fieldOrientedTranslate(0,0,0);
-                        actionId++;
+                        action.IncrementActionId();
                     }
                     break;
             }
