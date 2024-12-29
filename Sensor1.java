@@ -79,7 +79,7 @@ public class Sensor1 {
         double xDiff = tgtPos.x - pos.x;
         double yDiff = tgtPos.y - pos.y;
         
-        if (xDiff < 1)
+        if (Math.abs(xDiff) < 1)
         {
             completedBools[0] = true;
         }
@@ -88,7 +88,7 @@ public class Sensor1 {
             completedBools[0] = false;
         }
 
-        if (yDiff < 1)
+        if (Math.abs(yDiff) < 1)
         {
             completedBools[1] = true;
         }
