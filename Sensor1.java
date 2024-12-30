@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.hardware.maxbotix.MaxSonarI2CXL;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import org.firstinspires.ftc.teamcode.Drivetrain;
@@ -26,9 +25,6 @@ public class Sensor1 {
     //ElapsedTime runtime = new ElapsedTime();
     
     IMU imu;
-    MaxSonarI2CXL leftSensor = null;
-    MaxSonarI2CXL backSensor = null;
-    MaxSonarI2CXL rightSensor = null;
 
     SparkFunOTOS odometry;
     SparkFunOTOS.Pose2D pos;
@@ -51,9 +47,6 @@ public class Sensor1 {
         imu.resetYaw();
 
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
-        leftSensor = hwMap.get(MaxSonarI2CXL.class, "Sensor1");
-        backSensor = hwMap.get(MaxSonarI2CXL.class, "Sensor2");
-        rightSensor = hwMap.get(MaxSonarI2CXL.class, "Sensor3");
         odometry.begin();
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
