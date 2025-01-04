@@ -37,8 +37,6 @@ public class Sensor1 {
     
     public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot)
     {
-        if (!odometry.isConnected()) {return;}
-
         double yaw = GetImuReading();
         double lenience = 3;
 
@@ -124,17 +122,13 @@ public class Sensor1 {
         return odometry.getPosition().y;
     }
 
-    public bool AllBoolsCompleted()
+    public boolean AllBoolsCompleted()
     {
         for (int i = 0; i < 3; i++)
         {
             if (completedBools[i] == false)
             {
                 return false;
-            }
-            else
-            {
-                continue;
             }
         }
         return true;
