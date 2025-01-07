@@ -7,8 +7,6 @@ import org.firstinspires.ftc.teamcode.Drivetrain;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
-//import com.qualcomm.robotcore.util.ElapsedTime;
-
 
 public class OdometrySensor {
     Drivetrain dt = new Drivetrain();
@@ -49,8 +47,8 @@ public class OdometrySensor {
     public void init(HardwareMap hwMap)
     {
         kp = 0.0;
-        ki = 0.2;
-        kd = 0.001;
+        ki = 0.0;
+        kd = 0.0;
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
         odometry.resetTracking();
@@ -69,7 +67,6 @@ public class OdometrySensor {
         if (!odometry.isConnected()) {return;}
 
         double yaw = GetImuReading();
-        double rot = 0;
         double distanceLenience = 2;
         double angleLenience = 10;
         
@@ -78,32 +75,17 @@ public class OdometrySensor {
         last_time = now;
         
         pos = odometry.getPosition();
-        setpoint[0] = tgtX;
-        setpoint[1] = tgtY;
-        setpoint[2] = rot;
         
         double[] errors = new double[3];
+        errors[0] = tgtX - GetPositionX();
+        errors[1] = tgtY - GetPositionY();
+        errors[2] = tgtRot - GetImuReading();
+
+
         for (int i = 0; i < 3; i++)
         {
             output[i] = pid(errors[i]);
         }
-        
-        // SparkFunOTOS.Pose2D tgtPos = new SparkFunOTOS.Pose2D();
-        // tgtPos.x = tgtX;
-        // tgtPos.y = tgtY;
-
-        // SparkFunOTOS.Pose2D moveVector = new SparkFunOTOS.Pose2D();
-        // double xDiff = tgtPos.x - pos.x;
-        // double yDiff = tgtPos.y - pos.y;
-        
-        // if (Math.abs(xDiff) < distanceLenience)
-        // {
-        //     completedBools[0] = true;
-        // }
-        // else
-        // {
-        //     completedBools[0] = false;
-        // }
         
         if (Math.abs(output[0]) < distanceLenience)
         {
@@ -123,16 +105,11 @@ public class OdometrySensor {
             completedBools[1] = false;
         }
 
-        // double maxXYDiff = Math.max(Math.abs(xDiff), Math.abs(yDiff));
-        // xDiff/=maxXYDiff;
-        // yDiff/=maxXYDiff;
         double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
         output[0] /= maxXYOutput;
         output[1] /= maxXYOutput;
-        
-        // moveVector.x = xDiff;
-        // moveVector.y = yDiff;
-        
+        output[2] /= output[2]; // might cause oscillation from using max values although might just be confused 
+
         if (Math.abs(output[2]) < angleLenience)
         {
             completedBools[2] = false;
@@ -142,7 +119,7 @@ public class OdometrySensor {
             completedBools[2] = true;
         }
 
-        dt.fieldOrientedTranslate(output[0] * speed, output[1] * speed,output[2] * speed);
+        dt.fieldOrientedTranslate(output[0] * speed, output[1] * speed, output[2] * speed);
     }
 
     public double GetImuReading()
@@ -170,13 +147,5 @@ public class OdometrySensor {
             }
         }
         return true;
-    }
-    
-    public void OverwriteAllBoolsCompleted(boolean state)
-    {
-        for (int i = 0; i < 3; i++)
-        {
-            completedBools[i] = state;
-        }
     }
 }   
