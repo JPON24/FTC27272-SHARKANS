@@ -63,6 +63,7 @@ public class OdometrySensor {
     1.55 0.32 0 = absolute holy grail :D
     */
     
+    
     public void init(HardwareMap hwMap)
     {
         //currently using pid on odometry position readings, could be causing some of the oscillation problems
@@ -132,12 +133,6 @@ public class OdometrySensor {
         {
             completedBools[1] = false;
         }
-
-        double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
-        double maxXYHOutput = Math.max(maxXYOutput,Math.abs(output[2]));
-        output[0] /= maxXYHOutput;
-        output[1] /= maxXYHOutput;
-        output[2] /= maxXYHOutput;
         
         if (Math.abs(output[2]) < angleLenience)
         {
@@ -147,6 +142,12 @@ public class OdometrySensor {
         {
             completedBools[2] = false;
         }
+
+        double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
+        double maxXYHOutput = Math.max(maxXYOutput,Math.abs(output[2]));
+        output[0] /= maxXYHOutput;
+        output[1] /= maxXYHOutput;
+        output[2] /= maxXYHOutput;
 
         dt.fieldOrientedTranslate(speed * output[0] * 3, speed * output[1] * 3, 0);
         // dt.fieldOrientedTranslate(speed,speed,speed);
@@ -193,4 +194,5 @@ public class OdometrySensor {
         }
         return true;
     }
-}   
+} 
+
