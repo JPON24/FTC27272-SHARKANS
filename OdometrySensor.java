@@ -19,18 +19,8 @@ public class OdometrySensor {
     double deltaTime, last_time;
     double integral, previous = 0;
     double kp, ki, kd;
-    double[] setpoint = new double[3];
     double[] output = new double[3];
-    
-    double pid(double error)
-    {
-        double proportional = error;
-        integral += error * deltaTime;
-        double derivative = (error - previous) / deltaTime;
-        previous = error;
-        double output = (kp * proportional) + (ki * integral) + (kd * derivative);
-        return output;
-    }
+    double[] errors = new double[3];
     
     //y
     //offset from front - 12 3/8
@@ -44,11 +34,42 @@ public class OdometrySensor {
     // offset = 3/16
     //width of robot - 15.25
     
+    /*  <//PID TESTING LOG//>
+    1,0,0: 2/-2
+    2,0,0: SPIN TO WIN
+    1.41,0,0: 0.5/-0.5
+    1.41,0.1,0: spinning weirdly (turns out it had picked up a spikemark)
+    1.5,0,0: better y and x error, h error worse
+    1.6,0,0: better error: -0.4/4 pos -14/14 rot
+    2,0,0: error worse: -0.6/0.6 pos -16/16 rot
+    1.8,0,0: -0.5/0.5 pos -6/6 rot
+    1.75,0,0: pos better rot worse
+    1.8,1,0: rotated quickly into wall
+    1.8,1,1: same as 1.41,0.1,0
+    1.8,0,1: pos slightly lower, rot between -3/-11
+    
+    1.8,0.15,0.1: 
+    1.8,0.15,0.18 kinda good
+    
+    best currently: 0.9,0.2,0.09
+    current best: 0.9,0.15,0.1
+    current best: 0.9,0.2,0.2
+    
+    0.45,0.1,0.1 good
+    0.45 0.045 0
+    
+    0.5/-0.5 with most of the time between magnitude of 0.2
+    
+    1.55 0.32 0 = absolute holy grail :D
+    */
+    
     public void init(HardwareMap hwMap)
     {
-        kp = 0.0;
-        ki = 0.0;
-        kd = 0.0;
+        //currently using pid on odometry position readings, could be causing some of the oscillation problems
+        // might be better to use motor ticks with our odometry for more accuracy
+        kp = 1.55;
+        ki = 0.313; 
+        kd = 0.155; 
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
         odometry.resetTracking();
@@ -57,18 +78,28 @@ public class OdometrySensor {
         odometry.setAngularUnit(AngleUnit.DEGREES);
         odometry.setLinearScalar(40/41);
         odometry.setAngularScalar(1);
+        
         odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0D));// disables accelerometer
         odometry.setOffset(new SparkFunOTOS.Pose2D(0.1875,-3.75,0));
         dt.init(hwMap);
+    }
+    
+    double pid(double error)
+    {
+        integral += error * runtime.seconds();
+        double derivative = (error - previous) / runtime.seconds();
+        previous = error;
+        double output = (kp * error) + (ki * integral) + (kd * derivative);
+        runtime.reset();
+        return output;
     }
     
     public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot)
     {
         if (!odometry.isConnected()) {return;}
 
-        double yaw = GetImuReading();
         double distanceLenience = 2;
-        double angleLenience = 10;
+        double angleLenience = 3;
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -76,12 +107,9 @@ public class OdometrySensor {
         
         pos = odometry.getPosition();
         
-        double[] errors = new double[3];
-        errors[0] = tgtX - GetPositionX();
-        errors[1] = tgtY - GetPositionY();
-        errors[2] = tgtRot - GetImuReading();
-
-
+        errors[0] = tgtX - pos.x;
+        errors[1] = tgtY - pos.y;
+        errors[2] = tgtRot - pos.h;
         for (int i = 0; i < 3; i++)
         {
             output[i] = pid(errors[i]);
@@ -106,20 +134,22 @@ public class OdometrySensor {
         }
 
         double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
-        output[0] /= maxXYOutput;
-        output[1] /= maxXYOutput;
-        output[2] /= output[2]; // might cause oscillation from using max values although might just be confused 
-
+        double maxXYHOutput = Math.max(maxXYOutput,Math.abs(output[2]));
+        output[0] /= maxXYHOutput;
+        output[1] /= maxXYHOutput;
+        output[2] /= maxXYHOutput;
+        
         if (Math.abs(output[2]) < angleLenience)
-        {
-            completedBools[2] = false;
-        }
-        else
         {
             completedBools[2] = true;
         }
+        else
+        {
+            completedBools[2] = false;
+        }
 
-        dt.fieldOrientedTranslate(output[0] * speed, output[1] * speed, output[2] * speed);
+        dt.fieldOrientedTranslate(speed * output[0] * 3, speed * output[1] * 3, 0);
+        // dt.fieldOrientedTranslate(speed,speed,speed);
     }
 
     public double GetImuReading()
@@ -136,7 +166,22 @@ public class OdometrySensor {
     {
         return odometry.getPosition().y;
     }
-
+    
+    public double GetErrorX()
+    {
+        return errors[0];
+    }
+    
+    public double GetErrorY()
+    {
+        return errors[1];
+    }
+    
+    public double GetErrorH()
+    {
+        return errors[2];
+    }
+    
     public boolean AllBoolsCompleted()
     {
         for (int i = 0; i < 3; i++)
