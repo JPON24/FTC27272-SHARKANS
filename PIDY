@@ -8,7 +8,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
-public class OdometrySensor {
+public class PIDY {
     Drivetrain dt = new Drivetrain();
     ElapsedTime runtime = new ElapsedTime();
     SparkFunOTOS odometry; 
