@@ -1,39 +1,75 @@
 package org.firstinspires.ftc.teamcode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.robot.RobotState;
-
-
+import org.firstinspires.ftc.teamcode.ArmLiftMotor;
 
 public class ClawServo{
-    private Servo claw = null; // create servo variable to store servo data
-    private double clawPos = 0.1; // current claw position
-
-    //called in starter bot, intializes the claw by making reference to control hub
+    ArmLiftMotor am = new ArmLiftMotor();
+    ElapsedTime runtime = new ElapsedTime();
+    
+    private Servo claw = null;
+    private Servo wrist = null;
+    
+    private double clawPos = 0.1;
+    private double wristPos = 0;
+    private char wristMode = 'D';
+    private double currentRotation;
+    
     public void init(HardwareMap hwMap)
     {
         claw = hwMap.get(Servo.class, "claw");
+        wrist = hwMap.get(Servo.class, "wrist");
+        am.init(hwMap);
     }
     
     public void clawMove(boolean clawOpen)
     {
-        // if the claw is open
         if (clawOpen){
-            clawPos = 0.3; // set the claw's position to the open position
+            clawPos = 0.3; //initially
         }
-        else { // if the claw is closed
-            clawPos = 0.1; // set the claw's position to the closed position
+        else {
+            clawPos = 0.1;
+        }
+    }
+    
+    public void setWristMode(char temp)
+    {
+        wristMode = temp;
+    }
+    
+    private void MoveWrist()
+    {
+        double tempWristPos = 0;
+        if (wristMode == 'N') //normal
+        {
+            tempWristPos = 0.3 - (0.3 * am.GetNormalizedArmAngle());
+        }
+        else if(wristMode == 'D') //down
+        {
+            
         }
         
+        wristPos = tempWristPos;
     }
-    // runs all the time in teleop, handled in autonomous
+    
     public void update() {
-        claw.setPosition(clawPos); // repeatedly send power to the servo in order to make it grip instead of slipping
+        claw.setPosition(clawPos);
+        MoveWrist();
+        if (runtime.milliseconds() > 0.1)
+        {
+            wrist.setPosition(wristPos);
+            runtime.reset();
+        }
     }
+    
+    public char GetWristState()
+    {
+        return wristMode;
+    }
+    
+    
 }
-
-
-
-
