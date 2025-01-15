@@ -11,6 +11,11 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 public class OdometrySensor {
     Drivetrain dt = new Drivetrain();
     ElapsedTime runtime = new ElapsedTime();
+    
+    ElapsedTime xtime = new ElapsedTime();
+    ElapsedTime ytime = new ElapsedTime();
+    ElapsedTime htime = new ElapsedTime();
+    
     SparkFunOTOS odometry; 
     SparkFunOTOS.Pose2D pos;
 
@@ -34,41 +39,18 @@ public class OdometrySensor {
     // offset = 3/16
     //width of robot - 15.25
     
-    /*  <//PID TESTING LOG//>
-    1,0,0: 2/-2
-    2,0,0: SPIN TO WIN
-    1.41,0,0: 0.5/-0.5
-    1.41,0.1,0: spinning weirdly (turns out it had picked up a spikemark)
-    1.5,0,0: better y and x error, h error worse
-    1.6,0,0: better error: -0.4/4 pos -14/14 rot
-    2,0,0: error worse: -0.6/0.6 pos -16/16 rot
-    1.8,0,0: -0.5/0.5 pos -6/6 rot
-    1.75,0,0: pos better rot worse
-    1.8,1,0: rotated quickly into wall
-    1.8,1,1: same as 1.41,0.1,0
-    1.8,0,1: pos slightly lower, rot between -3/-11
+    //  <//PID TESTING LOG//>
     
-    1.8,0.15,0.1: 
-    1.8,0.15,0.18 kinda good
+    //1.55 0.32 0 = absolute holy grail :D
     
-    best currently: 0.9,0.2,0.09
-    current best: 0.9,0.15,0.1
-    current best: 0.9,0.2,0.2
-    
-    0.45,0.1,0.1 good
-    0.45 0.045 0
-    
-    0.5/-0.5 with most of the time between magnitude of 0.2
-    
-    1.55 0.32 0 = absolute holy grail :D
-    */
     
     
     public void init(HardwareMap hwMap)
     {
+        //PositionY 
         //currently using pid on odometry position readings, could be causing some of the oscillation problems
         // might be better to use motor ticks with our odometry for more accuracy
-        kp = 1.55;
+        kp = 1.55; // best value 0.8
         ki = 0.313; 
         kd = 0.155; 
         last_time = 0;
@@ -85,13 +67,16 @@ public class OdometrySensor {
         dt.init(hwMap);
     }
     
-    double pid(double error)
+    double pid(double error) // it's just a p controller lol
     {
-        integral += error * runtime.seconds();
-        double derivative = (error - previous) / runtime.seconds();
+        integral += error * (runtime.seconds() / 1000);
+        double derivative = (error - previous) / (runtime.seconds() * 1000);
         previous = error;
-        double output = (kp * error) + (ki * integral) + (kd * derivative);
+        double output = 0;
+        
+        output = kp * error;
         runtime.reset();
+        integral = 0;
         return output;
     }
     
@@ -99,8 +84,8 @@ public class OdometrySensor {
     {
         if (!odometry.isConnected()) {return;}
 
-        double distanceLenience = 2;
-        double angleLenience = 3;
+        double distanceLenience = 1; //best value 1
+        double angleLenience = 15; //best value 4
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -110,47 +95,117 @@ public class OdometrySensor {
         
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
-        errors[2] = tgtRot - pos.h;
+        errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)));
+        // errors[2] = tgtRot - pos.h;
+
         for (int i = 0; i < 3; i++)
         {
             output[i] = pid(errors[i]);
         }
         
-        if (Math.abs(output[0]) < distanceLenience)
+        double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
+        
+        if (Math.abs(errors[0]) < distanceLenience)
         {
             completedBools[0] = true;
+            // if (xtime.milliseconds() < 0.05)
+            // {
+            //     output[0] /= maxXYOutput;
+            //     output[0] = -output[0];
+            // }
+            // else
+            // {    
+            //     output[0] = 0;
+            // }
+            output[0] = 0;
         }
         else
         {
+            // xtime.reset();
+            output[0] /= maxXYOutput;
             completedBools[0] = false;
         }
 
-        if (Math.abs(output[1]) < distanceLenience)
+        if (Math.abs(errors[1]) < distanceLenience)
         {
             completedBools[1] = true;
+            // if (ytime.milliseconds() < 0.05)
+            // {
+            //     output[1] /= maxXYOutput;
+            //     output[1] = -output[1];
+            // }
+            // else
+            // {    
+            //     output[1] = 0;
+            // }
+            output[1] = 0;
         }
         else
         {
+            // ytime.reset();
+            output[1] /= maxXYOutput;
             completedBools[1] = false;
         }
         
-        if (Math.abs(output[2]) < angleLenience)
+        if (Math.abs(errors[2]) < angleLenience)
         {
             completedBools[2] = true;
+            // if (htime.milliseconds() < 0.05)
+            // {
+            //     output[2] /= Math.abs(output[2]);
+            //     output[2] = -output[2];
+            // }
+            // else
+            // {    
+            //     output[2] = 0;
+            // }
+            output[2] = 0;
         }
         else
         {
+            // htime.reset();
+            if (errors[2] < 0)
+            {
+                output[2] = -output[2];
+            }
+            output[2] /= Math.abs(output[2]);
             completedBools[2] = false;
         }
 
-        double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
-        double maxXYHOutput = Math.max(maxXYOutput,Math.abs(output[2]));
-        output[0] /= maxXYHOutput;
-        output[1] /= maxXYHOutput;
-        output[2] /= maxXYHOutput;
-
-        dt.fieldOrientedTranslate(speed * output[0] * 3, speed * output[1] * 3, 0);
+        // double maxXYHOutput = Math.max(maxXYOutput,Math.abs(output[2]));
+        // if (output[0] != 0)
+        // {
+        //     output[0] /= maxXYOutput;
+        // }
+        // if (output[1] != 0)
+        // {
+        //     output[1] /= maxXYOutput;
+        // }
+        // if (output[2] != 0)
+        // {
+        //     output[2] /= output[2];
+        // }
+        
+        // if (output[2] > 0)
+        // {
+        //     output[2] *= -1;
+        // }
+        // add 1.25 * scalar to rot if speed val < 0.4 otherwise scalar of 0.75
+        dt.fieldOrientedTranslate(speed * output[0], speed * output[1], output[2] * speed * 0.7, pos.h);
         // dt.fieldOrientedTranslate(speed,speed,speed);
+    }
+    
+    private double angleWrap(double rad)
+    {
+        while (rad > Math.PI)
+        {
+            rad -= 2 * Math.PI;
+        }
+        while (rad < -Math.PI)
+        {
+            rad += 2 * Math.PI;
+        }
+        return rad;
     }
 
     public double GetImuReading()
@@ -181,6 +236,21 @@ public class OdometrySensor {
     public double GetErrorH()
     {
         return errors[2];
+    }
+    
+    public double GetOutputX()
+    {
+        return output[0];
+    }
+    
+    public double GetOutputY()
+    {
+        return output[1];
+    }
+    
+    public double GetOutputH()
+    {
+        return output[2];
     }
     
     public boolean AllBoolsCompleted()
