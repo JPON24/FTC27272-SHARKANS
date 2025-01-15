@@ -5,8 +5,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 public class ArmLiftMotor {
-    ActionHandler action = new ActionHandler();
-    
     private DcMotor armLift = null;
     private DcMotor extension = null;
     private double currentRotation = 0;
@@ -53,6 +51,17 @@ public class ArmLiftMotor {
         speed = change;
     }
    
+    public double GetNormalizedArmAngle()
+    {
+        double positionRange = Math.abs(topLimit) + Math.abs(bottomLimit);
+        double temp = 0;
+        if (armLift.getCurrentPosition() != 0)
+        {
+            temp = Math.abs(armLift.getCurrentPosition()) / positionRange;
+        }
+        return temp;
+    }
+   
     public void rotate(double targetPower, String mode,int id)
     {    
         int armPosition = 0;
@@ -97,7 +106,6 @@ public class ArmLiftMotor {
                     }
                     else
                     {
-                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -108,7 +116,6 @@ public class ArmLiftMotor {
                     }
                     else
                     {
-                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -119,7 +126,6 @@ public class ArmLiftMotor {
                     }
                     else
                     {
-                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -130,7 +136,6 @@ public class ArmLiftMotor {
                     }
                     else
                     {
-                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -142,7 +147,6 @@ public class ArmLiftMotor {
                     }
                     else 
                     {
-                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -153,7 +157,6 @@ public class ArmLiftMotor {
                     }
                     else
                     {
-                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -164,7 +167,6 @@ public class ArmLiftMotor {
                     }
                     else
                     {
-                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -175,7 +177,6 @@ public class ArmLiftMotor {
                     }
                     else
                     {
-                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
@@ -186,7 +187,6 @@ public class ArmLiftMotor {
                     }
                     else
                     {
-                        action.IncrementActionId();
                         armLift.setPower(speed);
                     }
                     break;
