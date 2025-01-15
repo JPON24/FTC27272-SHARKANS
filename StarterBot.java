@@ -1,21 +1,25 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+// import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+// import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+// import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+// import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+// import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+// import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+// import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+// import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+// import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.ArmLiftMotor;
 import org.firstinspires.ftc.teamcode.ClawServo;
 import org.firstinspires.ftc.teamcode.Drivetrain;
 import org.firstinspires.ftc.teamcode.Extension_1;
-import com.qualcomm.robotcore.hardware.IMU;
+import org.firstinspires.ftc.teamcode.OdometrySensor;
+// import com.qualcomm.robotcore.hardware.IMU;
 
 @TeleOp
 public class StarterBot extends LinearOpMode{
@@ -23,25 +27,28 @@ public class StarterBot extends LinearOpMode{
     ClawServo cs = new ClawServo();
     ArmLiftMotor am = new ArmLiftMotor();
     Extension_1 e1 = new Extension_1();
+    OdometrySensor s1 = new OdometrySensor();
     //private DcMotor LiftMotor = null;
     private DcMotor extension = null;
     private Servo claw = null;
-    IMU imu;
+    // IMU imu;
 
     boolean fieldOriented = false;
     
     @Override
     public void runOpMode()
     {
-        
         //LiftMotor = hardwareMap.get(DcMotor.class, "armLiftMotor");
         extension = hardwareMap.get(DcMotor.class, "extension_1");
         claw = hardwareMap.get(Servo.class, "claw");
-        imu = hardwareMap.get(IMU.class, "imu");
+        // imu = hardwareMap.get(IMU.class, "imu");
         
         boolean canShift = true;
         double currentSpeed = 1.0;
         double speedInterval = 0.4;
+        
+        boolean canShiftWristType = true;
+        boolean normalWristType = false;
         
         boolean canShiftArm = true;
         double currentArmSpeed = 1.0;
@@ -51,6 +58,7 @@ public class StarterBot extends LinearOpMode{
         cs.init(hardwareMap);
         am.init(hardwareMap);
         e1.init(hardwareMap);
+        s1.init(hardwareMap);
         waitForStart();
         
         while(opModeIsActive())
@@ -68,6 +76,7 @@ public class StarterBot extends LinearOpMode{
             //arm
             boolean xButtonPressed = gamepad2.x;
             boolean aButtonPressed = gamepad2.a;
+            boolean yButtonPressed = gamepad2.y;
             double armLiftInput = -gamepad2.left_stick_y;
             double armExtendInput = -gamepad2.right_stick_y;
             
@@ -81,13 +90,32 @@ public class StarterBot extends LinearOpMode{
             double rightTrigger2 = gamepad2.right_trigger;
             
             //claw
-            if (xButtonPressed == true)
+            if (xButtonPressed)
             {
                 cs.clawMove(false);
             }
-            else if (aButtonPressed == true)
+            else if (aButtonPressed)
             {
                 cs.clawMove(true);
+            }
+            
+            if (yButtonPressed && canShiftWristType)
+            {
+                canShiftWristType = false;
+                if (normalWristType)
+                {
+                    cs.setWristMode('D');
+                    normalWristType = false;
+                }
+                else
+                {
+                    cs.setWristMode('N');
+                    normalWristType = true;
+                }
+            }
+            else if (!yButtonPressed)
+            {
+                canShiftWristType = true;  
             }
             
             cs.update();
@@ -116,10 +144,10 @@ public class StarterBot extends LinearOpMode{
                 canShift = true;
             }
             
-            if (dpadUp)
-            {
-                imu.resetYaw();
-            }
+            // if (dpadUp)
+            // {
+            //     s1.resetYaw();
+            // }
             
             //arm
             if (leftBumperPressed2)
@@ -168,7 +196,7 @@ public class StarterBot extends LinearOpMode{
             }
             if (fieldOriented)
             {
-                dt.fieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation);
+                dt.fieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation, s1.GetImuReading());
             }
             else
             {
@@ -199,6 +227,10 @@ public class StarterBot extends LinearOpMode{
             {
                 e1.move(0,extension.getCurrentPosition(),"T",0);
             }
+            
+            telemetry.addData("wrist setting",cs.GetWristState());
+            telemetry.addData("angle double",am.GetNormalizedArmAngle());
+            telemetry.update();
             /*
             telemetry.addData("extensionDistance", extension.getCurrentPosition());
             telemetry.addData("clawPosition", claw.getPosition());
@@ -206,11 +238,11 @@ public class StarterBot extends LinearOpMode{
             telemetry.addData("y",targetPowerY);
             telemetry.addData("rot",targetRotation);
             telemetry.update();*/
-            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-            double yaw = orientation.getYaw(AngleUnit.DEGREES);
-            telemetry.addData("yaw",yaw);
-            telemetry.addData("lastvalidyaw",dt.getLastValidYaw());
-            telemetry.update();
+            // YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+            // double yaw = orientation.getYaw(AngleUnit.DEGREES);
+            // telemetry.addData("yaw",yaw);
+            // telemetry.addData("lastvalidyaw",dt.getLastValidYaw());
+            // telemetry.update();
         }
     }
     
