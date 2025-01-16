@@ -10,9 +10,9 @@ import org.firstinspires.ftc.teamcode.ClawServo;
 import org.firstinspires.ftc.teamcode.Extension_1;
 import org.firstinspires.ftc.teamcode.ArmLiftMotor;
 import org.firstinspires.ftc.teamcode.OdometrySensor;
-// import org.firstinspires.ftc.teamcode.PIDX;
-// import org.firstinspires.ftc.teamcode.PIDH;
-// import org.firstinspires.ftc.teamcode.PIDY;
+import org.firstinspires.ftc.teamcode.CommandSystem;
+
+import java.util.*;
 
 @Autonomous
 public class CommandSequence extends LinearOpMode
@@ -24,6 +24,7 @@ public class CommandSequence extends LinearOpMode
     ArmLiftMotor am = new ArmLiftMotor();
     Extension_1 e1 = new Extension_1();
     OdometrySensor s1 = new OdometrySensor();
+    CommandSystem command = new CommandSystem();
     
     // double output[] = new double[3];
     
@@ -44,47 +45,118 @@ public class CommandSequence extends LinearOpMode
         moving = true;
     }
     
-    private void MoveToPosition(double speed, double tgtX, double tgtY, double rot, int tgtE, int tgtA, boolean clawOpen, char wristMode)
+    private void MoveToPosition(double speed, double tgtX, double tgtY, double rot, int tgtE, int tgtA, boolean tgtClaw, char tgtWrist)
     {
-        if (speed != 0)
+        // reset for next command
+        command.ResetMap();
+        Map<char, boolean> localCopy = new Hashtable<char,boolean>();
+
+        // movement, will be driven by s1.GetBoolsCompleted()
+        command.SetElementFalse('m'); 
+
+        // dont use 0 for minimum position of arm and extension because of this, use 1 instead
+        if (tgtE != 0) // if extension must occur
         {
-            AddElement("n");
+            command.SetElementFalse('e');
         }
-         if (tgtX != 0)
+        if (tgtA != 0) // if arm movement must occur
         {
-            AddElement("n");
+            command.SetElementFalse('a');
         }
-         if (tgtY != 0)
+        if (tgtClaw != cs.GetClawPosition()) // if move has to happen
         {
-            AddElement("n");
+            command.SetElementFalse('c');
         }
-         if (rot != 0)
+        if (tgtWrist != cs.GetWristState()) // if move has to happen
         {
-            AddElement("n");
+            command.SetElementFalse('w');
         }
-         if (tgtE != 0)
-        {
-            AddElement("n");
-        }
-         if (tgtA != 0)
-        {
-            AddElement("n");
-        }
-         if (clawOpen != false)
-        {
-            AddElement("n");
-        }
-         if (wristMode != 'D')
-        {
-            AddElement("n");
-        }
-            
-        //s1.OdometryControl(speed,tgtX,tgtY,rot);
         
-        // while (!s1.Completed() && !s2.Completed() && s3.Completed())
-        while (!s1.AllBoolsCompleted())
+        localCopy = command.GetMap();
+
+        while (!command.GetBoolsCompleted())
         {
-            s1.OdometryControl(speed,tgtX,tgtY,rot);
+            // movement done
+            if (s1.GetBoolsCompleted())
+            {
+                command.SetElementTrue('m');
+            }
+
+            // for every key (m, e, a, c, w)
+            for (boolean key : completedMap.keys())
+            {
+                // like an if else but more efficient
+                // if a subsystem has reached it's position, set it to complete
+                // otherwise, set it to false and stop moving it 
+                switch (key)
+                {
+                    case 'm':
+                        if (s1.GetBoolsCompleted())
+                        {
+                            command.SetElementTrue('m');
+                            break;
+                        }
+                        else
+                        {
+                            command.SetElementFalse('m');
+                            s1.OdometryControl(speed,tgtX,tgtY,rot);
+                            break;
+                        }
+                        break;
+                    case 'e':
+                        if (e1.GetCompleted(tgtE))
+                        {
+                            command.SetElementTrue('e');
+                            break;
+                        }
+                        else
+                        {
+                            command.SetElementFalse('e');
+                            e1.move(speed,'e','a',0);
+                            break;
+                        }
+                        break;
+                    case 'a':
+                        if (am.GetCompleted(tgtA))
+                        {
+                            command.SetElementTrue('a');
+                            break;
+                        }
+                        else
+                        {
+                            command.SetElementFalse('a');
+                            am.rotate(tgtA,'a',0);
+                            break;
+                        }
+                        break;
+                    case 'c':
+                        if (cs.GetClawPosition() == tgtClaw)
+                        {
+                            command.SetElementTrue('c');
+                            break;
+                        }
+                        else
+                        {
+                            command.SetElementFalse('c');
+                            cs.clawMove(tgtClaw);
+                            break;
+                        }
+                        break;
+                    case 'w':
+                        if (cs.GetWristState() == tgtWrist)
+                        {
+                            command.SetElementTrue('w');
+                            break;
+                        }
+                        else
+                        {
+                            command.SetElementFalse('w');
+                            cs.setWristMode(tgtWrist);
+                            break;
+                        }
+                        break;
+                }
+            }
             
             telemetry.addData("current action",currentAction);
             telemetry.addData("volts normalized",hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage());
@@ -100,11 +172,6 @@ public class CommandSequence extends LinearOpMode
             telemetry.addData("output h",s1.GetOutputH());
             telemetry.update();
             UpdateClaw();
-            
-            // if (runtime.milliseconds() > 5000)
-            // {
-            //     break;
-            // }
         }
         
         runtime.reset();
@@ -162,28 +229,31 @@ public class CommandSequence extends LinearOpMode
         
         //CURRENTLY 3 SECONDS TOO SLOW WITHOUT EVEN MANIPULATING
         
-        MoveToPosition(speed,0,22,0); // 1
-        // MoveToPosition(speed,0,25,180); // 1
-        MoveToPosition(speed,48,8,180); // 2
-        MoveToPosition(speed,0,28,0); // 3
-        MoveToPosition(speed,39,18.75,0); // 4 
-        MoveToPosition(speed,39,29,0); // 5 
-        MoveToPosition(speed,39,8,180); // 6 
-        MoveToPosition(speed,49,29,0); // 7
-        MoveToPosition(speed,49,8,180); // 8
-        MoveToPosition(speed,55.5,56.75,0); // 9
-        MoveToPosition(speed,53,8,0); // 10
-        MoveToPosition(speed,53,15,0); // 11
-        MoveToPosition(speed,53,8,180); // 12
-        MoveToPosition(speed,0,28,0); // 13
-        MoveToPosition(speed,48,8,180); // 2
-        MoveToPosition(speed,0,28,0); // 3
-        MoveToPosition(speed,48,8,180); // 2
-        MoveToPosition(speed,0,30.75,0); // 3
-        MoveToPosition(speed,48,8,180); // 2
-        Stop();
+        // MoveToPosition(speed,0,22,0); // 1
+        // // MoveToPosition(speed,0,25,180); // 1
+        // MoveToPosition(speed,48,8,180); // 2
+        // MoveToPosition(speed,0,28,0); // 3
+        // MoveToPosition(speed,39,18.75,0); // 4 
+        // MoveToPosition(speed,39,29,0); // 5 
+        // MoveToPosition(speed,39,8,180); // 6 
+        // MoveToPosition(speed,49,29,0); // 7
+        // MoveToPosition(speed,49,8,180); // 8
+        // MoveToPosition(speed,55.5,56.75,0); // 9
+        // MoveToPosition(speed,53,8,0); // 10
+        // MoveToPosition(speed,53,15,0); // 11
+        // MoveToPosition(speed,53,8,180); // 12
+        // MoveToPosition(speed,0,28,0); // 13
+        // MoveToPosition(speed,48,8,180); // 2
+        // MoveToPosition(speed,0,28,0); // 3
+        // MoveToPosition(speed,48,8,180); // 2
+        // MoveToPosition(speed,0,30.75,0); // 3
+        // MoveToPosition(speed,48,8,180); // 2
+        // Stop();
     }
-    
+    /*
+     * will require updating - adding the extra parameters for other movements
+     * refer to method for determining what values to add
+     */
     private void CommandSequenceV2()
     {
         MoveToPosition(speed,0,22,0); // 1
