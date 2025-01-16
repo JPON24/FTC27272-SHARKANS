@@ -44,20 +44,42 @@ public class CommandSequence extends LinearOpMode
         moving = true;
     }
     
-    private void MoveToPosition(double speed, double tgtX, double tgtY, double rot)
+    private void MoveToPosition(double speed, double tgtX, double tgtY, double rot, int tgtE, int tgtA, boolean clawOpen, char wristMode)
     {
-        // turn off for command sequence v1
-        // tgtX -= halfWidth;
-        // tgtY -= halfLength;
-        // if (tgtX < 0)
-        // {
-        //     tgtX = 0;
-        // }
-        // if (tgtY  < 0)
-        // {
-        //     tgtY = 0;
-        // }
-        s1.OdometryControl(speed,tgtX,tgtY,rot);
+        if (speed != 0)
+        {
+            AddElement("n");
+        }
+         if (tgtX != 0)
+        {
+            AddElement("n");
+        }
+         if (tgtY != 0)
+        {
+            AddElement("n");
+        }
+         if (rot != 0)
+        {
+            AddElement("n");
+        }
+         if (tgtE != 0)
+        {
+            AddElement("n");
+        }
+         if (tgtA != 0)
+        {
+            AddElement("n");
+        }
+         if (clawOpen != false)
+        {
+            AddElement("n");
+        }
+         if (wristMode != 'D')
+        {
+            AddElement("n");
+        }
+            
+        //s1.OdometryControl(speed,tgtX,tgtY,rot);
         
         // while (!s1.Completed() && !s2.Completed() && s3.Completed())
         while (!s1.AllBoolsCompleted())
