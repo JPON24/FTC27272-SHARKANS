@@ -4,7 +4,7 @@ import java.util.*;
 public class CommandSystem
 {
     // stores a state correlating to a subsystem
-    Map<char,boolean> completedMap = new Hashtable<char,boolean>();
+    HashMap<Character,Boolean> completedMap = new HashMap<Character,Boolean>();
     // ArrayList<String> completedList = new ArrayList<String>();
     
     public boolean GetBoolsCompleted()
@@ -37,7 +37,7 @@ public class CommandSystem
     // clear entire map for next command
     public void ResetMap()
     {
-        completedMap.Clear();
+        completedMap.clear();
     }       
     
     // set a given element's completion state to false
@@ -59,7 +59,7 @@ public class CommandSystem
     }
     
     // returns the map itself
-    public Map GetMap()
+    public HashMap<Character,Boolean> GetMap()
     {
         return completedMap;
     }
