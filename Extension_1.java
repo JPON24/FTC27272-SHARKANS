@@ -10,7 +10,6 @@ public class Extension_1 {
     
     private DcMotor extension_1 = null;
     
-    ActionHandler action = new ActionHandler();
     
     public void init(HardwareMap hwMap)
     {
@@ -58,7 +57,7 @@ public class Extension_1 {
                 }
                 else
                 {
-                    action.IncrementActionId();
+                    
                     extension_1.setPower(0);   
                     extension_1.setTargetPosition(extension_1.getCurrentPosition() + 25);
                 }
@@ -72,7 +71,7 @@ public class Extension_1 {
                 }
                 else
                 {
-                    action.IncrementActionId();
+                    
                     extension_1.setPower(0);
                     extension_1.setTargetPosition(extension_1.getCurrentPosition() + 25);
                 }
@@ -87,7 +86,7 @@ public class Extension_1 {
     public boolean GetCompleted(int tgt)
     {
         int lenience = 25;
-        if (tgt - armlift.getCurrentPosition() < Math.abs(lenience))
+        if (tgt - extension_1.getCurrentPosition() < Math.abs(lenience))
         {
             return true;
         }
