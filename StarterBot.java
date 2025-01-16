@@ -229,6 +229,7 @@ public class StarterBot extends LinearOpMode{
             }
             
             telemetry.addData("wrist setting",cs.GetWristState());
+            telemetry.addData("wrist position", cs.GetWristState());
             telemetry.addData("angle double",am.GetNormalizedArmAngle());
             telemetry.update();
             /*
