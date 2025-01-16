@@ -49,7 +49,7 @@ public class CommandSequence extends LinearOpMode
     {
         // reset for next command
         command.ResetMap();
-        Map<char, boolean> localCopy = new Hashtable<char,boolean>();
+        HashMap<Character, Boolean> localCopy = new HashMap<Character,Boolean>();
 
         // movement, will be driven by s1.GetBoolsCompleted()
         command.SetElementFalse('m'); 
@@ -73,7 +73,6 @@ public class CommandSequence extends LinearOpMode
         }
         
         localCopy = command.GetMap();
-
         while (!command.GetBoolsCompleted())
         {
             // movement done
@@ -83,7 +82,7 @@ public class CommandSequence extends LinearOpMode
             }
 
             // for every key (m, e, a, c, w)
-            for (boolean key : completedMap.keys())
+            for (Character key : localCopy.keySet())
             {
                 // like an if else but more efficient
                 // if a subsystem has reached it's position, set it to complete
@@ -112,7 +111,7 @@ public class CommandSequence extends LinearOpMode
                         else
                         {
                             command.SetElementFalse('e');
-                            e1.move(speed,'e','a',0);
+                            e1.move(speed,"e","a",0);
                             break;
                         }
                         break;
@@ -125,7 +124,7 @@ public class CommandSequence extends LinearOpMode
                         else
                         {
                             command.SetElementFalse('a');
-                            am.rotate(tgtA,'a',0);
+                            am.rotate(tgtA,"a",0);
                             break;
                         }
                         break;
@@ -256,33 +255,33 @@ public class CommandSequence extends LinearOpMode
      */
     private void CommandSequenceV2()
     {
-        MoveToPosition(speed,0,22,0); // 1
-        MoveToPosition(speed,48,8,180); // 2
-        MoveToPosition(speed,0,22,0); // 3
+        MoveToPosition(speed,0,22,0,800,90,"a",'N'); // 1
+        // MoveToPosition(speed,48,8,180); // 2
+        // MoveToPosition(speed,0,22,0); // 3
         
-        //when adding new values subtract 3 inches for deceleration
-        MoveToPosition(speed,28,18,0); // 5 
-        MoveToPosition(speed,28,58.625,0); // 6 
-        MoveToPosition(speed,39,58.625,0); // 7
-        MoveToPosition(speed,39,8,0); // 8
+        // //when adding new values subtract 3 inches for deceleration
+        // MoveToPosition(speed,28,18,0); // 5 
+        // MoveToPosition(speed,28,58.625,0); // 6 
+        // MoveToPosition(speed,39,58.625,0); // 7
+        // MoveToPosition(speed,39,8,0); // 8
         
-        MoveToPosition(speed,38,18,0); // 9
-        MoveToPosition(speed,38,58.625,0); // 10 
-        MoveToPosition(speed,49,58.625,0); // 11
-        MoveToPosition(speed,49,8,0); // 12
+        // MoveToPosition(speed,38,18,0); // 9
+        // MoveToPosition(speed,38,58.625,0); // 10 
+        // MoveToPosition(speed,49,58.625,0); // 11
+        // MoveToPosition(speed,49,8,0); // 12
         
-        MoveToPosition(speed,49,18,0); // 13 
-        MoveToPosition(speed,49,58.625,0); // 14 
-        MoveToPosition(speed,54.375,58.625,0); // 15
-        MoveToPosition(speed,54.375,8,0); // 16
+        // MoveToPosition(speed,49,18,0); // 13 
+        // MoveToPosition(speed,49,58.625,0); // 14 
+        // MoveToPosition(speed,54.375,58.625,0); // 15
+        // MoveToPosition(speed,54.375,8,0); // 16
         
-        MoveToPosition(speed,48,8,180); // 2
-        MoveToPosition(speed,0,22,0); // 3
-        MoveToPosition(speed,48,8,180); // 2
-        MoveToPosition(speed,0,22,0); // 3
-        MoveToPosition(speed,48,8,180); // 2
-        MoveToPosition(speed,0,22,0); // 3
-        MoveToPosition(speed,48,8,180); // 2
+        // MoveToPosition(speed,48,8,180); // 2
+        // MoveToPosition(speed,0,22,0); // 3
+        // MoveToPosition(speed,48,8,180); // 2
+        // MoveToPosition(speed,0,22,0); // 3
+        // MoveToPosition(speed,48,8,180); // 2
+        // MoveToPosition(speed,0,22,0); // 3
+        // MoveToPosition(speed,48,8,180); // 2
         // MoveToPosition(speed,55.5,56.75,0); // 9
         // MoveToPosition(speed,53,8,0); // 10
         // MoveToPosition(speed,53,15,0); // 11
@@ -298,10 +297,10 @@ public class CommandSequence extends LinearOpMode
     
     private void TestSequence()
     {
-        MoveToPosition(0.4,0,12,180);
-        sleep(2000);
-        MoveToPosition(0.4,0,12,0);
-        sleep(2000);
+        // MoveToPosition(0.4,0,12,180);
+        // sleep(2000);
+        // MoveToPosition(0.4,0,12,0);
+        // sleep(2000);
         // s1.OdometryControl(0.2,12,0,0);
     }
  
