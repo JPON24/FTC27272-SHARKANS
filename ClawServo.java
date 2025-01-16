@@ -71,5 +71,8 @@ public class ClawServo{
         return wristMode;
     }
     
-    
+    public boolean GetClawPosition()
+    {
+        return clawOpen;
+    }
 }
