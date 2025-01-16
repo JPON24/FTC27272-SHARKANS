@@ -129,20 +129,10 @@ public class OdometrySensor {
         if (Math.abs(errors[1]) < distanceLenience)
         {
             completedBools[1] = true;
-            // if (ytime.milliseconds() < 0.05)
-            // {
-            //     output[1] /= maxXYOutput;
-            //     output[1] = -output[1];
-            // }
-            // else
-            // {    
-            //     output[1] = 0;
-            // }
             output[1] = 0;
         }
         else
         {
-            // ytime.reset();
             output[1] /= maxXYOutput;
             completedBools[1] = false;
         }
@@ -150,15 +140,6 @@ public class OdometrySensor {
         if (Math.abs(errors[2]) < angleLenience)
         {
             completedBools[2] = true;
-            // if (htime.milliseconds() < 0.05)
-            // {
-            //     output[2] /= Math.abs(output[2]);
-            //     output[2] = -output[2];
-            // }
-            // else
-            // {    
-            //     output[2] = 0;
-            // }
             output[2] = 0;
         }
         else
@@ -172,25 +153,6 @@ public class OdometrySensor {
             completedBools[2] = false;
         }
 
-        // double maxXYHOutput = Math.max(maxXYOutput,Math.abs(output[2]));
-        // if (output[0] != 0)
-        // {
-        //     output[0] /= maxXYOutput;
-        // }
-        // if (output[1] != 0)
-        // {
-        //     output[1] /= maxXYOutput;
-        // }
-        // if (output[2] != 0)
-        // {
-        //     output[2] /= output[2];
-        // }
-        
-        // if (output[2] > 0)
-        // {
-        //     output[2] *= -1;
-        // }
-        // add 1.25 * scalar to rot if speed val < 0.4 otherwise scalar of 0.75
         dt.fieldOrientedTranslate(speed * output[0], speed * output[1], output[2] * speed * 0.7, pos.h);
         // dt.fieldOrientedTranslate(speed,speed,speed);
     }
@@ -205,7 +167,7 @@ public class OdometrySensor {
         {
             rad += 2 * Math.PI;
         }
-        return rad;
+        return -rad;
     }
 
     public double GetImuReading()
@@ -253,7 +215,7 @@ public class OdometrySensor {
         return output[2];
     }
     
-    public boolean AllBoolsCompleted()
+    public boolean GetBoolsCompleted()
     {
         for (int i = 0; i < 3; i++)
         {
@@ -265,4 +227,3 @@ public class OdometrySensor {
         return true;
     }
 } 
-
