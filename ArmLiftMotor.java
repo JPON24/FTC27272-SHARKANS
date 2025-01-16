@@ -197,7 +197,7 @@ public class ArmLiftMotor {
     public boolean GetCompleted(int tgt)
     {
         int lenience = 25;
-        if (tgt - armlift.getCurrentPosition() < Math.abs(lenience))
+        if (tgt - armLift.getCurrentPosition() < Math.abs(lenience))
         {
             return true;
         }
