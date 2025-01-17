@@ -161,6 +161,10 @@ public class CommandSequence extends LinearOpMode
             telemetry.addData("output x",s1.GetOutputX());
             telemetry.addData("output y",s1.GetOutputY());
             telemetry.addData("output h",s1.GetOutputH());
+            telemetry.addData("output a",am.armLift.getCurrentPosition());
+            telemetry.addData("output e",e1.extension_1.getCurrentPosition());
+            telemetry.addData("output claw",cs.GetClawPosition());
+            telemetry.addData("output wrist",cs.GetWristState());
             telemetry.update();
             UpdateClaw();
         }
@@ -234,7 +238,7 @@ public class CommandSequence extends LinearOpMode
         //at 0.6 speed MoveToPosition 22 actually means MoveToPosition 31
         //at 0.6 speed MoveToPosition 10 actually means MoveToPosition 22
         MoveToPosition(speed,0,22,0,750,90,false,'N'); // 1
-        // MoveToPosition(speed,0,22,0,650,90,false,'N'); // 1
+        MoveToPosition(speed,0,22,0,650,90,false,'N'); // 1
         // MoveToPosition(speed,0,20,0,650,60,false,'N'); //1
         // MoveToPosition(speed,0,20,0,650,60,true,'N'); //1
         // MoveToPosition(speed,48,8,180,20,30,true,'N');// 2
