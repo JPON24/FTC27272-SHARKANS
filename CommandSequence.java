@@ -28,10 +28,7 @@ public class CommandSequence extends LinearOpMode
     
     // double output[] = new double[3];
     
-    // PIDX s1 = new PIDX();
-    // PIDY s2 = new PIDY();
-    // PIDH s3 = new PIDH();
-
+    
     boolean moving = true;
     double speed = 0.6;
     int currentAction = 1;
@@ -101,7 +98,6 @@ public class CommandSequence extends LinearOpMode
                             s1.OdometryControl(speed,tgtX,tgtY,rot);
                             break;
                         }
-                        break;
                     case 'e':
                         if (e1.GetCompleted(tgtE))
                         {
@@ -111,10 +107,9 @@ public class CommandSequence extends LinearOpMode
                         else
                         {
                             command.SetElementFalse('e');
-                            e1.move(speed,"e","a",0);
+                            e1.move(speed,tgtE,"A",0);
                             break;
                         }
-                        break;
                     case 'a':
                         if (am.GetCompleted(tgtA))
                         {
@@ -124,10 +119,9 @@ public class CommandSequence extends LinearOpMode
                         else
                         {
                             command.SetElementFalse('a');
-                            am.rotate(tgtA,"a",0);
+                            am.rotate(tgtA,"A",0);
                             break;
                         }
-                        break;
                     case 'c':
                         if (cs.GetClawPosition() == tgtClaw)
                         {
@@ -140,7 +134,6 @@ public class CommandSequence extends LinearOpMode
                             cs.clawMove(tgtClaw);
                             break;
                         }
-                        break;
                     case 'w':
                         if (cs.GetWristState() == tgtWrist)
                         {
@@ -153,7 +146,6 @@ public class CommandSequence extends LinearOpMode
                             cs.setWristMode(tgtWrist);
                             break;
                         }
-                        break;
                 }
             }
             
@@ -221,49 +213,36 @@ public class CommandSequence extends LinearOpMode
         cs.update();
     }
     
-    private void CommandSequence()
-    {
-        // push samples instead of grabbing for efficiency
-        // push one hook one push one hook one for human player efficienccy
-        
-        //CURRENTLY 3 SECONDS TOO SLOW WITHOUT EVEN MANIPULATING
-        
-        // MoveToPosition(speed,0,22,0); // 1
-        // // MoveToPosition(speed,0,25,180); // 1
-        // MoveToPosition(speed,48,8,180); // 2
-        // MoveToPosition(speed,0,28,0); // 3
-        // MoveToPosition(speed,39,18.75,0); // 4 
-        // MoveToPosition(speed,39,29,0); // 5 
-        // MoveToPosition(speed,39,8,180); // 6 
-        // MoveToPosition(speed,49,29,0); // 7
-        // MoveToPosition(speed,49,8,180); // 8
-        // MoveToPosition(speed,55.5,56.75,0); // 9
-        // MoveToPosition(speed,53,8,0); // 10
-        // MoveToPosition(speed,53,15,0); // 11
-        // MoveToPosition(speed,53,8,180); // 12
-        // MoveToPosition(speed,0,28,0); // 13
-        // MoveToPosition(speed,48,8,180); // 2
-        // MoveToPosition(speed,0,28,0); // 3
-        // MoveToPosition(speed,48,8,180); // 2
-        // MoveToPosition(speed,0,30.75,0); // 3
-        // MoveToPosition(speed,48,8,180); // 2
-        // Stop();
-    }
+    
     /*
      * will require updating - adding the extra parameters for other movements
      * refer to method for determining what values to add
      */
-    private void CommandSequenceV2()
+    private void CommandSequence()
     {
-        MoveToPosition(speed,0,22,0,800,90,"a",'N'); // 1
-        // MoveToPosition(speed,48,8,180); // 2
-        // MoveToPosition(speed,0,22,0); // 3
+        /* Parameter order --
+        double speed : range 0 - 1
+        double x position : range > 0
+        double y position : range > 0
+        double rotation : range 0 - 360
+        int tgtExtension : range 0 - 800
+        int tgtArmRotation : range -15, 5, 30, 45, 50, 60, 70, 80, 90
+        boolean tgtClawOpen
+        char wristPosition : range 'N', 'D'
+        */
         
-        // //when adding new values subtract 3 inches for deceleration
-        // MoveToPosition(speed,28,18,0); // 5 
-        // MoveToPosition(speed,28,58.625,0); // 6 
-        // MoveToPosition(speed,39,58.625,0); // 7
-        // MoveToPosition(speed,39,8,0); // 8
+        //at 0.6 speed MoveToPosition 22 actually means MoveToPosition 31
+        //at 0.6 speed MoveToPosition 10 actually means MoveToPosition 22
+        MoveToPosition(speed,0,22,0,750,90,false,'N'); // 1
+        // MoveToPosition(speed,0,22,0,650,90,false,'N'); // 1
+        // MoveToPosition(speed,0,20,0,650,60,false,'N'); //1
+        // MoveToPosition(speed,0,20,0,650,60,true,'N'); //1
+        // MoveToPosition(speed,48,8,180,20,30,true,'N');// 2
+        // MoveToPosition(speed,48,8,180,20,30,false,'N');//2
+        // MoveToPosition(speed,0,22,0,800,90,false,'N'); // 3
+        // MoveToPosition(speed,0,22,0,650,60,false,'N'); // 6 
+        // MoveToPosition(speed,0,20,0,650,60,true,'N'); // 7
+        
         
         // MoveToPosition(speed,38,18,0); // 9
         // MoveToPosition(speed,38,58.625,0); // 10 
@@ -297,7 +276,7 @@ public class CommandSequence extends LinearOpMode
     
     private void TestSequence()
     {
-        // MoveToPosition(0.4,0,12,180);
+        MoveToPosition(speed,0,0,0,0,90,true,'N');
         // sleep(2000);
         // MoveToPosition(0.4,0,12,0);
         // sleep(2000);
@@ -325,9 +304,8 @@ public class CommandSequence extends LinearOpMode
         {
             if (moving)
             {
-                // CommandSequence();
-                CommandSequenceV2();
-                // TestSequence();
+                CommandSequence();
+                //TestSequence();
             }
         }
     }
