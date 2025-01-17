@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 public class ArmLiftMotor {
-    private DcMotor armLift = null;
+    public DcMotor armLift = null;
     private DcMotor extension = null;
     private double currentRotation = 0;
         
