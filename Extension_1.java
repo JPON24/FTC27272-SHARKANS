@@ -8,7 +8,7 @@ public class Extension_1 {
     final double deadZone = 0.3;
     final double speed = 1;
     
-    private DcMotor extension_1 = null;
+    public DcMotor extension_1 = null;
     
     
     public void init(HardwareMap hwMap)
