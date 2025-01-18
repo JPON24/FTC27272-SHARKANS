@@ -96,108 +96,55 @@ public class ArmLiftMotor {
         70: -1901
         90: -2497
         */
+
+        // DEPRECATING -15 DEGREE SETTING, CAN ADD BACK LATER IF NEEDED
             armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            switch ((int)targetPower){
-                case -15:
-                    armLift.setTargetPosition(278);
-                    if (armLift.getCurrentPosition() < 278 && extension.getCurrentPosition() > 150)
-                    {
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
+            int encoderPosition = ConvertAngleToEncoder(targetPower);
+            MoveToPositionAutonomous(encoderPosition);
+        }
+    }
+
+    // currently untested and uncompiled, very well may error
+    // might be better to use formula
+    private int ConvertAngleToEncoder(int tgtPower)
+    {
+        switch ((int)targetPower){
                 case 5:
-                    armLift.setTargetPosition(-17);
-                    if (armLift.getCurrentPosition()>-17){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
+                    return -17;
                 case 30:
-                    armLift.setTargetPosition(-909);
-                    if (armLift.getCurrentPosition()>-909){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
+                    return -909;
                 case 45:
-                    armLift.setTargetPosition(-1212);
-                    if (armLift.getCurrentPosition()>-1212){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
+                    return -1212;
                 case 50:
-                    armLift.setTargetPosition(-1550);
-                    if(armLift.getCurrentPosition()>-1550){
-                        armLift.setPower(-speed);
-                        
-                    }
-                    else 
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
+                    return -1550;
                 case 60:
-                    armLift.setTargetPosition(-1700);
-                    if (armLift.getCurrentPosition()>-1700){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
+                    return -1700;
                 case 70:
-                    armLift.setTargetPosition(-1901);
-                    if (armLift.getCurrentPosition()>-1901){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
+                    return -1901;
                 case 80:
-                    armLift.setTargetPosition(-2000);
-                    if (armLift.getCurrentPosition()>-2000){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
+                    return -2000;
                 case 90:
-                    armLift.setTargetPosition(-2200);
-                    if (armLift.getCurrentPosition()>-2200){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
+                    return -2200;
             }
+    }
+
+    private MoveToPositionAutonomous(int position)
+    {
+        armLift.setTargetPosition(position);
+        if (armLift.getCurrentPosition()>position){
+            armLift.setPower(-speed);
+        }
+        else
+        {
+            armLift.setPower(speed);
         }
     }
 
     public boolean GetCompleted(int tgt)
     {
-        int lenience = 25;
-        if (tgt - armLift.getCurrentPosition() < Math.abs(lenience))
+        // increased due to high range
+        int lenience = 50;
+        if (ConvertAngleToEncoder(tgt) - armLift.getCurrentPosition() < Math.abs(lenience))
         {
             return true;
         }
