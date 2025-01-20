@@ -26,9 +26,9 @@ public class Extension_1 {
         extension_1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     
-    public void move(double targetPower, int tgt, String mode, int id)
+    public void move(double targetPower, int tgt, char mode, int id)
     {
-        if (mode == "T")
+        if (mode == 'T')
         {
             if (targetPower > deadZone && extension_1.getCurrentPosition() < 600)
             {
@@ -46,47 +46,17 @@ public class Extension_1 {
                 extension_1.setPower(0);
             }
         }
-        else if (mode == "A")
+        else if (mode == 'A')
         {
+            extension_1.setPower(targetPower);
             extension_1.setTargetPosition(tgt);
-            if (targetPower > 0)
-            {
-                if (extension_1.getCurrentPosition() < tgt)
-                {
-                    extension_1.setPower(speed * 0.9);   
-                }
-                else
-                {
-                    
-                    extension_1.setPower(0);   
-                    extension_1.setTargetPosition(extension_1.getCurrentPosition() + 25);
-                }
-                    
-            }
-            else if (targetPower < 0)
-            {
-                if(extension_1.getCurrentPosition() > tgt)
-                {
-                    extension_1.setPower(-speed);
-                }
-                else
-                {
-                    
-                    extension_1.setPower(0);
-                    extension_1.setTargetPosition(extension_1.getCurrentPosition() + 25);
-                }
-            }
-            else
-            {
-                extension_1.setPower(0);
-            }
         }
     }
 
     public boolean GetCompleted(int tgt)
     {
-        int lenience = 25;
-        if (tgt - extension_1.getCurrentPosition() < Math.abs(lenience))
+        int lenience = 10;
+        if (Math.abs(tgt - extension_1.getCurrentPosition()) < lenience)
         {
             return true;
         }
