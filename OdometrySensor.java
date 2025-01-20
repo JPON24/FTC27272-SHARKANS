@@ -12,10 +12,6 @@ public class OdometrySensor {
     Drivetrain dt = new Drivetrain();
     ElapsedTime runtime = new ElapsedTime();
     
-    ElapsedTime xtime = new ElapsedTime();
-    ElapsedTime ytime = new ElapsedTime();
-    ElapsedTime htime = new ElapsedTime();
-    
     SparkFunOTOS odometry; 
     SparkFunOTOS.Pose2D pos;
 
@@ -74,7 +70,7 @@ public class OdometrySensor {
         previous = error;
         double output = 0;
         
-        output = kp * error;
+        output = kp * error + ki * integral + kd * derivative;
         runtime.reset();
         integral = 0;
         return output;
@@ -96,7 +92,6 @@ public class OdometrySensor {
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
         errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)));
-        // errors[2] = tgtRot - pos.h;
 
         for (int i = 0; i < 3; i++)
         {
@@ -104,24 +99,15 @@ public class OdometrySensor {
         }
         
         double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
+        // double maxXYError = Math.max(Math.abs(errors[0]),Math.abs(errors[1]));
         
         if (Math.abs(errors[0]) < distanceLenience)
         {
             completedBools[0] = true;
-            // if (xtime.milliseconds() < 0.05)
-            // {
-            //     output[0] /= maxXYOutput;
-            //     output[0] = -output[0];
-            // }
-            // else
-            // {    
-            //     output[0] = 0;
-            // }
             output[0] = 0;
         }
         else
         {
-            // xtime.reset();
             output[0] /= maxXYOutput;
             completedBools[0] = false;
         }
@@ -144,7 +130,6 @@ public class OdometrySensor {
         }
         else
         {
-            // htime.reset();
             if (errors[2] < 0)
             {
                 output[2] = -output[2];
@@ -152,9 +137,12 @@ public class OdometrySensor {
             output[2] /= Math.abs(output[2]);
             completedBools[2] = false;
         }
+        
+        // errors[0] /= maxXYError;
+        // errors[1] /= maxXYError;
+        // errors[2] /= errors[2];
 
-        dt.fieldOrientedTranslate(speed * output[0], speed * output[1], output[2] * speed * 0.7, pos.h);
-        // dt.fieldOrientedTranslate(speed,speed,speed);
+        dt.fieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2] * 0.7, pos.h);
     }
     
     private double angleWrap(double rad)
