@@ -1,17 +1,13 @@
 package org.firstinspires.ftc.teamcode;
-import java.util.*;
+import java.util.HashMap;
 
 public class CommandSystem
 {
     // stores a state correlating to a subsystem
     HashMap<Character,Boolean> completedMap = new HashMap<Character,Boolean>();
-    // ArrayList<String> completedList = new ArrayList<String>();
     
     public boolean GetBoolsCompleted()
     {
-        // Enumeration<boolean> values = completedDict.elements();
-        // boolean currentValue = true;
-
         // for every key in the dictionary
         for (boolean value : completedMap.values())
         {
@@ -21,17 +17,6 @@ public class CommandSystem
             }
         }
         return true;
-
-        // obsolete ? 
-        // while (values.hasMoreElements())
-        // {
-        //     currentValue = values.nextElement();
-        //     if (!currentValue)
-        //     {
-        //         return false;
-        //     }
-        // }
-        // return true;
     }
     
     // clear entire map for next command
