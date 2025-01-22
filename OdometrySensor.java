@@ -12,6 +12,10 @@ public class OdometrySensor {
     Drivetrain dt = new Drivetrain();
     ElapsedTime runtime = new ElapsedTime();
     
+    ElapsedTime xtime = new ElapsedTime();
+    ElapsedTime ytime = new ElapsedTime();
+    ElapsedTime htime = new ElapsedTime();
+    
     SparkFunOTOS odometry; 
     SparkFunOTOS.Pose2D pos;
 
@@ -38,7 +42,10 @@ public class OdometrySensor {
     //  <//PID TESTING LOG//>
     
     //1.55 0.32 0 = absolute holy grail :D
-    
+    //1.55 0.25 0.111 = best for PositionY
+    //1.55 0.25 0.00001 = best for PositionX 
+    //1.55 0.25 0.00001 = works for PostionY and PositionX
+     
     
     
     public void init(HardwareMap hwMap)
@@ -46,9 +53,9 @@ public class OdometrySensor {
         //PositionY 
         //currently using pid on odometry position readings, could be causing some of the oscillation problems
         // might be better to use motor ticks with our odometry for more accuracy
-        kp = 1.55; // best value 0.8
-        ki = 0.313; 
-        kd = 0.155; 
+        kp = 1.55; //1.55
+        ki = 0.25; //0.313
+        kd = 0.00001; //0.155
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
         odometry.resetTracking();
@@ -57,16 +64,16 @@ public class OdometrySensor {
         odometry.setAngularUnit(AngleUnit.DEGREES);
         odometry.setLinearScalar(40/41);
         odometry.setAngularScalar(1);
-        
         odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0D));// disables accelerometer
         odometry.setOffset(new SparkFunOTOS.Pose2D(0.1875,-3.75,0));
         dt.init(hwMap);
     }
     
-    double pid(double error) // it's just a p controller lol
+    // maybe derivative not needed as velocity becomes near linear
+    double pid(double error) 
     {
-        integral += error * (runtime.seconds() / 1000);
-        double derivative = (error - previous) / (runtime.seconds() * 1000);
+        integral += error * runtime.seconds();
+        double derivative = (error - previous) / runtime.seconds();
         previous = error;
         double output = 0;
         
@@ -81,7 +88,7 @@ public class OdometrySensor {
         if (!odometry.isConnected()) {return;}
 
         double distanceLenience = 1; //best value 1
-        double angleLenience = 15; //best value 4
+        double angleLenience = 5; //best value 4
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -92,6 +99,7 @@ public class OdometrySensor {
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
         errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)));
+        // errors[2] = tgtRot - pos.h;
 
         for (int i = 0; i < 3; i++)
         {
@@ -99,7 +107,6 @@ public class OdometrySensor {
         }
         
         double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
-        // double maxXYError = Math.max(Math.abs(errors[0]),Math.abs(errors[1]));
         
         if (Math.abs(errors[0]) < distanceLenience)
         {
@@ -108,6 +115,7 @@ public class OdometrySensor {
         }
         else
         {
+            // xtime.reset();
             output[0] /= maxXYOutput;
             completedBools[0] = false;
         }
@@ -130,19 +138,12 @@ public class OdometrySensor {
         }
         else
         {
-            if (errors[2] < 0)
-            {
-                output[2] = -output[2];
-            }
+            // htime.reset();
             output[2] /= Math.abs(output[2]);
             completedBools[2] = false;
         }
-        
-        // errors[0] /= maxXYError;
-        // errors[1] /= maxXYError;
-        // errors[2] /= errors[2];
 
-        dt.fieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2] * 0.7, pos.h);
+        dt.fieldOrientedTranslate(speed * output[0], speed * output[1], output[2] * speed * 0.7, Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
     }
     
     private double angleWrap(double rad)
@@ -156,6 +157,11 @@ public class OdometrySensor {
             rad += 2 * Math.PI;
         }
         return -rad;
+    }
+    
+    public void ResetImuReadings()
+    {
+        odometry.resetTracking();
     }
 
     public double GetImuReading()
