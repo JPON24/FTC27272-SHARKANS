@@ -1,49 +1,53 @@
 package org.firstinspires.ftc.teamcode;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.robot.Robot;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.Range;
 
 public class ArmLiftMotor {
-    public DcMotor armLift = null;
+    public DcMotor armLiftL = null;
+    public DcMotor armLiftR = null;
     private DcMotor extension = null;
     private double currentRotation = 0;
-        
-    double rpm = 84;
-    double gearRatio = 5;
     
-    double countsPerGearRev = rpm * gearRatio;
-    double countsPerDegree = countsPerGearRev/360;
-
     double speed = 1;
 
-    int topLimit = -2500;
-    int bottomLimit = 300;
+    int topLimit = -5626;
+    int bottomLimit = 0;
     
     public void init(HardwareMap hwMap)
     {
-        armLift = hwMap.get(DcMotor.class, "armLiftMotor");
-        armLift.setTargetPosition(0);
-        armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armLift.setDirection(DcMotor.Direction.FORWARD);
-        armLift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        armLiftL = hwMap.get(DcMotor.class, "armLiftL");
+        armLiftL.setTargetPosition(0);
+        armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armLiftL.setDirection(DcMotor.Direction.FORWARD);
+        armLiftL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        
+        armLiftR = hwMap.get(DcMotor.class, "armLiftR");
+        armLiftR.setTargetPosition(0);
+        armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armLiftR.setDirection(DcMotor.Direction.FORWARD);
+        armLiftR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         
         extension = hwMap.get(DcMotor.class, "extension_1");
     }
     
     public void ResetEncoders()
     {
-        topLimit = -2500;
-        bottomLimit = 300;
-        armLift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        topLimit = -5626;
+        bottomLimit = 0;
+        armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
+    
     public void ResetEncodersUp()
     {
         ResetEncoders();
         topLimit = 0;
-        bottomLimit = 2800;
+        bottomLimit = 5626;
     }
     
     public void SetSpeed(double change)
@@ -53,39 +57,50 @@ public class ArmLiftMotor {
    
     public double GetNormalizedArmAngle()
     {
-        double positionRange = Math.abs(topLimit) + Math.abs(bottomLimit);
+        // 5626 = 211 * 24.6667
+        double positionRange = 5626;
         double temp = 0;
-        if (armLift.getCurrentPosition() != 0)
+        if (armLiftL.getCurrentPosition() != 0)
         {
-            temp = Math.abs(armLift.getCurrentPosition()) / positionRange;
+            temp = Math.abs(armLiftL.getCurrentPosition()) / positionRange;
         }
         return temp;
     }
-   
-    public void rotate(double targetPower, String mode,int id)
+    public void rotate(double targetPower, char mode,int id)
     {    
-        int armPosition = 0;
-        if (mode == "T")
+        int armPositionL = 0;
+        int armPositionR = 0;
+        if (mode == 'T')
         {
             if (targetPower > 0.1)
             {
-                armLift.setTargetPosition(topLimit);
-                armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armLift.setPower(speed);
+                armLiftL.setTargetPosition(topLimit);
+                armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armLiftL.setPower(speed);
+                armLiftR.setTargetPosition(topLimit);
+                armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armLiftR.setPower(speed);
             }
             else if (targetPower < -0.1)
             {
-                armLift.setTargetPosition(bottomLimit);
-                armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armLift.setPower(speed);
+                armLiftL.setTargetPosition(bottomLimit);
+                armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armLiftL.setPower(speed);
+                armLiftR.setTargetPosition(bottomLimit);
+                armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armLiftR.setPower(speed);
             }
             else
             {
-                armLift.setTargetPosition(armLift.getCurrentPosition() + ((int)countsPerDegree * 1));
-                armLift.setPower(speed);
+                armLiftL.setTargetPosition(armLiftL.getCurrentPosition() + ((int)25));
+                armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armLiftL.setPower(speed);
+                armLiftR.setTargetPosition(armLiftR.getCurrentPosition() + ((int)25));
+                armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                armLiftR.setPower(speed);
             }
         }
-        else if (mode == "A")
+        else if (mode == 'A')
         {
         /*
         needed locations:
@@ -96,108 +111,42 @@ public class ArmLiftMotor {
         70: -1901
         90: -2497
         */
-            armLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            switch ((int)targetPower){
-                case -15:
-                    armLift.setTargetPosition(278);
-                    if (armLift.getCurrentPosition() < 278 && extension.getCurrentPosition() > 150)
-                    {
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
-                case 5:
-                    armLift.setTargetPosition(-17);
-                    if (armLift.getCurrentPosition()>-17){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
-                case 30:
-                    armLift.setTargetPosition(-909);
-                    if (armLift.getCurrentPosition()>-909){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
-                case 45:
-                    armLift.setTargetPosition(-1212);
-                    if (armLift.getCurrentPosition()>-1212){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
-                case 50:
-                    armLift.setTargetPosition(-1550);
-                    if(armLift.getCurrentPosition()>-1550){
-                        armLift.setPower(-speed);
-                        
-                    }
-                    else 
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
-                case 60:
-                    armLift.setTargetPosition(-1700);
-                    if (armLift.getCurrentPosition()>-1700){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
-                case 70:
-                    armLift.setTargetPosition(-1901);
-                    if (armLift.getCurrentPosition()>-1901){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
-                case 80:
-                    armLift.setTargetPosition(-2000);
-                    if (armLift.getCurrentPosition()>-2000){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
-                case 90:
-                    armLift.setTargetPosition(-2200);
-                    if (armLift.getCurrentPosition()>-2200){
-                        armLift.setPower(-speed);
-                    }
-                    else
-                    {
-                        armLift.setPower(speed);
-                    }
-                    break;
-            }
+
+        // DEPRECATING -15 DEGREE SETTING, CAN ADD BACK LATER IF NEEDED
+            int encoderPosition = ConvertAngleToEncoder((int)targetPower);
+            MoveToPositionAutonomous(encoderPosition);
         }
+    }
+
+    // currently untested and uncompiled, very well may error
+    // might be better to use formula
+    private int ConvertAngleToEncoder(int tgtPower)
+    {
+        return (int)(-tgtPower * 26.6667);
+    }
+
+    private void MoveToPositionAutonomous(int position)
+    {
+        armLiftL.setPower(speed);
+        armLiftR.setPower(speed);
+        
+        armLiftL.setTargetPosition(position);
+        armLiftR.setTargetPosition(position);
+        
+        armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+    
+    public int GetCurrentPosition()
+    {
+        return armLiftL.getCurrentPosition();
     }
 
     public boolean GetCompleted(int tgt)
     {
-        int lenience = 25;
-        if (tgt - armLift.getCurrentPosition() < Math.abs(lenience))
+        // increased due to high range
+        int lenience = 10;
+        if (Math.abs(ConvertAngleToEncoder(tgt) - armLiftL.getCurrentPosition()) < lenience)
         {
             return true;
         }
@@ -207,3 +156,5 @@ public class ArmLiftMotor {
         }
     }
 }
+
+  
