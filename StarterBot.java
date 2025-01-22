@@ -55,9 +55,9 @@ public class StarterBot extends LinearOpMode{
         double armSpeedInterval = 0.8;
             
         dt.init(hardwareMap);
-        cs.init(hardwareMap);
+        // cs.init(hardwareMap);
         am.init(hardwareMap);
-        e1.init(hardwareMap);
+        // e1.init(hardwareMap);
         s1.init(hardwareMap);
         waitForStart();
         
@@ -92,11 +92,11 @@ public class StarterBot extends LinearOpMode{
             //claw
             if (xButtonPressed)
             {
-                cs.clawMove(false);
+                // cs.clawMove(false);
             }
             else if (aButtonPressed)
             {
-                cs.clawMove(true);
+                // cs.clawMove(true);
             }
             
             if (yButtonPressed && canShiftWristType)
@@ -104,12 +104,12 @@ public class StarterBot extends LinearOpMode{
                 canShiftWristType = false;
                 if (normalWristType)
                 {
-                    cs.setWristMode('D');
+                    // cs.setWristMode('D');
                     normalWristType = false;
                 }
                 else
                 {
-                    cs.setWristMode('N');
+                    // cs.setWristMode('N');
                     normalWristType = true;
                 }
             }
@@ -118,7 +118,7 @@ public class StarterBot extends LinearOpMode{
                 canShiftWristType = true;  
             }
             
-            cs.update();
+            // cs.update();
             
             // drive
             if (leftBumperPressed)
@@ -144,10 +144,10 @@ public class StarterBot extends LinearOpMode{
                 canShift = true;
             }
             
-            // if (dpadUp)
-            // {
-            //     s1.resetYaw();
-            // }
+            if (dpadUp)
+            {
+                s1.ResetImuReadings();
+            }
             
             //arm
             if (leftBumperPressed2)
@@ -179,7 +179,7 @@ public class StarterBot extends LinearOpMode{
             }
             else if (dpadLeft2)//fix extension pos
             {
-                e1.ResetEncoders();
+                // e1.ResetEncoders();
             }
             else if (dpadDown2)
             {
@@ -214,18 +214,18 @@ public class StarterBot extends LinearOpMode{
                 armExtendInput = -1;
             }
             
-            am.rotate(armLiftInput, "T",0);
+            am.rotate(armLiftInput, 'T',0);
             if (armExtendInput > 0.1)
             {
-                e1.move(armExtendInput,775, "T",0);
+                // e1.move(armExtendInput,775, 'T',0);
             }
             else if (armExtendInput < -0.1)
             {
-                e1.move(armExtendInput,25,"T",0);
+                // e1.move(armExtendInput,25,'T',0);
             }
             else
             {
-                e1.move(0,extension.getCurrentPosition(),"T",0);
+                // e1.move(0,extension.getCurrentPosition(),'T',0);
             }
             
             telemetry.addData("wrist setting",cs.GetWristState());
