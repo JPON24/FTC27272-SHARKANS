@@ -28,10 +28,12 @@ public class ClawServo{
     
     public void clawMove(boolean clawOpen)
     {
-        if (clawOpen){
+        if (clawOpen)
+        {
             clawPos = 0.3; //initially
         }
-        else {
+        else
+        {
             clawPos = 0.1;
         }
     }
@@ -46,11 +48,20 @@ public class ClawServo{
         double tempWristPos = 0;
         if (wristMode == 'N') //normal
         {
-            tempWristPos = 0.3 - (0.3 * am.GetNormalizedArmAngle());
+            if (am.GetNormalizedArmAngle() < 0.573)
+            {
+
+                tempWristPos = 0.6 - (0.35 * am.GetNormalizedArmAngle());
+            }
+            else
+            {
+                // review and retest
+                tempWristPos = 0 - (0.35 * am.GetNormalizedArmAngle());
+            }
         }
         else if(wristMode == 'D') //down
         {
-            
+            tempWristPos = 0.6;
         }
         
         wristPos = tempWristPos;
@@ -73,6 +84,13 @@ public class ClawServo{
     
     public boolean GetClawPosition()
     {
-        return clawOpen;
+        if(clawPos == 0.3)
+        {
+            return true;
+        }
+        else 
+        {
+            return false;
+        }
     }
 }
