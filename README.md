@@ -3,3 +3,4 @@ This repository shows the software progression starting after the first competit
 PS:
 - No AI required :)
 - arctan <3
+- hexagons are the bestagons ┌( ಠ_ಠ)┘
