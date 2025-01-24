@@ -109,8 +109,17 @@ public class MotorTester extends LinearOpMode {
                 amL.setPower(0);
                 amR.setPower(0);
             }
+
+            if (gamepad2.y)
+            {
+                wrist.setPosition(0.3)
+            }
+            else if (gamepad2.b)
+            {
+                wrist.setPosition(0);
+            }
             
-            wrist.setPosition(0);
+            // wrist.setPosition(0);
             
             
             frontLeft.setPower(0);
