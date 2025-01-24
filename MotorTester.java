@@ -7,8 +7,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.hardware.maxbotix.MaxSonarI2CXL;
 
 import com.qualcomm.hardware.sparkfun.*;
 
@@ -21,7 +19,6 @@ public class MotorTester extends LinearOpMode {
     private DcMotor backRight = null;
     private DcMotor amL = null;
     private DcMotor amR = null;
-    // private DcMotor armLiftMotor = null;
     private Servo claw = null;
     private Servo wrist = null;
     private SparkFunOTOS odometry;
@@ -32,16 +29,10 @@ public class MotorTester extends LinearOpMode {
         frontRight = hardwareMap.get(DcMotor.class, "FrontRight");
         backLeft = hardwareMap.get(DcMotor.class, "BackLeft");
         backRight = hardwareMap.get(DcMotor.class, "BackRight");
-        // armLiftMotor = hardwareMap.get(DcMotor.class, "armLiftMotor");
         amL = hardwareMap.get(DcMotor.class, "armLiftL");
         amR = hardwareMap.get(DcMotor.class, "armLiftR");
         claw = hardwareMap.get(Servo.class, "claw");
         wrist = hardwareMap.get(Servo.class, "wrist");
-        
-        //rangeSensor = hardwareMap.get(ModernRoboticsI2cRangeSensor.class,"Sensor1");
-        // d = hardwareMap.get(MaxSonarI2CXL.class, "Sensor1");
-        // d2 = hardwareMap.get(MaxSonarI2CXL.class, "Sensor2");
-        // d3 = hardwareMap.get(MaxSonarI2CXL.class, "Sensor3");  
         
         odometry = hardwareMap.get(SparkFunOTOS.class,"otos");
         odometry.resetTracking();
@@ -119,9 +110,6 @@ public class MotorTester extends LinearOpMode {
                 wrist.setPosition(0);
             }
             
-            // wrist.setPosition(0);
-            
-            
             frontLeft.setPower(0);
             frontRight.setPower(0);
             backLeft.setPower(0);
@@ -133,9 +121,7 @@ public class MotorTester extends LinearOpMode {
             telemetry.addData("odometryh", odometry.getPosition().h);
             telemetry.addData("armLPosition", amL.getCurrentPosition());
             telemetry.addData("armRPosition", amR.getCurrentPosition());
-            // telemetry.addData("odometryoffsetx", odometry.getOffset().x);
-            // telemetry.addData("odometryoffsety", odometry.getOffset().y);
-            // telemetry.addData("odometryoffseth", odometry.getOffset().h);
+            telemetry.addData("wrist position", wrist.getPosition());
             telemetry.update();
         }
     }
