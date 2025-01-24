@@ -42,21 +42,24 @@ public class ClawServo{
     {
         wristMode = temp;
     }
-    
+
+    // gonna need some revision as angle range is not actually 221, a little different
     private void MoveWrist()
     {
         double tempWristPos = 0;
         if (wristMode == 'N') //normal
         {
-            if (am.GetNormalizedArmAngle() < 0.573)
+            if (am.GetNormalizedArmAngle() < 0.14) // less than 31 degrees
             {
-
-                tempWristPos = 0.6 - (0.35 * am.GetNormalizedArmAngle());
+                tempWristPos = 0.3 - (0.103 - 0.14 * am.GetNormalizedArmAngle());
             }
-            else
+            else if (am.GetNormalizedArmAngle() < 0.573) // greater than 31 and less than 121
             {
-                // review and retest
-                tempWristPos = 0 - (0.35 * am.GetNormalizedArmAngle());
+                tempWristPos = 0.3 + 0.3 * ((am.GetNormalizedArmAngle() - 0.14)/0.433);
+            }
+            else // greater than 121 and less than 221
+            {
+                tempWristPos = 0.3 * ((am.GetNormalizedArmAngle() - 0.573)/0.427);
             }
         }
         else if(wristMode == 'D') //down
