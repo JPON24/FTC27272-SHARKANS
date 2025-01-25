@@ -1,19 +1,8 @@
-//package org.firstinspires.ftc.teamcode;
 package org.firstinspires.ftc.teamcode;
 import org.firstinspires.ftc.robotcore.external.*;
-// import com.qualcomm.robotcore.hardware.IMU;
-// import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-// import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-// import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
-// import com.qualcomm.robotcore.hardware.DcMotorEx;
-
-// import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-// import com.qualcomm.robotcore.hardware.IMU;
-// import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-// import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -25,10 +14,6 @@ public class Drivetrain{
     private DcMotor frontRight = null;
     private DcMotor backLeft = null;
     private DcMotor backRight = null;
-    
-    // public static final double NEW_P = 0.45;
-    // public static final double NEW_I = 0.1;
-    // public static final double NEW_D = 0.1;
     
     private ElapsedTime runtime = new ElapsedTime();
     public boolean moving = true;
@@ -47,15 +32,6 @@ public class Drivetrain{
         backLeft = hwMap.get(DcMotor.class, "BackLeft");
         backRight = hwMap.get(DcMotor.class, "BackRight");
 
-        //intialize imu
-        // imu = hwMap.get(IMU.class, "imu");
-        // RevHubOrientationOnRobot.LogoFacingDirection logoDir = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        // RevHubOrientationOnRobot.UsbFacingDirection usbDir = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-        // RevHubOrientationOnRobot robotOrientationInit = new RevHubOrientationOnRobot(logoDir,usbDir);
-        // imu.initialize(new IMU.Parameters(robotOrientationInit));
-        
-        // imu.resetYaw();
-
         //set their run modes to run without encoder, meaning they will not be using setTargetPos
         frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -66,105 +42,7 @@ public class Drivetrain{
         frontRight.setDirection(DcMotor.Direction.FORWARD);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
         backRight.setDirection(DcMotor.Direction.FORWARD);
-    
-        // PIDCoefficients pidNew = new PIDCoefficients(NEW_P, NEW_I, NEW_D);
-        // frontLeft.setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
-        // frontRight.setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
-        // backLeft.setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
-        // backRight.setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidNew);
     }
-    
-    // private void CheckZero()
-    // {
-    //     // Orientation o;
-    //     // o = imu.getRobotOrientation(AxesReference.INTRINSIC,AxesOrder.ZYX,AngleUnit.DEGREES);
-    //     // double yaw = o.firstAngle;
-        
-    //     if(!canOverrideFieldOrient)
-    //     {
-    //         return;
-    //     }
-        
-    //     if (!(yaw==0||yaw==-0))
-    //     {
-    //         lastValidYaw = yaw;
-    //         canSetInit = true;
-    //         return;
-    //     }
-    //     else
-    //     {
-    //         if (canSetInit)
-    //         {
-    //             initialTime = runtime.seconds();
-    //             canSetInit = false;
-    //         }
-    //     }
-    //     if (runtime.seconds() >= initialTime + waitTime)
-    //     {
-    //         overrideFieldOrient = true;
-    //     }
-    // }
-    
-    /*
-    public void SnapToOrthogonal()
-    {
-        Orientation o;
-        o = imu.getRobotOrientation(AxesReference.INTRINSIC,AxesOrder.ZYX,AngleUnit.DEGREES);
-        double yaw = o.firstAngle;
-        double yawIn360 = 0;
-        
-        if (yaw < 0)
-        {
-            yawIn360 = (180 - Math.abs(yaw)) + 180;
-        }
-        
-        double closestYaw = 90;
-        
-        for (int i = 0; i < 5; i++)
-        {
-            if (Math.abs(yawIn360 - i*90) < closestYaw)
-            {
-                closestYaw = Math.abs(yawIn360 - i*90);
-            }
-        }
-        
-        /*if (closestYaw > 180)
-        {
-            closestYaw = (180 - (closestYaw - 180)) * -1;
-        }
-        
-        double tgt = closestYaw;
-        double lenience = 5; //lenience in degrees
-        String turnDir = "";
-        if (yaw > tgt - lenience && yaw < tgt + lenience)
-        {
-            if (turnDir == "R")
-            {
-                translate(0,0,-1);
-                turnDir = "";
-            }
-            else if (turnDir == "L")
-            {
-                translate(0,0,1);
-                turnDir = "";
-            }
-            else
-            {
-                return;
-            }
-        }
-        else if (yaw < tgt - lenience)
-        {
-            translate(0,0,0.5); //turn speed
-            turnDir = "R";
-        }
-        else if (yaw > tgt + lenience)
-        {
-            translate(0,0,-0.5); //turn speed
-            turnDir = "L";
-        }
-    }*/
-    //increase theta by that thing
     
     private double angleWrap(double rad)
     {
@@ -176,18 +54,11 @@ public class Drivetrain{
         {
             rad += 2 * Math.PI;
         }
-        return rad;
+        return -rad;
     }
 
     public void fieldOrientedTranslate(double targetPowerX, double targetPowerY, double rotation, double currentRotation)
     {
-        // get yaw
-        // Orientation o;
-        // o = imu.getRobotOrientation(AxesReference.INTRINSIC,AxesOrder.ZYX,AngleUnit.DEGREES);
-        // double yaw = o.firstAngle;
-        
-        //CheckZero();
-
         double yaw = Math.toDegrees(angleWrap(Math.toRadians(currentRotation)));
         
         if(overrideFieldOrient)
@@ -196,15 +67,12 @@ public class Drivetrain{
         }
         
         double stickRotation = 0;
-        int sameSignFlip = 1;
         if (targetPowerY > 0 && targetPowerX < 0) //quad2
         {
-            // sameSignFlip = -1;
             stickRotation = (Math.atan2(Math.abs(targetPowerY),Math.abs(targetPowerX)) + Math.PI/2) * 180/Math.PI;   
         }
         else if (targetPowerY < 0 && targetPowerX < 0) //quad3
         {
-            // sameSignFlip = -1;
             stickRotation = (Math.atan2(Math.abs(targetPowerY),Math.abs(targetPowerX)) + Math.PI) * 180/Math.PI;
         }
         else //quad1 and quad4
@@ -247,10 +115,10 @@ public class Drivetrain{
         double frPower = 0;
         double blPower = 0;
         double brPower = 0;
-        flPower = power * cos/maxSinCos+rotation * sameSignFlip;
-        frPower = power * sin/maxSinCos-rotation * sameSignFlip;
-        blPower = power * sin/maxSinCos+rotation * sameSignFlip;
-        brPower = power * cos/maxSinCos-rotation * sameSignFlip;
+        flPower = power * cos/maxSinCos+rotation;
+        frPower = power * sin/maxSinCos-rotation;
+        blPower = power * sin/maxSinCos+rotation;
+        brPower = power * cos/maxSinCos-rotation;
         
         double frontMax = Math.max(Math.abs(flPower),Math.abs(frPower));
         double backMax = Math.max(Math.abs(blPower),Math.abs(brPower));
@@ -258,10 +126,10 @@ public class Drivetrain{
         //another normalization
         if ((power + Math.abs(rotation)) > 1)
         {
-            flPower /= power + rotation;
-            frPower /= power - rotation;
-            blPower /= power + rotation;
-            brPower /= power - rotation;
+            flPower /= power + Math.abs(rotation);
+            frPower /= power - Math.abs(rotation);
+            blPower /= power + Math.abs(rotation);
+            brPower /= power - Math.abs(rotation);
         }
         
         //set speed to calculated values * the speedScalar(determined by bumpers)
@@ -273,21 +141,6 @@ public class Drivetrain{
             backRight.setPower(brPower * speedScalar);
         }
     }
-    
-    public void fieldOrientedTranslateV2(double tgtX, double tgtY, double tgtRot, double rot)
-    {
-        double x_rotated = tgtX * Math.cos(rot) - tgtY * Math.sin(rot);
-        double y_rotated = tgtX * Math.sin(rot) + tgtY * Math.cos(rot);
-        
-        if(moving)
-        {
-            frontLeft.setPower((x_rotated + y_rotated + tgtRot) * speedScalar);
-            frontRight.setPower((x_rotated - y_rotated - tgtRot) * speedScalar);
-            backLeft.setPower((x_rotated - y_rotated + tgtRot) * speedScalar);
-            backRight.setPower((x_rotated + y_rotated - tgtRot) * speedScalar);
-        }
-    }
-    
     
     public void translate(double targetPowerX, double targetPowerY, double rotation)
     {
@@ -307,10 +160,10 @@ public class Drivetrain{
 
         if ((power + Math.abs(rotation)) > 1)
         {
-            flPower /= power + rotation;
-            frPower /= power - rotation;
-            blPower /= power + rotation;
-            brPower /= power - rotation;
+            flPower /= power + Math.abs(rotation);
+            frPower /= power - Math.abs(rotation);
+            blPower /= power + Math.abs(rotation);
+            brPower /= power - Math.abs(rotation);
         }
         
         //sets power of each motor
