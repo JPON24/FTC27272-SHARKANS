@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.robot.RobotState;
 import org.firstinspires.ftc.teamcode.ArmLiftMotor;
@@ -23,6 +24,7 @@ public class ClawServo{
     {
         claw = hwMap.get(Servo.class, "claw");
         wrist = hwMap.get(Servo.class, "wrist");
+        wrist.setDirection(Servo.Direction.FORWARD);
         am.init(hwMap);
     }
     
@@ -34,7 +36,7 @@ public class ClawServo{
         }
         else
         {
-            clawPos = 0.1;
+            clawPos = 0;
         }
     }
     
@@ -49,6 +51,7 @@ public class ClawServo{
         double tempWristPos = 0;
         if (wristMode == 'N') //normal
         {
+            //tempWristPos = 0.6 * am.GetNormalizedArmAngle();
             if (am.GetNormalizedArmAngle() < 0.14) // less than 31 degrees
             {
                 tempWristPos = 0.3 - (0.103 - 0.14 * am.GetNormalizedArmAngle());
@@ -64,7 +67,7 @@ public class ClawServo{
         }
         else if(wristMode == 'D') //down
         {
-            tempWristPos = 0.6;
+            tempWristPos = 0;
         }
         
         wristPos = tempWristPos;
@@ -73,7 +76,7 @@ public class ClawServo{
     public void update() {
         claw.setPosition(clawPos);
         MoveWrist();
-        if (runtime.milliseconds() > 0.1)
+        if (runtime.seconds() > 0.5)
         {
             wrist.setPosition(wristPos);
             runtime.reset();
@@ -83,6 +86,12 @@ public class ClawServo{
     public char GetWristState()
     {
         return wristMode;
+    }
+    
+    public double GetWristPosition()
+    {
+        // return wrist.getPosition();
+        return 0;
     }
     
     public boolean GetClawPosition()
