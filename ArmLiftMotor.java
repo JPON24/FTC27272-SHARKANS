@@ -41,6 +41,7 @@ public class ArmLiftMotor {
         armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
     }
     
     public void ResetEncodersUp()
@@ -66,7 +67,7 @@ public class ArmLiftMotor {
         }
         return temp;
     }
-    public void rotate(double targetPower, char mode,int id)
+    public void rotate(double targetPower, char mode)
     {    
         int armPositionL = 0;
         int armPositionR = 0;
@@ -74,30 +75,15 @@ public class ArmLiftMotor {
         {
             if (targetPower > 0.1)
             {
-                armLiftL.setTargetPosition(topLimit);
-                armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armLiftL.setPower(speed);
-                armLiftR.setTargetPosition(topLimit);
-                armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armLiftR.setPower(speed);
+                MoveToPositionTeleop(topLimit);
             }
             else if (targetPower < -0.1)
             {
-                armLiftL.setTargetPosition(bottomLimit);
-                armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armLiftL.setPower(speed);
-                armLiftR.setTargetPosition(bottomLimit);
-                armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armLiftR.setPower(speed);
+                MoveToPositionTeleop(bottomLimit);
             }
             else
             {
-                armLiftL.setTargetPosition(armLiftL.getCurrentPosition() + ((int)25));
-                armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armLiftL.setPower(speed);
-                armLiftR.setTargetPosition(armLiftR.getCurrentPosition() + ((int)25));
-                armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                armLiftR.setPower(speed);
+                MoveToPositionTeleop(armLiftL.getCurrentPosition());
             }
         }
         else if (mode == 'A')
@@ -116,6 +102,18 @@ public class ArmLiftMotor {
             int encoderPosition = ConvertAngleToEncoder((int)targetPower);
             MoveToPositionAutonomous(encoderPosition);
         }
+    }
+    
+    private void MoveToPositionTeleop(int position)
+    {
+        armLiftL.setPower(speed);
+        armLiftR.setPower(speed);
+        
+        armLiftL.setTargetPosition(position);
+        armLiftR.setTargetPosition(position);
+        
+        armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     // currently untested and uncompiled, very well may error
