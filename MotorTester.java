@@ -1,14 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+// import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
-
-import com.qualcomm.hardware.sparkfun.*;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 @TeleOp
 
@@ -57,6 +57,13 @@ public class MotorTester extends LinearOpMode {
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         amL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         amR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        wrist.scaleRange(0,0.6);
+        
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        frontRight.setDirection(DcMotor.Direction.FORWARD);
+        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.FORWARD);
+        
         
         waitForStart();
         while (opModeIsActive()) {
@@ -103,11 +110,18 @@ public class MotorTester extends LinearOpMode {
 
             if (gamepad2.y)
             {
-                wrist.setPosition(0.3)
+                wrist.setPosition(0.5);
+                // wrist.setPosition(0.3);
             }
             else if (gamepad2.b)
             {
+                wrist.setPosition(1);
+                // wrist.setPosition(0);
+            }
+            else
+            {
                 wrist.setPosition(0);
+                // wrist.setPower(0);
             }
             
             frontLeft.setPower(0);
