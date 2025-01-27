@@ -1,25 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-// import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-// import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-// import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-// import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-// import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.DcMotor;
-// import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-// import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-// import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-// import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.ArmLiftMotor;
 import org.firstinspires.ftc.teamcode.ClawServo;
 import org.firstinspires.ftc.teamcode.Drivetrain;
 import org.firstinspires.ftc.teamcode.Extension_1;
 import org.firstinspires.ftc.teamcode.OdometrySensor;
-// import com.qualcomm.robotcore.hardware.IMU;
 
 @TeleOp
 public class StarterBot extends LinearOpMode{
@@ -28,36 +16,26 @@ public class StarterBot extends LinearOpMode{
     ArmLiftMotor am = new ArmLiftMotor();
     Extension_1 e1 = new Extension_1();
     OdometrySensor s1 = new OdometrySensor();
-    //private DcMotor LiftMotor = null;
-    private DcMotor extension = null;
-    private Servo claw = null;
-    // IMU imu;
 
     boolean fieldOriented = false;
+    boolean canShift = true;
+    double currentSpeed = 1.0;
+    double speedInterval = 0.4;
     
+    boolean canShiftWristType = true;
+    boolean normalWristType = false;
+    
+    boolean canShiftArm = true;
+    double currentArmSpeed = 1.0;
+    double armSpeedInterval = 0.8;
+        
     @Override
     public void runOpMode()
     {
-        //LiftMotor = hardwareMap.get(DcMotor.class, "armLiftMotor");
-        extension = hardwareMap.get(DcMotor.class, "extension_1");
-        claw = hardwareMap.get(Servo.class, "claw");
-        // imu = hardwareMap.get(IMU.class, "imu");
-        
-        boolean canShift = true;
-        double currentSpeed = 1.0;
-        double speedInterval = 0.4;
-        
-        boolean canShiftWristType = true;
-        boolean normalWristType = false;
-        
-        boolean canShiftArm = true;
-        double currentArmSpeed = 1.0;
-        double armSpeedInterval = 0.8;
-            
         dt.init(hardwareMap);
-        // cs.init(hardwareMap);
+        cs.init(hardwareMap);
+        e1.init(hardwareMap);
         am.init(hardwareMap);
-        // e1.init(hardwareMap);
         s1.init(hardwareMap);
         waitForStart();
         
@@ -92,11 +70,11 @@ public class StarterBot extends LinearOpMode{
             //claw
             if (xButtonPressed)
             {
-                // cs.clawMove(false);
+                cs.clawMove(false);
             }
             else if (aButtonPressed)
             {
-                // cs.clawMove(true);
+                cs.clawMove(true);
             }
             
             if (yButtonPressed && canShiftWristType)
@@ -104,12 +82,12 @@ public class StarterBot extends LinearOpMode{
                 canShiftWristType = false;
                 if (normalWristType)
                 {
-                    // cs.setWristMode('D');
+                    cs.setWristMode('D');
                     normalWristType = false;
                 }
                 else
                 {
-                    // cs.setWristMode('N');
+                    cs.setWristMode('N');
                     normalWristType = true;
                 }
             }
@@ -118,25 +96,21 @@ public class StarterBot extends LinearOpMode{
                 canShiftWristType = true;  
             }
             
-            // cs.update();
+            cs.update();
             
             // drive
             if (leftBumperPressed)
             {
                 if (canShift && currentSpeed - speedInterval > 0)
                 {
-                    currentSpeed -= speedInterval;
-                    dt.SetSpeedScalar(currentSpeed);
-                    canShift = false;
+                    MoveSpeedShift(-speedInterval);
                 }
             }
             else if (rightBumperPressed)
             {
                 if (canShift && currentSpeed + speedInterval <= 1)
                 {
-                    currentSpeed += speedInterval;
-                    dt.SetSpeedScalar(currentSpeed); 
-                    canShift = false;
+                    MoveSpeedShift(speedInterval);
                 }  
             }
             else
@@ -154,18 +128,14 @@ public class StarterBot extends LinearOpMode{
             {
                 if (canShiftArm && currentArmSpeed - armSpeedInterval > 0)
                 {
-                    currentArmSpeed -= armSpeedInterval;
-                    am.SetSpeed(currentArmSpeed);
-                    canShiftArm = false;
+                    ArmSpeedShift(-armSpeedInterval);
                 }
             }
             else if (rightBumperPressed2)
             {
                 if (canShiftArm && currentArmSpeed + armSpeedInterval <=1)
                 {
-                    currentArmSpeed += armSpeedInterval;
-                    am.SetSpeed(currentArmSpeed);
-                    canShiftArm = false;
+                    ArmSpeedShift(armSpeedInterval);
                 }
             }
             else
@@ -179,7 +149,7 @@ public class StarterBot extends LinearOpMode{
             }
             else if (dpadLeft2)//fix extension pos
             {
-                // e1.ResetEncoders();
+                e1.ResetEncoders();
             }
             else if (dpadDown2)
             {
@@ -214,37 +184,41 @@ public class StarterBot extends LinearOpMode{
                 armExtendInput = -1;
             }
             
-            am.rotate(armLiftInput, 'T',0);
+            am.rotate(armLiftInput, 'T');
+            
             if (armExtendInput > 0.1)
             {
-                // e1.move(armExtendInput,775, 'T',0);
+                e1.move(armExtendInput,600, 'T');
             }
             else if (armExtendInput < -0.1)
             {
-                // e1.move(armExtendInput,25,'T',0);
+                e1.move(armExtendInput,-125,'T');
             }
             else
             {
-                // e1.move(0,extension.getCurrentPosition(),'T',0);
+                e1.move(0,e1.GetCurrentPosition(),'T');
             }
             
             telemetry.addData("wrist setting",cs.GetWristState());
-            telemetry.addData("wrist position", cs.GetWristState());
+            telemetry.addData("wrist position", cs.GetWristPosition());
             telemetry.addData("angle double",am.GetNormalizedArmAngle());
+            telemetry.addData("field oriented", fieldOriented);
             telemetry.update();
-            /*
-            telemetry.addData("extensionDistance", extension.getCurrentPosition());
-            telemetry.addData("clawPosition", claw.getPosition());
-            telemetry.addData("x",targetPowerX);
-            telemetry.addData("y",targetPowerY);
-            telemetry.addData("rot",targetRotation);
-            telemetry.update();*/
-            // YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-            // double yaw = orientation.getYaw(AngleUnit.DEGREES);
-            // telemetry.addData("yaw",yaw);
-            // telemetry.addData("lastvalidyaw",dt.getLastValidYaw());
-            // telemetry.update();
         }
+    }
+    
+    private void MoveSpeedShift(double speedInterval)
+    {
+        currentSpeed += speedInterval;
+        dt.SetSpeedScalar(currentSpeed);
+        canShift = false;
+    }
+    
+    private void ArmSpeedShift(double speedInterval)
+    {
+        currentArmSpeed += speedInterval;
+        am.SetSpeed(currentArmSpeed);
+        canShiftArm = false;
     }
     
 }
