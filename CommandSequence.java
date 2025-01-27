@@ -25,8 +25,6 @@ public class CommandSequence extends LinearOpMode
     OdometrySensor s1 = new OdometrySensor();
     CommandSystem command = new CommandSystem();
     
-    // double output[] = new double[3];
-    
     boolean moving = true;
     double speed = 0.6;
     int currentAction = 1;
@@ -111,7 +109,7 @@ public class CommandSequence extends LinearOpMode
                         else
                         {
                             command.SetElementFalse('e');
-                            e1.move(speed,tgtE,'A',0);
+                            e1.move(speed,tgtE,'A');
                             break;
                         }
                     case 'a':
@@ -123,7 +121,7 @@ public class CommandSequence extends LinearOpMode
                         else
                         {
                             command.SetElementFalse('a');
-                            am.rotate(tgtA,'A',0);
+                            am.rotate(tgtA,'A');
                             break;
                         }
                     case 'c':
@@ -170,7 +168,6 @@ public class CommandSequence extends LinearOpMode
             UpdateClaw();
         }
         runtime.reset();
-        // Stop();
         currentAction += 1;
     }
 
@@ -203,29 +200,24 @@ public class CommandSequence extends LinearOpMode
         char wristPosition : range 'N', 'D'
         */
         
-        //at 0.6 speed MoveToPosition 22 actually means MoveToPosition 30
-        //at 0.6 speed MoveToPosition 10 actually means MoveToPosition 22
-        
         // length = 15 inches
         // width = 15.25 inches
         // height = 15 inches
         // 211 degree ROM
-        
-        //32.5 = 40 - halfLength
 
         // first hook
-        MoveToPosition(speed,0,48 - 2 * halfLength,0,600,70,false,'N');
-        MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,false,'N'); 
-        MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,true,'N');
+        MoveToPosition(speed,0,46 - 2 * halfLength,0,0,0,false,'D');
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
         
         // // grab second specimen off wall
         // MoveToPosition(speed,48,15,0,0,211,true,'N');
         // MoveToPosition(speed,48,15,0,0,211,false,'N');
 
         // // second hook
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,600,76,false,'N'); 
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,false,'N'); 
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,true,'N');
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,76,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
 
         // // grab next sample
         // MoveToPosition(speed,30,42 - halfLength,0,0,211,true,'N');
@@ -238,9 +230,9 @@ public class CommandSequence extends LinearOpMode
         // MoveToPosition(speed,48 - halfWidth,15,0,0,211,false,'N');
 
         // // third hook
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,600,76,false,'N'); 
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,false,'N'); 
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,true,'N');
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,76,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
 
         // // grab next sample
         // MoveToPosition(speed,30,42 - halfLength,0,0,211,true,'N');
@@ -253,9 +245,9 @@ public class CommandSequence extends LinearOpMode
         // MoveToPosition(speed,58 - halfWidth,15,0,0,211,false,'N');
 
         // // fourth hook
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,600,76,false,'N'); 
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,false,'N'); 
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,true,'N');
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,76,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
 
         // // grab next sample
         // MoveToPosition(speed,30,42 - halfLength,0,0,211,true,'N');
@@ -268,9 +260,9 @@ public class CommandSequence extends LinearOpMode
         // MoveToPosition(speed,68 - halfWidth,15,0,0,211,false,'N');
 
         // // fifth hook
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,600,76,false,'N'); 
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,false,'N'); 
-        // MoveToPosition(speed,0,48 - 2 * halfLength,0,500,70,true,'N');
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,76,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
 
         // end sequence
         Stop();
@@ -278,13 +270,9 @@ public class CommandSequence extends LinearOpMode
     
     private void TestSequence()
     {
-        MoveToPosition(speed,0,20 - halfLength,0,0,0,false,'N');
-        // sleep(2000);
-        // MoveToPosition(speed,20 - halfWidth,20 - halfLength,0,0,0,false,'N'); 
-        // sleep(2000);
-        // MoveToPosition(speed,0,32 - halfLength,0,0,0,false,'N');
-        
+        MoveToPosition(speed,12,12,90,0,0,false,'N');
     }
+    
     @Override
     public void runOpMode() 
     {
@@ -293,22 +281,21 @@ public class CommandSequence extends LinearOpMode
         am.init(hardwareMap);
         e1.init(hardwareMap);
         s1.init(hardwareMap);
-        // s2.init(hardwareMap);
-        // s3.init(hardwareMap);
         
         double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
-        double normalizedVolts = (1 - volts/13) + 0.7586;
+        double normalizedVolts = (1 - volts/14) + 0.7586;
         speed *= normalizedVolts;
-       
+        
         waitForStart();
         ContinueMovement(); //just in case
         while(opModeIsActive())
         {
             if (moving)
             {
-                //CommandSequence();
-                TestSequence();
+                CommandSequence();
+                //TestSequence();
             }
         }
     }
 }
+
