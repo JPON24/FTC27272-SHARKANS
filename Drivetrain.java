@@ -1,3 +1,4 @@
+
 package org.firstinspires.ftc.teamcode;
 import org.firstinspires.ftc.robotcore.external.*;
 
@@ -77,16 +78,12 @@ public class Drivetrain{
         }
         else //quad1 and quad4
         {
-            sameSignFlip = 1;
             stickRotation = Math.atan2(targetPowerY,targetPowerX) * 180/Math.PI;
         }
         
         // angle of imu yaw supplemented by the stick's rotation, determined by atan
         double theta = (360-yaw) + stickRotation;
         double power = Math.hypot(targetPowerX,targetPowerY); //get hypotenuse of x and y tgt, getting the power
-        
-        double speedScalarLocal = 0.5; // static speed scalar, can be adjusted as seen fit
-        
         
         // if at max power diag, limit to magnitude of 1
         // with the normalizing code, the diag movement had a bug where max power (being magnitude sqrt(2))-- 
@@ -126,10 +123,10 @@ public class Drivetrain{
         //another normalization
         if ((power + Math.abs(rotation)) > 1)
         {
-            flPower /= power + Math.abs(rotation);
-            frPower /= power - Math.abs(rotation);
-            blPower /= power + Math.abs(rotation);
-            brPower /= power - Math.abs(rotation);
+            flPower /= power + rotation;
+            frPower /= power - rotation;
+            blPower /= power + rotation;
+            brPower /= power - rotation;
         }
         
         //set speed to calculated values * the speedScalar(determined by bumpers)
@@ -160,10 +157,10 @@ public class Drivetrain{
 
         if ((power + Math.abs(rotation)) > 1)
         {
-            flPower /= power + Math.abs(rotation);
-            frPower /= power - Math.abs(rotation);
-            blPower /= power + Math.abs(rotation);
-            brPower /= power - Math.abs(rotation);
+            flPower /= power + rotation;
+            frPower /= power - rotation;
+            blPower /= power + rotation;
+            brPower /= power - rotation;
         }
         
         //sets power of each motor
