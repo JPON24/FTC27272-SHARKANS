@@ -26,24 +26,21 @@ public class Extension_1 {
         extension_1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     
-    public void move(double targetPower, int tgt, char mode, int id)
+    public void move(double targetPower, int tgt, char mode)
     {
         if (mode == 'T')
         {
             if (targetPower > deadZone && extension_1.getCurrentPosition() < 600)
             {
-                extension_1.setTargetPosition(600);
-                extension_1.setPower(speed * 0.9); 
+                MoveTeleop(600, speed * 0.9);
             }
             else if(targetPower< -deadZone && extension_1.getCurrentPosition() > -125)
             {
-                extension_1.setTargetPosition(-125);
-                extension_1.setPower(-speed);
+                MoveTeleop(-125, speed * 0.9);
             }
             else
             {
-                extension_1.setTargetPosition(extension_1.getCurrentPosition() + 25);
-                extension_1.setPower(0);
+                MoveTeleop(extension_1.getCurrentPosition() + 25, 0);
             }
         }
         else if (mode == 'A')
@@ -51,6 +48,12 @@ public class Extension_1 {
             extension_1.setPower(targetPower);
             extension_1.setTargetPosition(tgt);
         }
+    }
+    
+    private void MoveTeleop(int tgtPosition, double speed)
+    {
+        extension_1.setTargetPosition(tgtPosition);
+        extension_1.setPower(speed); 
     }
 
     public boolean GetCompleted(int tgt)
@@ -64,5 +67,10 @@ public class Extension_1 {
         {
             return false;
         }
+    }
+    
+    public int GetCurrentPosition()
+    {
+        return extension_1.getCurrentPosition();
     }
 }
