@@ -52,17 +52,21 @@ public class ClawServo{
         if (wristMode == 'N') //normal
         {
             //tempWristPos = 0.6 * am.GetNormalizedArmAngle();
-            if (am.GetNormalizedArmAngle() < 0.14) // less than 31 degrees
+            if (am.GetNormalizedArmAngle() < 0.077) // less than 20 degrees
             {
-                tempWristPos = 0.3 - (0.103 - 0.14 * am.GetNormalizedArmAngle());
+                tempWristPos = 0.377 - am.GetNormalizedArmAngle();
             }
-            else if (am.GetNormalizedArmAngle() < 0.573) // greater than 31 and less than 121
+            else if (am.GetNormalizedArmAngle() < 0.423) // greater than 20 and less than 110
             {
-                tempWristPos = 0.3 + 0.3 * ((am.GetNormalizedArmAngle() - 0.14)/0.433);
+                tempWristPos = 0.3 + 0.3 * ((am.GetNormalizedArmAngle() - 0.077)/0.346);
             }
-            else // greater than 121 and less than 221
+            else if (am.GetNormalizedArmAngle() < 0.77) // greater than 110 and less than 200
             {
-                tempWristPos = 0.3 * ((am.GetNormalizedArmAngle() - 0.573)/0.427);
+                tempWristPos = 0.3 * ((am.GetNormalizedArmAngle() - 0.423)/0.347);
+            }
+            else // greater than 200 and less than 260
+            {
+                tempWristPos = 0.3 + 0.23 * ((am.GetNormalizedArmAngle() - 0.77)/0.23)
             }
         }
         else if(wristMode == 'D') //down
