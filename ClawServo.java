@@ -46,12 +46,11 @@ public class ClawServo{
     }
 
     // gonna need some revision as angle range is not actually 221, a little different
-    private void MoveWrist()
+    private void MoveToPosition()
     {
         double tempWristPos = 0;
         if (wristMode == 'N') //normal
         {
-            //tempWristPos = 0.6 * am.GetNormalizedArmAngle();
             if (am.GetNormalizedArmAngle() < 0.077) // less than 20 degrees
             {
                 tempWristPos = 0.377 - am.GetNormalizedArmAngle();
@@ -66,20 +65,34 @@ public class ClawServo{
             }
             else // greater than 200 and less than 260
             {
-                tempWristPos = 0.3 + 0.23 * ((am.GetNormalizedArmAngle() - 0.77)/0.23)
+                tempWristPos = 0.3 + 0.23 * ((am.GetNormalizedArmAngle() - 0.77)/0.23);
             }
         }
         else if(wristMode == 'D') //down
         {
             tempWristPos = 0;
         }
+        else if(wristMode == 'B') //back
+        {
+            tempWristPos = 0.6;
+        }
+        else
+        {
+            return;
+        }
         
         wristPos = tempWristPos;
     }
     
-    public void update() {
+    // used for shifting in custom mode
+    public void MoveToPosition(double position)
+    {
+        wristPos = position;
+    }
+    
+    public void Update() {
         claw.setPosition(clawPos);
-        MoveWrist();
+        MoveToPosition();
         if (runtime.seconds() > 0.5)
         {
             wrist.setPosition(wristPos);
@@ -94,12 +107,12 @@ public class ClawServo{
     
     public double GetWristPosition()
     {
-        // return wrist.getPosition();
-        return 0;
+        return wrist.getPosition();
     }
     
     public boolean GetClawPosition()
     {
+        // local claw pos
         if(clawPos == 0.3)
         {
             return true;
