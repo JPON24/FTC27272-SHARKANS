@@ -6,7 +6,7 @@ public class ArmLiftMotor {
     public DcMotor armLiftL = null;
     public DcMotor armLiftR = null;
     
-    double speed = 0.8;
+    double speed = 0.4;
 
     int topLimit = -6933;
     int bottomLimit = 0;
@@ -15,6 +15,9 @@ public class ArmLiftMotor {
     {
         initArmMotor(armLiftL, hwMap, "armLiftL");
         initArmMotor(armLiftR, hwMap, "armLiftL");
+        
+        armLiftL.setDirection(DcMotor.Direction.REVERSE);
+        armLiftR.setDirection(DcMotor.Direction.FORWARD);
     }
 
     //  code refactor
@@ -24,7 +27,6 @@ public class ArmLiftMotor {
         motor.setTargetPosition(0);
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        motor.setDirection(DcMotor.Direction.FORWARD);
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
     
