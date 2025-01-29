@@ -18,12 +18,6 @@ public class Drivetrain{
     
     private ElapsedTime runtime = new ElapsedTime();
     public boolean moving = true;
-    double lastValidYaw = 0;
-    double initialTime = 0;
-    double waitTime = 0.2;
-    boolean canSetInit = true;
-    boolean canOverrideFieldOrient = false;
-    boolean overrideFieldOrient = false;
     
     public void init(HardwareMap hwMap)
     {
@@ -58,14 +52,9 @@ public class Drivetrain{
         return -rad;
     }
 
-    public void fieldOrientedTranslate(double targetPowerX, double targetPowerY, double rotation, double currentRotation)
+    public void FieldOrientedTranslate(double targetPowerX, double targetPowerY, double rotation, double currentRotation)
     {
         double yaw = Math.toDegrees(angleWrap(Math.toRadians(currentRotation)));
-        
-        if(overrideFieldOrient)
-        {
-            yaw += lastValidYaw;
-        }
         
         double stickRotation = 0;
         if (targetPowerY > 0 && targetPowerX < 0) //quad2
@@ -139,7 +128,7 @@ public class Drivetrain{
         }
     }
     
-    public void translate(double targetPowerX, double targetPowerY, double rotation)
+    public void Translate(double targetPowerX, double targetPowerY, double rotation)
     {
         // inputs target power on x and y, outputs proper power distribution
         
@@ -174,10 +163,5 @@ public class Drivetrain{
     {
         //sets the speed scalar of the motors to a specified value in starter bot
         speedScalar = change;
-    }
-    
-    public double getLastValidYaw()
-    {
-        return lastValidYaw;
     }
 }
