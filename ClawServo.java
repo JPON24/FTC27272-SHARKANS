@@ -46,53 +46,36 @@ public class ClawServo{
     }
 
     // gonna need some revision as angle range is not actually 221, a little different
-    private void MoveToPosition()
+    private void MoveWrist()
     {
         double tempWristPos = 0;
         if (wristMode == 'N') //normal
         {
-            if (am.GetNormalizedArmAngle() < 0.077) // less than 20 degrees
+            //tempWristPos = 0.6 * am.GetNormalizedArmAngle();
+            if (am.GetNormalizedArmAngle() < 0.14) // less than 31 degrees
             {
-                tempWristPos = 0.377 - am.GetNormalizedArmAngle();
+                tempWristPos = 0.3 - (0.103 - 0.14 * am.GetNormalizedArmAngle());
             }
-            else if (am.GetNormalizedArmAngle() < 0.423) // greater than 20 and less than 110
+            else if (am.GetNormalizedArmAngle() < 0.573) // greater than 31 and less than 121
             {
-                tempWristPos = 0.3 + 0.3 * ((am.GetNormalizedArmAngle() - 0.077)/0.346);
+                tempWristPos = 0.3 + 0.3 * ((am.GetNormalizedArmAngle() - 0.14)/0.433);
             }
-            else if (am.GetNormalizedArmAngle() < 0.77) // greater than 110 and less than 200
+            else // greater than 121 and less than 221
             {
-                tempWristPos = 0.3 * ((am.GetNormalizedArmAngle() - 0.423)/0.347);
-            }
-            else // greater than 200 and less than 260
-            {
-                tempWristPos = 0.3 + 0.23 * ((am.GetNormalizedArmAngle() - 0.77)/0.23);
+                tempWristPos = 0.3 * ((am.GetNormalizedArmAngle() - 0.573)/0.427);
             }
         }
         else if(wristMode == 'D') //down
         {
             tempWristPos = 0;
         }
-        else if(wristMode == 'B') //back
-        {
-            tempWristPos = 0.6;
-        }
-        else
-        {
-            return;
-        }
         
         wristPos = tempWristPos;
     }
     
-    // used for shifting in custom mode
-    public void MoveToPosition(double position)
-    {
-        wristPos = position;
-    }
-    
-    public void Update() {
+    public void update() {
         claw.setPosition(clawPos);
-        MoveToPosition();
+        MoveWrist();
         if (runtime.seconds() > 0.5)
         {
             wrist.setPosition(wristPos);
@@ -107,12 +90,12 @@ public class ClawServo{
     
     public double GetWristPosition()
     {
-        return wrist.getPosition();
+        // return wrist.getPosition();
+        return 0;
     }
     
     public boolean GetClawPosition()
     {
-        // local claw pos
         if(clawPos == 0.3)
         {
             return true;
