@@ -26,7 +26,7 @@ public class CommandSequence extends LinearOpMode
     CommandSystem command = new CommandSystem();
     
     boolean moving = true;
-    double speed = 0.9;
+    double speed = 0.6;
     int currentAction = 1;
 
     double halfWidth = 7.625;
@@ -109,7 +109,7 @@ public class CommandSequence extends LinearOpMode
                         else
                         {
                             command.SetElementFalse('e');
-                            e1.Move(speed,tgtE,'A');
+                            e1.move(speed,tgtE,'A');
                             break;
                         }
                     case 'a':
@@ -157,20 +157,14 @@ public class CommandSequence extends LinearOpMode
             telemetry.addData("x",s1.GetPositionX());
             telemetry.addData("y",s1.GetPositionY());
             telemetry.addData("h",s1.GetImuReading());
-            // telemetry.addData("tgtx", tgtX);
-            // telemetry.addData("tgty", tgtY);
-            // telemetry.addData("tgth", rot);
-            // telemetry.addData("error x",s1.GetErrorX());
-            // telemetry.addData("error y",s1.GetErrorY());
-            // telemetry.addData("error h",s1.GetErrorH());
-            // telemetry.addData("output x",s1.GetOutputX());
-            // telemetry.addData("output y",s1.GetOutputY());
-            // telemetry.addData("output h",s1.GetOutputH());
+            telemetry.addData("error x",s1.GetErrorX());
+            telemetry.addData("error y",s1.GetErrorY());
+            telemetry.addData("error h",s1.GetErrorH());
             telemetry.addData("position a",am.GetCurrentPosition());
             telemetry.addData("position e",e1.extension_1.getCurrentPosition());
             telemetry.addData("position claw",cs.GetClawPosition());
             telemetry.addData("position wrist",cs.GetWristState());
-            telemetry.Update();
+            telemetry.update();
             UpdateClaw();
         }
         runtime.reset();
@@ -179,15 +173,20 @@ public class CommandSequence extends LinearOpMode
 
     private void Stop()
     {
-        dt.FieldOrientedTranslate(0,0,0,s1.GetImuReading());
+        dt.fieldOrientedTranslate(0,0,0,s1.GetImuReading());
         moving = false;
     }
     
     private void UpdateClaw()
     {
-        cs.Update();
+        cs.update();
     }
     
+    
+    /*
+     * will require updating - adding the extra parameters for other movements
+     * refer to method for determining what values to add
+     */
     private void CommandSequence()
     {
         /* Parameter order --
@@ -198,77 +197,80 @@ public class CommandSequence extends LinearOpMode
         int tgtExtension : range 0 - 800
         int tgtArmRotation : range -15, 5, 30, 45, 50, 60, 70, 80, 90
         boolean tgtClawOpen
-        char wristPosition : range 'N', 'D', 'B'
+        char wristPosition : range 'N', 'D'
         */
         
         // length = 15 inches
         // width = 15.25 inches
         // height = 15 inches
-        // 260 degree ROM
+        // 211 degree ROM
+
+        // first hook
+        MoveToPosition(speed,0,46 - 2 * halfLength,0,0,0,false,'D');
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
         
-        // hook
-        MoveToPosition(speed,0,-21,0,0,0,false,'N'); //1
-        MoveToPosition(speed,0,-19,0,0,0,false,'N'); //2
-        MoveToPosition(speed,0,-19,0,0,0,true,'N'); //3
-        
-        // push
-        MoveToPosition(speed,-26,-19,0,0,0,false,'N'); //4
-        MoveToPosition(speed,-26,-48,0,0,0,true,'N'); //5
-        MoveToPosition(speed,-37,-48,0,0,0,true,'N'); //6
-        MoveToPosition(speed,-37,-8.5,0,0,0,true,'N'); //7
+        // // grab second specimen off wall
+        // MoveToPosition(speed,48,15,0,0,211,true,'N');
+        // MoveToPosition(speed,48,15,0,0,211,false,'N');
 
-        // grab
-        MoveToPosition(speed,-37,-8.5,0,0,0,false,'N'); //8
-        
-        // hook
-        MoveToPosition(speed,0,-21,0,0,0,false,'N'); //9
-        MoveToPosition(speed,0,-19,0,0,0,false,'N'); //2
-        MoveToPosition(speed,0,-19,0,0,0,true,'N'); //10
-        
-        // push
-        MoveToPosition(speed,-36,-19,0,0,0,false,'N'); //11
-        MoveToPosition(speed,-36,-48,0,0,0,false,'N'); //11
-        MoveToPosition(speed,-47,-48,0,0,0,false,'N'); //12
-        MoveToPosition(speed,-47,-8.5,0,0,0,false,'N'); //13
-        
-        // grab
-        MoveToPosition(speed,-47,-8.5,0,0,0,false,'N'); //14
-    
-        // hook
-        MoveToPosition(speed,0,-21,0,0,0,false,'N'); //15
-        MoveToPosition(speed,0,-19,0,0,0,false,'N'); //2
-        MoveToPosition(speed,0,-19,0,0,0,true,'N'); //16
+        // // second hook
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,76,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
 
-        // push
-        MoveToPosition(speed,-46,-19,0,0,0,false,'N'); //11
-        MoveToPosition(speed,-46,-48,0,0,0,false,'N'); //17
-        MoveToPosition(speed,-52,-48,0,0,0,false,'N'); //18
-        MoveToPosition(speed,-52,-8.5,0,0,0,false,'N'); //19
+        // // grab next sample
+        // MoveToPosition(speed,30,42 - halfLength,0,0,211,true,'N');
+        // MoveToPosition(speed,48 - halfWidth,48,0,0,211,true,'N');
 
-        // grab
-        MoveToPosition(speed,-52,-8.5,0,0,0,false,'N'); //20
+        // // wait and then regrab specimen
+        // MoveToPosition(speed,48 - halfWidth,15,0,0,111,true,'N');
+        // sleep(500);
+        // MoveToPosition(speed,48 - halfWidth,15,0,0,211,true,'N');
+        // MoveToPosition(speed,48 - halfWidth,15,0,0,211,false,'N');
 
-        // hook
-        MoveToPosition(speed,0,-21,0,0,0,false,'N'); //21
-        MoveToPosition(speed,0,-19,0,0,0,false,'N'); //2
-        MoveToPosition(speed,0,-19,0,0,0,true,'N'); //22
+        // // third hook
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,76,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
 
-        //grab
-        MoveToPosition(speed,-27.5,-8.5,0,0,0,false,'N'); //23
+        // // grab next sample
+        // MoveToPosition(speed,30,42 - halfLength,0,0,211,true,'N');
+        // MoveToPosition(speed,58 - halfWidth,48,0,0,211,true,'N');
 
-        // hook
-        MoveToPosition(speed,0,-21,0,0,0,false,'N'); //24
-        MoveToPosition(speed,0,-19,0,0,0,false,'N'); //2
-        MoveToPosition(speed,0,-19,0,0,0,true,'N'); //25
+        // // wait and then regrab specimen
+        // MoveToPosition(speed,58 - halfWidth,15,0,0,111,true,'N');
+        // sleep(500);
+        // MoveToPosition(speed,58 - halfWidth,15,0,0,211,true,'N');
+        // MoveToPosition(speed,58 - halfWidth,15,0,0,211,false,'N');
+
+        // // fourth hook
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,76,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
+
+        // // grab next sample
+        // MoveToPosition(speed,30,42 - halfLength,0,0,211,true,'N');
+        // MoveToPosition(speed,68 - halfWidth,48,0,0,211,true,'N');
+
+        // // wait and then regrab specimen
+        // MoveToPosition(speed,68 - halfWidth,15,0,0,111,true,'N');
+        // sleep(500);
+        // MoveToPosition(speed,68 - halfWidth,15,0,0,211,true,'N');
+        // MoveToPosition(speed,68 - halfWidth,15,0,0,211,false,'N');
+
+        // // fifth hook
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,76,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,false,'N'); 
+        // MoveToPosition(speed,0,48 - 2 * halfLength,0,0,70,true,'N');
 
         // end sequence
-        MoveToPosition(speed,-35,-4,0,0,0,true,'N');
         Stop();
     }
     
     private void TestSequence()
     {
-        MoveToPosition(speed,0,0,180,0,0,false,'N');
+        MoveToPosition(speed,12,12,90,0,0,false,'N');
     }
     
     @Override
@@ -281,7 +283,7 @@ public class CommandSequence extends LinearOpMode
         s1.init(hardwareMap);
         
         double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
-        double normalizedVolts = (1 - volts/14) + 0.57; // reduced to account for volt drops during auton
+        double normalizedVolts = (1 - volts/14) + 0.7586;
         speed *= normalizedVolts;
         
         waitForStart();
@@ -291,7 +293,7 @@ public class CommandSequence extends LinearOpMode
             if (moving)
             {
                 CommandSequence();
-                // TestSequence();
+                //TestSequence();
             }
         }
     }
