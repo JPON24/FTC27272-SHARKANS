@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.robot.Robot;
 
 public class Extension_1 {
     final double deadZone = 0.3;
+    final double speed = 1;
     
     public DcMotor extension_1 = null;
     
@@ -25,30 +26,31 @@ public class Extension_1 {
         extension_1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
     
-    public void Move(double speed, int tgt, char mode)
+    public void move(double targetPower, int tgt, char mode)
     {
         if (mode == 'T')
         {
-            if (speed > deadZone && extension_1.getCurrentPosition() < 600)
+            if (targetPower > deadZone && extension_1.getCurrentPosition() < 600)
             {
-                MoveToPosition(600, speed * 0.9);
+                MoveTeleop(600, speed * 0.9);
             }
-            else if(speed< -deadZone && extension_1.getCurrentPosition() > -125)
+            else if(targetPower< -deadZone && extension_1.getCurrentPosition() > -125)
             {
-                MoveToPosition(-125, speed * 0.9);
+                MoveTeleop(-125, speed * 0.9);
             }
             else
             {
-                MoveToPosition(extension_1.getCurrentPosition() + 25, 0);
+                MoveTeleop(extension_1.getCurrentPosition() + 25, 0);
             }
         }
         else if (mode == 'A')
         {
-            MoveToPosition(tgt, speed);
+            extension_1.setPower(targetPower);
+            extension_1.setTargetPosition(tgt);
         }
     }
     
-    private void MoveToPosition(int tgtPosition, double speed)
+    private void MoveTeleop(int tgtPosition, double speed)
     {
         extension_1.setTargetPosition(tgtPosition);
         extension_1.setPower(speed); 
