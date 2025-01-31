@@ -3,11 +3,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.ArmLiftMotor;
 import org.firstinspires.ftc.teamcode.ClawServo;
 import org.firstinspires.ftc.teamcode.Drivetrain;
 import org.firstinspires.ftc.teamcode.Extension_1;
 import org.firstinspires.ftc.teamcode.OdometrySensor;
+import org.firstinspires.ftc.teamcode.MoveCommand;
 
 @TeleOp
 public class StarterBot extends LinearOpMode{
@@ -16,6 +18,8 @@ public class StarterBot extends LinearOpMode{
     ArmLiftMotor am = new ArmLiftMotor();
     Extension_1 e1 = new Extension_1();
     OdometrySensor s1 = new OdometrySensor();
+    MoveCommand moveCmd = new MoveCommand();
+    ElapsedTime runtime = new ElapsedTime();
 
     boolean fieldOriented = false;
     boolean canShift = true;
@@ -24,79 +28,121 @@ public class StarterBot extends LinearOpMode{
     
     boolean canShiftWristType = true;
     boolean normalWristType = false;
+    boolean lastXButtonState = false;
+    boolean lastDpad2RightState = false;
     
     boolean canShiftArm = true;
     double currentArmSpeed = 1.0;
     double armSpeedInterval = 0.8;
         
+    boolean hookMacroActivated = false;
+
     @Override
     public void runOpMode()
     {
+        double targetPowerX = 0;
+        double targetPowerY = 0;
+        double targetRotation = 0;
+        
+        boolean leftBumperPressed = false;
+        boolean rightBumperPressed = false;
+        boolean dpadUp = false;
+        boolean aButtonPressed1 = false;
+        boolean xButtonPressed1 = false;
+        
+        //arm
+        boolean xButtonPressed = false;
+
+        boolean yButtonPressed = false;
+        double armLiftInput = 0;
+        double wristInput = 0;
+        
+        boolean dpadUp2 = false;
+        boolean dpadDown2 = false;
+        boolean dpadLeft2 = false;
+        boolean dpadRight2 = false;
+        boolean leftBumperPressed2 = false;
+        boolean rightBumperPressed2 = false;
+        
+        double leftTrigger2 = 0;
+        double rightTrigger2 = 0;
+
         dt.init(hardwareMap);
         cs.init(hardwareMap);
         e1.init(hardwareMap);
         am.init(hardwareMap);
-        s1.init(hardwareMap);
+        s1.init(hardwareMap, false);
+        moveCmd.init(hardwareMap, false);
         waitForStart();
         
         while(opModeIsActive())
         {
-            double targetPowerX = gamepad1.left_stick_x;
-            double targetPowerY = -gamepad1.left_stick_y;
-            double targetRotation = gamepad1.right_stick_x;
+            // triggers should be extension
+            // joystick should be wrist movement
+            // swap between normal and custom in teleop for wrist
             
-            boolean leftBumperPressed = gamepad1.left_bumper;
-            boolean rightBumperPressed = gamepad1.right_bumper;
-            boolean dpadUp = gamepad1.dpad_up;
-            boolean aButtonPressed1 = gamepad1.a;
-            boolean xButtonPressed1 = gamepad1.x;
+            if (hookMacroActivated)
+            {
+                HookMacro();
+                continue;
+            }
+            targetPowerX = gamepad1.left_stick_x;
+            targetPowerY = -gamepad1.left_stick_y;
+            targetRotation = gamepad1.right_stick_x;
+            
+            leftBumperPressed = gamepad1.left_bumper;
+            rightBumperPressed = gamepad1.right_bumper;
+            dpadUp = gamepad1.dpad_up;
+            aButtonPressed1 = gamepad1.a;
+            xButtonPressed1 = gamepad1.x;
             
             //arm
-            boolean xButtonPressed = gamepad2.x;
-            boolean aButtonPressed = gamepad2.a;
-            boolean yButtonPressed = gamepad2.y;
-            double armLiftInput = -gamepad2.left_stick_y;
-            double armExtendInput = -gamepad2.right_stick_y;
+            xButtonPressed = gamepad2.x;
+            yButtonPressed = gamepad2.y;
+            armLiftInput = -gamepad2.left_stick_y;
+            wristInput = -gamepad2.right_stick_y;
             
-            boolean dpadUp2 = gamepad2.dpad_up;
-            boolean dpadDown2 = gamepad2.dpad_down;
-            boolean dpadLeft2 = gamepad2.dpad_left;
-            boolean leftBumperPressed2 = gamepad2.left_bumper;
-            boolean rightBumperPressed2 = gamepad2.right_bumper;
+            dpadUp2 = gamepad2.dpad_up;
+            dpadDown2 = gamepad2.dpad_down;
+            dpadLeft2 = gamepad2.dpad_left;
+            dpadRight2 = gamepad2.dpad_right;
+            leftBumperPressed2 = gamepad2.left_bumper;
+            rightBumperPressed2 = gamepad2.right_bumper;
             
-            double leftTrigger2 = gamepad2.left_trigger;
-            double rightTrigger2 = gamepad2.right_trigger;
-            
-            //claw
-            if (xButtonPressed)
+            leftTrigger2 = gamepad2.left_trigger;
+            rightTrigger2 = gamepad2.right_trigger;
+
+            if (dpadRight2)
             {
-                cs.clawMove(false);
-            }
-            else if (aButtonPressed)
-            {
-                cs.clawMove(true);
+                hookMacroActivated = true;
             }
             
-            if (yButtonPressed && canShiftWristType)
+            lastDpad2RightState = dpadRight2;
+            
+            //claw swapper
+            if (xButtonPressed != lastXButtonState)
             {
-                canShiftWristType = false;
-                if (normalWristType)
+                cs.clawMove(!cs.GetClawPosition());
+            }
+            lastXButtonState = xButtonPressed;
+            
+            // handles different wrist types based off button presses
+            SwapWristType('C',yButtonPressed);
+            
+            if (cs.GetWristState() == 'C')
+            {
+                runtime.reset();
+                if (wristInput < -0.8)
                 {
-                    cs.setWristMode('D');
-                    normalWristType = false;
+                    cs.MoveToPosition(cs.GetWristPosition() - 0.5 * runtime.milliseconds());
                 }
-                else
+                else if (wristInput > 0.8)
                 {
-                    cs.setWristMode('N');
-                    normalWristType = true;
+                    cs.MoveToPosition(cs.GetWristPosition() + 0.5 * runtime.milliseconds());
                 }
             }
-            else if (!yButtonPressed)
-            {
-                canShiftWristType = true;  
-            }
-            
-            cs.update();
+
+            cs.Update();
             
             // drive
             if (leftBumperPressed)
@@ -166,37 +212,26 @@ public class StarterBot extends LinearOpMode{
             }
             if (fieldOriented)
             {
-                dt.fieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation, s1.GetImuReading());
+                dt.FieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation, s1.GetImuReading());
             }
             else
             {
-                dt.translate(targetPowerX,targetPowerY,targetRotation);
-            }
-            
-            if (rightTrigger2 > 0.8)
-            {
-                armLiftInput = 1;
-                armExtendInput = 1;
-            }
-            else if (leftTrigger2 > 0.8)
-            {
-                armLiftInput = -1;
-                armExtendInput = -1;
+                dt.Translate(targetPowerX,targetPowerY,targetRotation);
             }
             
             am.rotate(armLiftInput, 'T');
             
-            if (armExtendInput > 0.1)
+            if (rightTrigger2 > 0.5)
             {
-                e1.move(armExtendInput,600, 'T');
+                e1.Move(rightTrigger2,600, 'T');
             }
-            else if (armExtendInput < -0.1)
+            else if (leftTrigger2 > 0.5)
             {
-                e1.move(armExtendInput,-125,'T');
+                e1.Move(leftTrigger2,-125,'T');
             }
             else
             {
-                e1.move(0,e1.GetCurrentPosition(),'T');
+                e1.Move(0,e1.GetCurrentPosition(),'T');
             }
             
             telemetry.addData("wrist setting",cs.GetWristState());
@@ -221,4 +256,61 @@ public class StarterBot extends LinearOpMode{
         canShiftArm = false;
     }
     
+    private void SwapWristType(char additionalMode, boolean buttonPressed)
+    {
+        if (buttonPressed && canShiftWristType)
+        {
+            canShiftWristType = false;
+            if (normalWristType)
+            {
+                cs.setWristMode(additionalMode);
+                normalWristType = false;
+            }
+            else
+            {
+                cs.setWristMode('N');
+                normalWristType = true;
+            }
+        }
+        else if (!buttonPressed && !canShiftWristType)
+        {
+            canShiftWristType = true;  
+        }
+    }
+
+    private void HookMacro()
+    {
+        CancellableCommand(currentSpeed,0,-12,0,0,165,true,'D'); //1
+        CancellableCommand(currentSpeed,0,-23,0,0,165,true,'B'); //1
+        CancellableCommand(currentSpeed,0,-21,0,0,165,true,'B'); //2
+        CancellableCommand(currentSpeed,0,-21,0,0,165,false,'B'); //3
+        CancellableCommand(currentSpeed,0,-18,0,0,180,false,'B');
+        hookMacroActivated = false;
+    }
+
+    private void CancellableCommand(double speed, double tgtX, double tgtY, double rot, int tgtE, int tgtA, boolean tgtClaw, char tgtWrist)
+    {
+        if (!hookMacroActivated)
+        {
+            return;
+        }
+        moveCmd.MoveToPositionCancellable(speed,tgtX,tgtY,rot,tgtE,tgtA,tgtClaw,tgtWrist);
+        while (!moveCmd.GetBoolsCompleted())
+        {
+            // if command deactivated then break out of loop
+            if (!hookMacroActivated)
+            {
+                break;
+            }
+
+            moveCmd.MoveToPositionCancellable(speed,tgtX,tgtY,rot,tgtE,tgtA,tgtClaw,tgtWrist);
+            // deactivate command if dpad right pressed
+            if (gamepad2.dpad_right && lastDpad2RightState != gamepad2.dpad_right)
+            {
+                hookMacroActivated = false;
+            }
+            
+            lastDpad2RightState = gamepad2.dpad_right;
+        }
+    }
 }
