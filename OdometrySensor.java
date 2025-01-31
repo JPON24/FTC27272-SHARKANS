@@ -19,41 +19,26 @@ public class OdometrySensor {
     
     double deltaTime, last_time;
     double integral, previous = 0;
-    double kp, ki, kdx, kdy;
+    double kp, ki, kdx, kdy, kdh;
     double[] output = new double[3];
     double[] errors = new double[3];
     
-    //y
-    //offset from front - 12 3/8
-    //offset from back - 4 7/8
-    //length of robot - 17.25
-    
-    //x
-    //offset from left side 7 7/16
-    // 7 13/16 offset
-    // 7 10/16 center
-    // offset = 3/16
-    //width of robot - 15.25
-    
-    //  <//PID TESTING LOG//>
-    
-    //1.55 0.32 0 = absolute holy grail :D
-    //1.55 0.25 0.111 = best for PositionY
-    //1.55 0.25 0.00001 = best for PositionX 
-    //1.55 0.25 0.00001 = works for PostionY and PositionX
-    
-    public void init(HardwareMap hwMap)
+    public void init(HardwareMap hwMap, boolean isAuton)
     {
         //PositionY 
         //currently using pid on odometry position readings, could be causing some of the oscillation problems
         // might be better to use motor ticks with our odometry for more accuracy
         kp = 1.75; //1.75 
         ki = 0.332; //0.332
-        kdx = 0.00001; //0.00001
-        kdy = 0.355; //0.355
+        kdx = 0.425; //0.00001
+        kdy = 0.425; //0.425
+        kdh = 0.9; //0.9
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
-        odometry.resetTracking();
+        if (isAuton)
+        {
+            odometry.resetTracking();
+        }
         odometry.begin();
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
@@ -72,15 +57,19 @@ public class OdometrySensor {
         previous = error;
         double output = 0;
         
-        if (index != 0)
+        if (index == 0)
         {
             output = kp * error + ki * integral + kdx * derivative;
         }
-        else
+        else if (index == 1)
         {
             output = kp * error + ki * integral + kdy * derivative;
         }
-        runtime.reset();
+        else
+        {
+            output = kp * error + ki * integral + kdh * derivative;   
+            runtime.reset(); // reset delta only on final pid not every pid occurence to ensure consistency in derivative and integral terms
+        }
         integral = 0;
         return output;
     }
@@ -89,15 +78,14 @@ public class OdometrySensor {
     {
         if (!odometry.isConnected()) {return;}
 
-        double distanceLenience = 1; //best value 1
-        double angleLenience = 5; //best value 4
+        double distanceLenience = 2; //best value 1
+        double angleLenience = 4; //best value 4
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
         last_time = now;
         
         pos = odometry.getPosition();
-        
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
         errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)));
@@ -141,7 +129,7 @@ public class OdometrySensor {
             output[2] /= Math.abs(output[2]);
             completedBools[2] = false;
         }
-        dt.fieldOrientedTranslate(speed * output[0], speed * output[1], 0.7 * speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
+        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], 0.7 * speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
     }
     
     private double angleWrap(double rad)
