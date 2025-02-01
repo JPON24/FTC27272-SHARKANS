@@ -80,6 +80,7 @@ public class MoveCommand  {
                         if (s1.GetBoolsCompleted())
                         {
                             command.SetElementTrue('m');
+                            dt.FieldOrientedTranslate(0,0,0,0);
                             break;
                         }
                         else
@@ -97,7 +98,7 @@ public class MoveCommand  {
                         else
                         {
                             command.SetElementFalse('e');
-                            e1.Move(speed,tgtE,'A');
+                            e1.Move(1,tgtE,'A');
                             break;
                         }
                     case 'a':
@@ -186,6 +187,7 @@ public class MoveCommand  {
                     if (s1.GetBoolsCompleted())
                     {
                         command.SetElementTrue('m');
+                        dt.FieldOrientedTranslate(0,0,0,0);
                         break;
                     }
                     else
@@ -203,7 +205,7 @@ public class MoveCommand  {
                     else
                     {
                         command.SetElementFalse('e');
-                        e1.Move(speed,tgtE,'A');
+                        e1.Move(1,tgtE,'A');
                         break;
                     }
                 case 'a':
