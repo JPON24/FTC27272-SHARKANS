@@ -28,7 +28,6 @@ public class StarterBot extends LinearOpMode{
     
     boolean canShiftWristType = true;
     boolean normalWristType = false;
-    boolean lastXButtonState = false;
     boolean lastDpad2RightState = false;
     
     boolean canShiftArm = true;
@@ -52,6 +51,8 @@ public class StarterBot extends LinearOpMode{
         
         //arm
         boolean xButtonPressed = false;
+        boolean aButtonPressed = false;
+        boolean bButtonPressed = false;
 
         boolean yButtonPressed = false;
         double armLiftInput = 0;
@@ -71,7 +72,7 @@ public class StarterBot extends LinearOpMode{
         cs.init(hardwareMap);
         e1.init(hardwareMap);
         am.init(hardwareMap);
-        s1.init(hardwareMap, false);
+        s1.init(hardwareMap, true);
         moveCmd.init(hardwareMap, false);
         waitForStart();
         
@@ -98,7 +99,9 @@ public class StarterBot extends LinearOpMode{
             
             //arm
             xButtonPressed = gamepad2.x;
+            aButtonPressed = gamepad2.a;
             yButtonPressed = gamepad2.y;
+            bButtonPressed = gamepad2.b;
             armLiftInput = -gamepad2.left_stick_y;
             wristInput = -gamepad2.right_stick_y;
             
@@ -120,12 +123,14 @@ public class StarterBot extends LinearOpMode{
             lastDpad2RightState = dpadRight2;
             
             //claw swapper
-            if (xButtonPressed != lastXButtonState)
+            if (xButtonPressed)
             {
-                cs.clawMove(!cs.GetClawPosition());
+                cs.clawMove(true);
             }
-            lastXButtonState = xButtonPressed;
-            
+            else if (aButtonPressed)
+            {
+                cs.clawMove(false);
+            }
             // handles different wrist types based off button presses
             SwapWristType('C',yButtonPressed);
             
@@ -134,11 +139,11 @@ public class StarterBot extends LinearOpMode{
                 runtime.reset();
                 if (wristInput < -0.8)
                 {
-                    cs.MoveToPosition(cs.GetWristPosition() - 0.5 * runtime.milliseconds());
+                    cs.MoveToPosition(cs.GetWristPosition() + 1.75 * runtime.milliseconds());
                 }
                 else if (wristInput > 0.8)
                 {
-                    cs.MoveToPosition(cs.GetWristPosition() + 0.5 * runtime.milliseconds());
+                    cs.MoveToPosition(cs.GetWristPosition() - 1.75 * runtime.milliseconds());
                 }
             }
 
@@ -221,13 +226,19 @@ public class StarterBot extends LinearOpMode{
             
             am.rotate(armLiftInput, 'T');
             
+            //set arm height for grabbing samples off wall
+            if (bButtonPressed)
+            {
+                am.MoveToPosition(am.ConvertAngleToEncoder(200));
+            }
+            
             if (rightTrigger2 > 0.5)
             {
                 e1.Move(rightTrigger2,600, 'T');
             }
             else if (leftTrigger2 > 0.5)
             {
-                e1.Move(leftTrigger2,-125,'T');
+                e1.Move(-leftTrigger2,-125,'T');
             }
             else
             {
@@ -280,11 +291,10 @@ public class StarterBot extends LinearOpMode{
 
     private void HookMacro()
     {
-        CancellableCommand(currentSpeed,0,-12,0,0,165,true,'D'); //1
-        CancellableCommand(currentSpeed,0,-23,0,0,165,true,'B'); //1
-        CancellableCommand(currentSpeed,0,-21,0,0,165,true,'B'); //2
-        CancellableCommand(currentSpeed,0,-21,0,0,165,false,'B'); //3
-        CancellableCommand(currentSpeed,0,-18,0,0,180,false,'B');
+        CancellableCommand(currentSpeed,0,-6,0,0,165,true,'D'); //1
+        CancellableCommand(currentSpeed,0,-20,0,0,165,true,'D'); //1
+        CancellableCommand(currentSpeed,0,-20,0,0,150,true,'B'); //1
+        CancellableCommand(currentSpeed,0,-15,0,0,165,true,'B'); //1
         hookMacroActivated = false;
     }
 
@@ -295,7 +305,7 @@ public class StarterBot extends LinearOpMode{
             return;
         }
         moveCmd.MoveToPositionCancellable(speed,tgtX,tgtY,rot,tgtE,tgtA,tgtClaw,tgtWrist);
-        while (!moveCmd.GetBoolsCompleted())
+        while (!moveCmd.GetCommandState())
         {
             // if command deactivated then break out of loop
             if (!hookMacroActivated)
