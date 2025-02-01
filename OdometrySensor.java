@@ -32,14 +32,14 @@ public class OdometrySensor {
         ki = 0.332; //0.332
         kdx = 0.425; //0.00001
         kdy = 0.425; //0.425
-        kdh = 0.9; //0.9
+        kdh = 0; //0.9
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
         if (isAuton)
         {
             odometry.resetTracking();
+            odometry.begin();
         }
-        odometry.begin();
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
         odometry.setLinearScalar(40/41);
@@ -67,10 +67,10 @@ public class OdometrySensor {
         }
         else
         {
-            output = kp * error + ki * integral + kdh * derivative;   
-            runtime.reset(); // reset delta only on final pid not every pid occurence to ensure consistency in derivative and integral terms
+            output = kp * error + ki * integral + kdh * derivative;
+            runtime.reset();
+            integral = 0;
         }
-        integral = 0;
         return output;
     }
     
@@ -78,7 +78,7 @@ public class OdometrySensor {
     {
         if (!odometry.isConnected()) {return;}
 
-        double distanceLenience = 2; //best value 1
+        double distanceLenience = 0.5; //best value 1
         double angleLenience = 4; //best value 4
         
         double now = runtime.milliseconds();
