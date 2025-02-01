@@ -13,7 +13,7 @@ public class Drivetrain{
     private DcMotor frontRight = null;
     private DcMotor backLeft = null;
     private DcMotor backRight = null;
-
+    
     public boolean moving = true;
     
     public void init(HardwareMap hwMap)
@@ -46,7 +46,7 @@ public class Drivetrain{
         {
             rad += 2 * Math.PI;
         }
-        return -rad;
+        return rad;
     }
 
     public void FieldOrientedTranslate(double targetPowerX, double targetPowerY, double rotation, double currentRotation)
