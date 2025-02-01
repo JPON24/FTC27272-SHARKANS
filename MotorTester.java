@@ -57,7 +57,6 @@ public class MotorTester extends LinearOpMode {
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         amL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         amR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        wrist.scaleRange(0,0.6);
         
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
         frontRight.setDirection(DcMotor.Direction.FORWARD);
@@ -123,6 +122,8 @@ public class MotorTester extends LinearOpMode {
                 wrist.setPosition(0);
                 // wrist.setPower(0);
             }
+            
+            claw.setPosition(0);
             
             frontLeft.setPower(0);
             frontRight.setPower(0);
