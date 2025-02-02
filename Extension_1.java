@@ -5,8 +5,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.robot.Robot;
 
 public class Extension_1 {
-    final double deadZone = 0.3;
-    
     public DcMotor extension_1 = null;
     
     
@@ -29,17 +27,17 @@ public class Extension_1 {
     {
         if (mode == 'T')
         {
-            if (speed > deadZone && extension_1.getCurrentPosition() < 600)
+            if (speed > 0.1 && extension_1.getCurrentPosition() < 700)
             {
-                MoveToPosition(600, speed);
+                MoveToPosition(700, speed);
             }
-            else if(speed< -deadZone && extension_1.getCurrentPosition() > -125)
+            else if (speed < -0.1 && extension_1.getCurrentPosition() > 0)
             {
-                MoveToPosition(-125, speed);
+                MoveToPosition(0, speed);
             }
             else
             {
-                MoveToPosition(extension_1.getCurrentPosition() + 25, 0);
+                MoveToPosition(extension_1.getCurrentPosition(), 0);
             }
         }
         else if (mode == 'A')
