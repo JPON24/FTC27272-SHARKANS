@@ -6,15 +6,17 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.Drivetrain;
 import org.firstinspires.ftc.teamcode.MoveCommand;
+import org.firstinspires.ftc.teamcode.OdometrySensor;
 
 @Autonomous
 public class CommandSequence extends LinearOpMode
 {
     MoveCommand moveCmd = new MoveCommand();
     Drivetrain dt = new Drivetrain();
+    OdometrySensor odo = new OdometrySensor();
     
     boolean moving = true;
-    double speed = 0.5;
+    double speed = 1;
 
     double halfWidth = 7.625;
     double halfLength = 7.5;
@@ -56,51 +58,66 @@ public class CommandSequence extends LinearOpMode
         Hook();
         
         // push
-        moveCmd.MoveToPosition(speed,-26,-19,0,0,110,false,'N'); //4
-        moveCmd.MoveToPosition(speed,-26,-48,0,0,60,false,'N'); //5
-        moveCmd.MoveToPosition(speed,-37,-48,0,0,50,false,'N'); //6
-        moveCmd.MoveToPosition(speed,-37,-8,0,0,30,false,'N'); //7
+        moveCmd.MoveToPosition(speed,32,19,0,0,120,false,'N'); //4
+        moveCmd.MoveToPosition(speed,32,52,0,0,200,false,'G'); //5
+        moveCmd.MoveToPosition(speed,43,52,0,0,200,false,'G'); //6
+        moveCmd.MoveToPosition(speed,43,24,0,0,190,false,'G');
+        moveCmd.MoveToPosition(0.2,42,21,0,0,190,false,'G'); //7
+        moveCmd.MoveToPosition(0.2,42,21,0,0,190,true,'G'); //7
+        while (moveCmd.GetClawPositionReading() != 0.3) {moveCmd.UpdateClawPosition();}
 
         // grab
-        moveCmd.MoveToPosition(speed,-37,-8,0,0,30,true,'N'); //8
+        moveCmd.MoveToPosition(speed,42,21,0,0,160,true,'G'); //8
+        moveCmd.MoveToPosition(speed,0,10,0,0,50,true,'G'); //8
         
         // hook
         Hook();
-        
-        // push
-        moveCmd.MoveToPosition(speed,-36,-19,0,0,110,false,'N'); //11
-        moveCmd.MoveToPosition(speed,-36,-48,0,0,60,true,'N'); //11
-        moveCmd.MoveToPosition(speed,-47,-48,0,0,50,true,'N'); //12
-        moveCmd.MoveToPosition(speed,-47,-9,0,0,30,false,'N'); //13
-        
-        // grab
-        moveCmd.MoveToPosition(speed,-47,-9,0,0,60,true,'N');
-    
-        // hook
-        Hook();
-
-        // push
-        moveCmd.MoveToPosition(speed,-46,-19,0,0,60,false,'N'); //11
-        moveCmd.MoveToPosition(speed,-46,-48,0,0,40,true,'N'); //17
-        moveCmd.MoveToPosition(speed,-52,-48,0,0,30,true,'N'); //18
-        moveCmd.MoveToPosition(speed,-52,-8,0,0,30,true,'N'); //19
-
-        // grab
-        moveCmd.MoveToPosition(speed,-52,-8,0,0,30,false,'N'); //20
-        moveCmd.MoveToPosition(speed,-52,-8,0,0,30,true,'N'); //20
-
-        // hook
-        Hook();
-
-        //grab
-        Grab();
-
-        // hook
-        Hook();
-
-        // end sequence
-        moveCmd.MoveToPosition(speed,-35,-4,0,0,0,false,'N');
+        moveCmd.MoveToPosition(speed,39,4,0,0,0,false,'G');
         Stop();
+        
+        // push
+        // moveCmd.MoveToPosition(speed,32,19,0,0,120,false,'N'); //11
+        // moveCmd.MoveToPosition(speed,40,19,0,0,120,false,'N'); //11
+        // moveCmd.MoveToPosition(speed,40,52,0,0,200,false,'G'); //11
+        // moveCmd.MoveToPosition(speed,51,52,0,0,200,false,'G'); //12
+        // moveCmd.MoveToPosition(speed,51,24,0,0,190,false,'G');
+        // moveCmd.MoveToPosition(0.2,51,21,0,0,190,false,'G'); //13
+        // moveCmd.MoveToPosition(0.2,51,21,0,0,190,true,'G'); //7
+        // while (moveCmd.GetClawPositionReading() != 0.3) {moveCmd.UpdateClawPosition();}
+        
+        // // grab
+        // moveCmd.MoveToPosition(speed,51,21,0,0,160,true,'G');
+        // moveCmd.MoveToPosition(speed,0,10,0,0,50,true,'G'); //8
+        
+    
+        // // hook
+        // Hook();
+
+        // // push
+        // moveCmd.MoveToPosition(speed,50,19,0,0,120,false,'N'); //11
+        // moveCmd.MoveToPosition(speed,50,52,0,0,200,false,'G'); //17
+        // moveCmd.MoveToPosition(speed,56,52,0,0,200,false,'G'); //18
+        // moveCmd.MoveToPosition(speed,56,24,0,0,190,false,'G');
+        // moveCmd.MoveToPosition(0.2,56,21,0,0,190,false,'G'); //19
+        // moveCmd.MoveToPosition(0.2,56,21,0,0,190,true,'G'); //19
+        // while (moveCmd.GetClawPositionReading() != 0.3) {moveCmd.UpdateClawPosition();}
+
+        // // grab
+        // moveCmd.MoveToPosition(speed,56,21,0,0,160,true,'G'); //20
+        // moveCmd.MoveToPosition(speed,0,10,0,0,50,true,'G'); //8
+
+        // // hook
+        // Hook();
+
+        // //grab
+        // Grab();
+
+        // // hook
+        // Hook();
+
+        // // end sequence
+        // moveCmd.MoveToPosition(speed,39,4,0,0,0,false,'G');
+        // Stop();
     }
 
     private void Hook() // add offset constant
@@ -110,22 +127,41 @@ public class CommandSequence extends LinearOpMode
         // moveCmd.MoveToPosition(speed,0,-24,0,0,150,true,'D'); //1
         // moveCmd.MoveToPosition(speed,0,-24,0,0,150,true,'B'); //1
         // moveCmd.MoveToPosition(speed,0,-21.5,0,0,150,true,'B'); //1
-        moveCmd.MoveToPosition(speed,0,-2,0,0,0,true,'D'); //1
-        moveCmd.MoveToPosition(speed,0,-6,0,0,130,true,'D');
-        moveCmd.MoveToPosition(speed,0,-18,0,0,130,true,'D'); //1
-        moveCmd.MoveToPosition(speed,0,-18,0,650,130,true,'D'); //1
+        // deprecated
+        // moveCmd.MoveToPosition(speed,0,-2,0,0,0,true,'D'); //1
+        // moveCmd.MoveToPosition(speed,0,-6,0,0,130,true,'D');
+        // moveCmd.MoveToPosition(speed,0,-18,0,0,130,true,'D'); //1
+        // moveCmd.MoveToPosition(speed,0,-18,0,650,130,true,'D'); //1
+        moveCmd.MoveToPosition(speed,0,34.5,0,0,50,true,'B');
+        moveCmd.MoveToPosition(speed,0,34.5,0,0,69,true,'B');
+        moveCmd.MoveToPosition(speed,0,31.5,0,0,69,true,'B');
     }
 
     private void Grab()
     {
-        moveCmd.MoveToPosition(speed,-27.5,-8,0,0,30,false,'N'); //23
-        moveCmd.MoveToPosition(speed,-27.5,-8,0,0,30,true,'N'); //23
+        moveCmd.MoveToPosition(speed,31,24,0,0,190,false,'G');
+        moveCmd.MoveToPosition(0.2,31,21,0,0,190,false,'G'); //23
+        moveCmd.MoveToPosition(0.2,31,21,0,0,190,true,'G');
+        while (moveCmd.GetClawPositionReading() != 0.3) {moveCmd.UpdateClawPosition();}
+        moveCmd.MoveToPosition(speed,31,21,0,0,160,true,'G'); //23
+        moveCmd.MoveToPosition(speed,0,10,0,0,50,true,'G'); //8
     }
 
     private void TestSequence()
     {
-        moveCmd.MoveToPosition(speed,0,0,0,0,0,true,'N');
-        // moveCmd.MoveToPosition(speed,0,-16,0,0,40,false,'N');
+        // moveCmd.MoveToPosition(speed,0,6,0,0,0,true,'N');
+        // moveCmd.MoveToPosition(speed,6,0,0,0,0,false,'N');
+        odo.OdometryControl(speed,0,24,0);
+        telemetry.addData("x", odo.GetPositionX());
+        telemetry.addData("y", odo.GetPositionY());
+        telemetry.addData("h", odo.GetImuReading());
+        telemetry.addData("ex", odo.GetErrorX());
+        telemetry.addData("ey", odo.GetErrorY());
+        telemetry.addData("eh", odo.GetErrorH());
+        telemetry.addData("ox", odo.GetOutputX());
+        telemetry.addData("oy", odo.GetOutputY());
+        telemetry.addData("oh", odo.GetOutputH());
+        telemetry.update();
     }
     
     @Override
@@ -133,6 +169,7 @@ public class CommandSequence extends LinearOpMode
     {
         dt.init(hardwareMap);
         moveCmd.init(hardwareMap, true);
+        odo.init(hardwareMap,true);
         
         double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
         double normalizedVolts = (1 - volts/14) + 0.57; // reduced to account for volt drops during auton
@@ -146,8 +183,8 @@ public class CommandSequence extends LinearOpMode
             {
                 // maybe add arm speed change when hover/moving
                 
-                CommandSequence();
-                // TestSequence();
+                // CommandSequence();
+                TestSequence();
             }
         }
     }
