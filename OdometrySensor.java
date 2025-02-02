@@ -22,7 +22,7 @@ public class OdometrySensor {
     boolean[] completedBools = new boolean[3];
     
     double deltaTime, last_time;
-    double integral = 0;
+    double integralX, integralY, integralH = 0;
     double kp, ki, kdx, kdy, kdh;
     double[] output = new double[3];
     double[] errors = new double[3];
@@ -33,11 +33,11 @@ public class OdometrySensor {
         //PositionY 
         //currently using pid on odometry position readings, could be causing some of the oscillation problems
         // might be better to use motor ticks with our odometry for more accuracy
-        kp = 0.4375; //0.875
-        ki = 0.08375; //0.1675
-        kdx = 0.18875; //0.3775
-        kdy = 0.18875; //0.3775
-        kdh = 0.25; //0.5
+        kp = 0.075; //0.4375  0.109375 0.077
+        ki = 0.08375; //0.08375  0.0209375
+        kdx = 0.05; //0.18875  0.0471875
+        kdy = 0.05; //0.18875  0.0471875
+        kdh = 0.25; //0.25  0.0625
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
         if (isAuton)
@@ -62,29 +62,30 @@ public class OdometrySensor {
         if (index == 0)
         {
             previous[0] = error;
-            integral += error * dxTime.seconds();
+            integralX += error * dxTime.seconds();
             double derivative = (error - previous[0]) / dxTime.seconds();
-            output = kp * error + ki * integral + kdx * derivative;
+            output = kp * error + ki * integralX + kdx * derivative;
             dxTime.reset();
+            integralX = 0;
         }
         else if (index == 1)
         {
             previous[1] = error;
-            integral += error * dyTime.seconds();
+            integralY += error * dyTime.seconds();
             double derivative = (error - previous[1]) / dyTime.seconds();
-            output = kp * error + ki * integral + kdy * derivative;
+            output = kp * error + ki * integralY + kdy * derivative;
             dyTime.reset();
+            integralY = 0;
         }
         else
         {
             previous[2] = error;
-            integral += error * dhTime.seconds();
+            integralH += error * dhTime.seconds();
             double derivative = (error - previous[2]) / dhTime.seconds();
-            output = kp * error + ki * integral + kdh * derivative;
+            output = kp * error + ki * integralH + kdh * derivative;
             dhTime.reset();
+            integralH = 0;
         }
-        runtime.reset();
-        integral = 0;
         output = Range.clip(output, -1, 1);
         return output;
     }
@@ -143,8 +144,14 @@ public class OdometrySensor {
             // output[2] /= Math.abs(output[2]);
             completedBools[2] = false;
         }
+        // for (int i = 0; i < 3; i++)
+        // {
+        //     if (Math.abs(output[i]) < 0.15)
+        //     {
+        //         output[i] = 0;
+        //     }
+        // }
         // output[0] = 0;
-        // output[1] = 0;
         // output[2] = 0;
         dt.FieldOrientedTranslate(speed * output[0], speed * output[1], 0.7 * speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
     }
