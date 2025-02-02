@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.Drivetrain;
@@ -11,6 +12,9 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 public class OdometrySensor {
     Drivetrain dt = new Drivetrain();
     ElapsedTime runtime = new ElapsedTime();
+    ElapsedTime dxTime = new ElapsedTime();
+    ElapsedTime dyTime = new ElapsedTime();
+    ElapsedTime dhTime = new ElapsedTime();
     
     SparkFunOTOS odometry; 
     SparkFunOTOS.Pose2D pos;
@@ -18,21 +22,22 @@ public class OdometrySensor {
     boolean[] completedBools = new boolean[3];
     
     double deltaTime, last_time;
-    double integral, previous = 0;
+    double integral = 0;
     double kp, ki, kdx, kdy, kdh;
     double[] output = new double[3];
     double[] errors = new double[3];
+    double[] previous = new double[3];
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
         //PositionY 
         //currently using pid on odometry position readings, could be causing some of the oscillation problems
         // might be better to use motor ticks with our odometry for more accuracy
-        kp = 1.75; //1.75 
-        ki = 0.332; //0.332
-        kdx = 0.425; //0.00001
-        kdy = 0.425; //0.425
-        kdh = 0; //0.9
+        kp = 0.4375; //0.875
+        ki = 0.08375; //0.1675
+        kdx = 0.18875; //0.3775
+        kdy = 0.18875; //0.3775
+        kdh = 0.25; //0.5
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
         if (isAuton)
@@ -52,34 +57,43 @@ public class OdometrySensor {
     // maybe derivative not needed as velocity becomes near linear
     double pid(double error, int index) 
     {
-        integral += error * runtime.seconds();
-        double derivative = (error - previous) / runtime.seconds();
-        previous = error;
         double output = 0;
         
         if (index == 0)
         {
+            previous[0] = error;
+            integral += error * dxTime.seconds();
+            double derivative = (error - previous[0]) / dxTime.seconds();
             output = kp * error + ki * integral + kdx * derivative;
+            dxTime.reset();
         }
         else if (index == 1)
         {
+            previous[1] = error;
+            integral += error * dyTime.seconds();
+            double derivative = (error - previous[1]) / dyTime.seconds();
             output = kp * error + ki * integral + kdy * derivative;
+            dyTime.reset();
         }
         else
         {
+            previous[2] = error;
+            integral += error * dhTime.seconds();
+            double derivative = (error - previous[2]) / dhTime.seconds();
             output = kp * error + ki * integral + kdh * derivative;
-            runtime.reset();
-            integral = 0;
+            dhTime.reset();
         }
+        runtime.reset();
+        integral = 0;
+        output = Range.clip(output, -1, 1);
         return output;
     }
     
     public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot)
     {
         if (!odometry.isConnected()) {return;}
-
-        double distanceLenience = 0.5; //best value 1
-        double angleLenience = 4; //best value 4
+        double distanceLenience = 0.6; //best value 1
+        double angleLenience = 1.5; //best value 4
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -88,7 +102,7 @@ public class OdometrySensor {
         pos = odometry.getPosition();
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
-        errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)));
+        errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h))) / 5;
 
         for (int i = 0; i < 3; i++)
         {
@@ -100,35 +114,38 @@ public class OdometrySensor {
         if (Math.abs(errors[0]) < distanceLenience)
         {
             completedBools[0] = true;
-            output[0] = 0;
+            // output[0] = 0;
         }
         else
         {
-            output[0] /= maxXYOutput;
+            // output[0] /= maxXYOutput;
             completedBools[0] = false;
         }
 
         if (Math.abs(errors[1]) < distanceLenience)
         {
             completedBools[1] = true;
-            output[1] = 0;
+            // output[1] = 0;
         }
         else
         {
-            output[1] /= maxXYOutput;
+            // output[1] /= maxXYOutput;
             completedBools[1] = false;
         }
         
         if (Math.abs(errors[2]) < angleLenience)
         {
             completedBools[2] = true;
-            output[2] = 0;
+            // output[2] = 0;
         }
         else
         {
-            output[2] /= Math.abs(output[2]);
+            // output[2] /= Math.abs(output[2]);
             completedBools[2] = false;
         }
+        // output[0] = 0;
+        // output[1] = 0;
+        // output[2] = 0;
         dt.FieldOrientedTranslate(speed * output[0], speed * output[1], 0.7 * speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
     }
     
