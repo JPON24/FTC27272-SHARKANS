@@ -31,8 +31,7 @@ public class StarterBot extends LinearOpMode{
     boolean lastDpad2RightState = false;
     
     boolean canShiftArm = true;
-    double currentArmSpeed = 1.0;
-    double armSpeedInterval = 0.8;
+    double currentArmSpeed = 0.9;
         
     boolean hookMacroActivated = false;
 
@@ -115,7 +114,7 @@ public class StarterBot extends LinearOpMode{
             leftTrigger2 = gamepad2.left_trigger;
             rightTrigger2 = gamepad2.right_trigger;
 
-            if (dpadRight2)
+            if (dpadRight2 && dpadRight2 != lastDpad2RightState)
             {
                 hookMacroActivated = true;
             }
@@ -137,11 +136,11 @@ public class StarterBot extends LinearOpMode{
             if (cs.GetWristState() == 'C')
             {
                 runtime.reset();
-                if (wristInput < -0.8)
+                if (wristInput < -0.1)
                 {
                     cs.MoveToPosition(cs.GetWristPosition() + 1.75 * runtime.milliseconds());
                 }
-                else if (wristInput > 0.8)
+                else if (wristInput > 0.1)
                 {
                     cs.MoveToPosition(cs.GetWristPosition() - 1.75 * runtime.milliseconds());
                 }
@@ -177,16 +176,15 @@ public class StarterBot extends LinearOpMode{
             //arm
             if (leftBumperPressed2)
             {
-                if (canShiftArm && currentArmSpeed - armSpeedInterval > 0)
+                if (canShiftArm && currentArmSpeed == 0.9)
                 {
-                    ArmSpeedShift(-armSpeedInterval);
+                    ArmSpeedShift(0.2);
+                    canShiftArm = false;
                 }
-            }
-            else if (rightBumperPressed2)
-            {
-                if (canShiftArm && currentArmSpeed + armSpeedInterval <=1)
+                else if (canShiftArm && currentArmSpeed == 0.2)
                 {
-                    ArmSpeedShift(armSpeedInterval);
+                    ArmSpeedShift(0.9);
+                    canShiftArm = false;
                 }
             }
             else
@@ -201,10 +199,6 @@ public class StarterBot extends LinearOpMode{
             else if (dpadLeft2)//fix extension pos
             {
                 e1.ResetEncoders();
-            }
-            else if (dpadDown2)
-            {
-                am.ResetEncodersUp();
             }
 
             if (aButtonPressed1)
@@ -230,15 +224,24 @@ public class StarterBot extends LinearOpMode{
             if (bButtonPressed)
             {
                 am.MoveToPosition(am.ConvertAngleToEncoder(200));
+                cs.setWristMode('C');
+                cs.MoveToPosition(0.47);
+            }
+            
+            if (rightBumperPressed2)
+            {
+                am.MoveToPosition(-1825);
+                cs.setWristMode('C');
+                cs.MoveToPosition(0.22);
             }
             
             if (rightTrigger2 > 0.5)
             {
-                e1.Move(rightTrigger2,600, 'T');
+                e1.Move(rightTrigger2,700, 'T');
             }
             else if (leftTrigger2 > 0.5)
             {
-                e1.Move(-leftTrigger2,-125,'T');
+                e1.Move(-leftTrigger2,0,'T');
             }
             else
             {
@@ -248,6 +251,7 @@ public class StarterBot extends LinearOpMode{
             telemetry.addData("wrist setting",cs.GetWristState());
             telemetry.addData("wrist position", cs.GetWristPosition());
             telemetry.addData("angle double",am.GetNormalizedArmAngle());
+            telemetry.addData("arm encoder", am.GetCurrentPosition());
             telemetry.addData("field oriented", fieldOriented);
             telemetry.update();
         }
@@ -262,7 +266,7 @@ public class StarterBot extends LinearOpMode{
     
     private void ArmSpeedShift(double speedInterval)
     {
-        currentArmSpeed += speedInterval;
+        currentArmSpeed = speedInterval;
         am.SetSpeed(currentArmSpeed);
         canShiftArm = false;
     }
@@ -291,20 +295,19 @@ public class StarterBot extends LinearOpMode{
 
     private void HookMacro()
     {
-        CancellableCommand(currentSpeed,0,-6,0,0,165,true,'D'); //1
-        CancellableCommand(currentSpeed,0,-20,0,0,165,true,'D'); //1
-        CancellableCommand(currentSpeed,0,-20,0,0,150,true,'B'); //1
-        CancellableCommand(currentSpeed,0,-15,0,0,165,true,'B'); //1
+        CancellableCommand(0,165,true,'D'); //1
+        CancellableCommand(0,150,true,'B'); //1
+        CancellableCommand(0,165,true,'B'); //1
         hookMacroActivated = false;
     }
 
-    private void CancellableCommand(double speed, double tgtX, double tgtY, double rot, int tgtE, int tgtA, boolean tgtClaw, char tgtWrist)
+    private void CancellableCommand(int tgtE, int tgtA, boolean tgtClaw, char tgtWrist)
     {
         if (!hookMacroActivated)
         {
             return;
         }
-        moveCmd.MoveToPositionCancellable(speed,tgtX,tgtY,rot,tgtE,tgtA,tgtClaw,tgtWrist);
+        moveCmd.MoveToPositionCancellable(tgtE,tgtA,tgtClaw,tgtWrist);
         while (!moveCmd.GetCommandState())
         {
             // if command deactivated then break out of loop
@@ -313,7 +316,7 @@ public class StarterBot extends LinearOpMode{
                 break;
             }
 
-            moveCmd.MoveToPositionCancellable(speed,tgtX,tgtY,rot,tgtE,tgtA,tgtClaw,tgtWrist);
+            moveCmd.MoveToPositionCancellable(tgtE,tgtA,tgtClaw,tgtWrist);
             // deactivate command if dpad right pressed
             if (gamepad2.dpad_right && lastDpad2RightState != gamepad2.dpad_right)
             {
