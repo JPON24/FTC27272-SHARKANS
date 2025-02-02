@@ -108,10 +108,10 @@ public class Drivetrain{
         //another normalization
         if ((power + Math.abs(rotation)) > 1)
         {
-            flPower /= power + rotation;
-            frPower /= power - rotation;
-            blPower /= power + rotation;
-            brPower /= power - rotation;
+            flPower /= power + Math.abs(rotation);
+            frPower /= power - Math.abs(rotation);
+            blPower /= power + Math.abs(rotation);
+            brPower /= power - Math.abs(rotation);
         }
         
         //set speed to calculated values * the speedScalar(determined by bumpers)
@@ -142,10 +142,10 @@ public class Drivetrain{
 
         if ((power + Math.abs(rotation)) > 1)
         {
-            flPower /= power + rotation;
-            frPower /= power - rotation;
-            blPower /= power + rotation;
-            brPower /= power - rotation;
+            flPower /= power + Math.abs(rotation);
+            frPower /= power - Math.abs(rotation);
+            blPower /= power + Math.abs(rotation);
+            brPower /= power - Math.abs(rotation);
         }
         
         //sets power of each motor
