@@ -143,14 +143,11 @@ public class MoveCommand  {
         }
     }
 
-    public void MoveToPositionCancellable(double speed, double tgtX, double tgtY, double rot, int tgtE, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPositionCancellable(int tgtE, int tgtA, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
         HashMap<Character, Boolean> localCopy = new HashMap<Character,Boolean>();
-
-        // movement, will be driven by s1.GetBoolsCompleted()
-        command.SetElementFalse('m'); 
 
         // dont use 0 for minimum position of arm and extension because of this, use 1 instead
         if (tgtE != lastE) // if extension must occur
@@ -171,8 +168,7 @@ public class MoveCommand  {
         }
         lastE = tgtE;
         lastA = tgtA;
-        
-        s1.OdometryControl(speed,tgtX,tgtY,rot);
+
         localCopy = command.GetMap();
 
         // for every key (m, e, a, c, w)
@@ -183,19 +179,6 @@ public class MoveCommand  {
             // otherwise, set it to false and stop moving it 
             switch (key)
             {
-                case 'm':
-                    if (s1.GetBoolsCompleted())
-                    {
-                        command.SetElementTrue('m');
-                        dt.FieldOrientedTranslate(0,0,0,0);
-                        break;
-                    }
-                    else
-                    {
-                        command.SetElementFalse('m');
-                        s1.OdometryControl(speed,tgtX,tgtY,rot);
-                        break;
-                    }
                 case 'e':
                     if (e1.GetCompleted(tgtE))
                     {
@@ -252,5 +235,15 @@ public class MoveCommand  {
     public boolean GetCommandState()
     {
         return command.GetBoolsCompleted();
+    }
+    
+    public double GetClawPositionReading()
+    {
+        return cs.GetClawPositionReading();
+    }
+    
+    public void UpdateClawPosition()
+    {
+        cs.Update();
     }
 }
