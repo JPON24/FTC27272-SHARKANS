@@ -7,10 +7,10 @@ public class ArmLiftMotor {
     public DcMotor armLiftL = null;
     public DcMotor armLiftR = null;
     
-    double speed = 0.4;
+    double speed = 0.9;
 
-    int topLimit = -1513; // old value 1780
-    int bottomLimit = 0;
+    int topLimit = -6050; // old value 1780
+    int bottomLimit = 50;
     
     public void init(HardwareMap hwMap)
     {
@@ -20,7 +20,7 @@ public class ArmLiftMotor {
         armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armLiftL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         
-        armLiftR = hwMap.get(DcMotor.class, "armLiftL");
+        armLiftR = hwMap.get(DcMotor.class, "armLiftR");
         armLiftR.setTargetPosition(0);
         armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -32,8 +32,8 @@ public class ArmLiftMotor {
     
     public void ResetEncoders()
     {
-        topLimit = -1513;
-        bottomLimit = 0;
+        topLimit = -6050;
+        bottomLimit = 50;
         armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -44,8 +44,8 @@ public class ArmLiftMotor {
     public void ResetEncodersUp()
     {
         ResetEncoders();
-        topLimit = 0;
-        bottomLimit = 1513;
+        topLimit = -50;
+        bottomLimit = 6050;
     }
     
     public void SetSpeed(double change)
@@ -56,9 +56,9 @@ public class ArmLiftMotor {
     public double GetNormalizedArmAngle()
     {
         // 6933 = 260 * 6.846
-        double positionRange = 1513;
+        double positionRange = 6050;
         double temp = 0;
-        if (armLiftL.getCurrentPosition() != 0)
+        if (armLiftR.getCurrentPosition() != 0)
         {
             temp = Math.abs(armLiftL.getCurrentPosition()) / positionRange;
         }
@@ -84,6 +84,7 @@ public class ArmLiftMotor {
         else if (mode == 'A')
         {
             int encoderPosition = ConvertAngleToEncoder((int)targetPower);
+            speed = 0.9;
             MoveToPosition(encoderPosition);
         }
     }
@@ -99,7 +100,7 @@ public class ArmLiftMotor {
 
     public int ConvertAngleToEncoder(int tgtPower)
     {
-        return (int)(-tgtPower * 6.846);
+        return (int)(-tgtPower * 26.3);
     }
     
     public int GetCurrentPosition()
