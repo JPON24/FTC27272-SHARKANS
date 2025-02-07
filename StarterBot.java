@@ -74,7 +74,8 @@ public class StarterBot extends LinearOpMode{
         s1.init(hardwareMap, true);
         moveCmd.init(hardwareMap, false);
         waitForStart();
-        
+        cs.clawMove(true);
+        cs.Update();
         while(opModeIsActive())
         {
             // triggers should be extension
@@ -218,26 +219,28 @@ public class StarterBot extends LinearOpMode{
                 dt.Translate(targetPowerX,targetPowerY,targetRotation);
             }
             
-            am.rotate(armLiftInput, 'T');
             
             //set arm height for grabbing samples off wall
             if (bButtonPressed)
             {
-                am.MoveToPosition(am.ConvertAngleToEncoder(200));
+                am.MoveToPosition(am.ConvertAngleToEncoder(211));
                 cs.setWristMode('C');
                 cs.MoveToPosition(0.47);
             }
-            
-            if (rightBumperPressed2)
+            else if (rightBumperPressed2)
             {
-                am.MoveToPosition(-1825);
+                am.MoveToPosition(-1650);
                 cs.setWristMode('C');
-                cs.MoveToPosition(0.22);
+                cs.MoveToPosition(0.17);
+            }
+            else
+            {
+                am.rotate(armLiftInput, 'T');
             }
             
             if (rightTrigger2 > 0.5)
             {
-                e1.Move(rightTrigger2,700, 'T');
+                e1.Move(rightTrigger2,60, 'T');
             }
             else if (leftTrigger2 > 0.5)
             {
