@@ -87,8 +87,8 @@ public class StarterBot extends LinearOpMode{
                 HookMacro();
                 continue;
             }
-            targetPowerX = gamepad1.left_stick_x;
-            targetPowerY = -gamepad1.left_stick_y;
+            targetPowerY = gamepad1.left_stick_x;
+            targetPowerX = gamepad1.left_stick_y;
             targetRotation = gamepad1.right_stick_x;
             
             leftBumperPressed = gamepad1.left_bumper;
