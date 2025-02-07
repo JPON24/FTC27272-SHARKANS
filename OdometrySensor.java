@@ -33,7 +33,7 @@ public class OdometrySensor {
         //PositionY 
         //currently using pid on odometry position readings, could be causing some of the oscillation problems
         // might be better to use motor ticks with our odometry for more accuracy
-        kp = 0.075; //0.4375  0.109375 0.077
+        kp = 0.109375; //0.4375  0.109375 0.075
         ki = 0.08375; //0.08375  0.0209375
         kdx = 0.05; //0.18875  0.0471875
         kdy = 0.05; //0.18875  0.0471875
@@ -93,8 +93,8 @@ public class OdometrySensor {
     public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot)
     {
         if (!odometry.isConnected()) {return;}
-        double distanceLenience = 0.6; //best value 1
-        double angleLenience = 1.5; //best value 4
+        double distanceLenience = 2; //best value 1 old 0.6
+        double angleLenience = 3; //best value 4 old 3
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
