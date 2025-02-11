@@ -18,13 +18,13 @@ public class CommandSequence extends LinearOpMode
     ClawServo cs = new ClawServo();
     
     boolean moving = true;
-    double speed = 0.4;
+    double speed = 1;
 
     double halfWidth = 7.625;
     double halfLength = 7.5;
     
-    double grabDistance = 24.75; // old 22.8 
-    int grabHeight = 210;
+    double grabDistance = 5; // old 4.5
+    int grabHeight = -600;
     
     // use later for scalability
     // double halfLength = 8.625; //y
@@ -60,97 +60,58 @@ public class CommandSequence extends LinearOpMode
         // 260 degree ROM
         
         // hook
-        Hook(0);
+        Hook(-7);
         
         // push
-        // moveCmd.MoveToPosition(speed,32,19,0,0,120,false,'N'); //4
-        // moveCmd.MoveToPosition(speed,32,50,0,0,grabHeight,false,'G'); //5
-        // moveCmd.MoveToPosition(speed,43,50,0,0,grabHeight,false,'G'); //6
-        // moveCmd.MoveToPosition(speed,43,27,0,0,grabHeight,false,'G');
-        // moveCmd.MoveToPosition(speed,43,grabDistance,0,0,grabHeight,false,'G'); //7
-        // moveCmd.MoveToPosition(speed,43,grabDistance,0,0,grabHeight,true,'G'); //7
-        // while (moveCmd.GetClawPositionReading() != 0.3) {moveCmd.UpdateClawPosition();}
-        // sleep(300);
+        Grab(0);
         
-        // // grab
-        // moveCmd.MoveToPosition(speed,43,grabDistance,0,0,160,true,'G'); //8
-        // moveCmd.MoveToPosition(speed,0,6,0,0,50,true,'G'); //8
-        
-        // // hook
-        // Hook(-2);
+        // hook
+        Hook(-2);
         
         // push
-        // moveCmd.MoveToPosition(speed,32,19,0,0,120,false,'N'); //11
-        // moveCmd.MoveToPosition(speed,40,19,0,0,120,false,'N'); //11
-        // moveCmd.MoveToPosition(speed,40,50,0,0,grabHeight,false,'G'); //11
-        // moveCmd.MoveToPosition(speed,51,50,0,0,grabHeight,false,'G'); //12
-        // moveCmd.MoveToPosition(speed,51,27,0,0,grabHeight,false,'G');
-        // moveCmd.MoveToPosition(speed,51,grabDistance,0,0,grabHeight,false,'G'); //13
-        // moveCmd.MoveToPosition(speed,51,grabDistance,0,0,grabHeight,true,'G'); //7
-        // while (moveCmd.GetClawPositionReading() != 0.3) {moveCmd.UpdateClawPosition();}
-        // sleep(300);
-        
-        // // grab
-        // moveCmd.MoveToPosition(speed,51,grabDistance,0,0,160,true,'G');
-        // moveCmd.MoveToPosition(speed,0,10,0,0,50,true,'G'); //8
+        Grab(10);
     
-        // // hook
-        // Hook(-4);
+        // hook
+        Hook(3);
 
+        moveCmd.MoveToPosition(speed,41,18,0,0,grabHeight,false,'G');
+        moveCmd.MoveToPosition(0.5,41,grabDistance,0,0,grabHeight,false,'G'); //7
+        moveCmd.MoveToPosition(0.5,41,grabDistance,0,0,grabHeight,true,'G'); //7
+        sleep(300);
+        moveCmd.MoveToPosition(0.5,41,grabDistance,0,0,-1500,true,'G'); //8
+        moveCmd.MoveToPosition(speed,0,9,0,0,-4900,true,'G');
         // // push
-        // moveCmd.MoveToPosition(speed,50,19,0,0,120,false,'N'); //11
-        // moveCmd.MoveToPosition(speed,50,50,0,0,grabHeight,false,'G'); //17
-        // moveCmd.MoveToPosition(speed,56,50,0,0,grabHeight,false,'G'); //18
-        // moveCmd.MoveToPosition(speed,56,27,0,0,grabHeight,false,'G');
-        // moveCmd.MoveToPosition(speed,56,grabDistance,0,0,grabHeight,false,'G'); //19
-        // moveCmd.MoveToPosition(speed,56,grabDistance,0,0,grabHeight,true,'G'); //19
-        // while (moveCmd.GetClawPositionReading() != 0.3) {moveCmd.UpdateClawPosition();}
-        // sleep(300);
-        
-        // // grab
-        // moveCmd.MoveToPosition(speed,56,grabDistance,0,0,160,true,'G'); //20
-        // moveCmd.MoveToPosition(speed,0,10,0,0,50,true,'G'); //8
+        // Grab(15);
 
-        // // hook
-        // Hook(6);
-
-        // //grab
-        // Grab();
-
-        // // hook
-        // Hook(8);g
+        // hook
+        Hook(8);
 
         // end sequence
-        moveCmd.MoveToPosition(speed,50,4,0,0,0,false,'G');
+        moveCmd.MoveToPosition(speed,50,8,0,0,-700,false,'G');
         Stop();
     }
 
     private void Hook(int offset) // add offset constant
     {
-        // deprecated
-        // moveCmd.MoveToPosition(speed,0,-12,0,0,150,true,'D'); //1
-        // moveCmd.MoveToPosition(speed,0,-24,0,0,150,true,'D'); //1
-        // moveCmd.MoveToPosition(speed,0,-24,0,0,150,true,'B'); //1
-        // moveCmd.MoveToPosition(speed,0,-21.5,0,0,150,true,'B'); //1
-        // deprecated
-        // moveCmd.MoveToPosition(speed,0,-2,0,0,0,true,'D'); //1
-        // moveCmd.MoveToPosition(speed,0,-6,0,0,130,true,'D');
-        // moveCmd.MoveToPosition(speed,0,-18,0,0,130,true,'D'); //1
-        // moveCmd.MoveToPosition(speed,0,-18,0,650,130,true,'D'); //1
-        moveCmd.MoveToPosition(speed,offset,30,0,0,50,true,'B');
-        moveCmd.MoveToPosition(speed,offset,30,0,0,67,true,'B');
-        moveCmd.MoveToPosition(speed,offset,26.5,0,0,67,true,'B');
+        moveCmd.MoveToPosition(speed,offset,18,0,0,-4900,true,'G'); //1
+        moveCmd.MoveToPosition(0.5,offset,26,0,0,-4900,true,'G'); //1
+        moveCmd.MoveToPosition(0.5,offset,26,0,0,-4575,true,'B'); //1
+        moveCmd.MoveToPosition(0.5,offset,19,0,0,-4575,true,'B'); //1
+        moveCmd.MoveToPosition(0.5,offset,16,0,0,-4575,false,'B');
     }
 
-    private void Grab()
+    private void Grab(double offset)
     {
-        moveCmd.MoveToPosition(speed,43,27,0,0,grabHeight,false,'G');
-        moveCmd.MoveToPosition(speed,43,grabDistance,0,0,grabHeight,false,'G'); //23
-        moveCmd.MoveToPosition(speed,43,grabDistance,0,0,grabHeight,true,'G');
-        while (moveCmd.GetClawPositionReading() != 0.3) {moveCmd.UpdateClawPosition();}
+        moveCmd.MoveToPosition(speed,32 + offset,19,0,0,-2000,false,'B'); //4
+        moveCmd.MoveToPosition(speed,32 + offset,50,0,0,grabHeight,false,'G'); //5
+        moveCmd.MoveToPosition(speed,41 + offset,50,0,0,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,41 + offset,18,0,0,grabHeight,false,'G');
+        moveCmd.MoveToPosition(speed,41,18,0,0,grabHeight,false,'G');
+        moveCmd.MoveToPosition(0.5,41,grabDistance,0,0,grabHeight,false,'G'); //7
+        moveCmd.MoveToPosition(0.5,41,grabDistance,0,0,grabHeight,true,'G'); //7
         sleep(300);
-        moveCmd.MoveToPosition(speed,43,grabDistance,0,0,160,true,'G'); //23
-        moveCmd.MoveToPosition(speed,0,10,0,0,50,true,'G'); //8
+        moveCmd.MoveToPosition(0.5,41,grabDistance,0,0,-1500,true,'G'); //8
+        moveCmd.MoveToPosition(speed,0,9,0,0,-4900,true,'G');
     }
     
     private void BasicPark()
@@ -165,17 +126,17 @@ public class CommandSequence extends LinearOpMode
     private void TestSequence()
     {
         // moveCmd.MoveToPosition(speed,0,6,0,0,0,true,'N');
-        moveCmd.MoveToPosition(speed,0,-12,0,0,0,false,'N');
+        moveCmd.MoveToPosition(speed,0,12,0,0,0,false,'N');
         //odo.OdometryControl(speed,0,24,0);
         telemetry.addData("x", odo.GetPositionX());
         telemetry.addData("y", odo.GetPositionY());
-        // telemetry.addData("h", odo.GetImuReading());
-        // telemetry.addData("ex", odo.GettErrorX());
-        // telemetry.addData("ey", odo.GetErrorY());
-        // telemetry.addData("eh", odo.GetErrorH());
-        // telemetry.addData("ox", odo.GetOutputX());
-        // telemetry.addData("oy", odo.GetOutputY());
-        // telemetry.addData("oh", odo.GetOutputH());
+        telemetry.addData("h", odo.GetImuReading());
+        telemetry.addData("ex", odo.GetErrorX());
+        telemetry.addData("ey", odo.GetErrorY());
+        telemetry.addData("eh", odo.GetErrorH());
+        telemetry.addData("ox", odo.GetOutputX());
+        telemetry.addData("oy", odo.GetOutputY());
+        telemetry.addData("oh", odo.GetOutputH());
         telemetry.update();
     }
     
@@ -199,8 +160,8 @@ public class CommandSequence extends LinearOpMode
             {
                 // maybe add arm speed change when hover/moving
                 
-                //CommandSequence();
-                TestSequence();
+                CommandSequence();
+                // TestSequence();
                 //BasicPark();
             }
         }
