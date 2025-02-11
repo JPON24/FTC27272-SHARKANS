@@ -87,8 +87,8 @@ public class StarterBot extends LinearOpMode{
                 HookMacro();
                 continue;
             }
-            targetPowerY = gamepad1.left_stick_x;
-            targetPowerX = gamepad1.left_stick_y;
+            targetPowerX = gamepad1.left_stick_x;
+            targetPowerY = -gamepad1.left_stick_y;
             targetRotation = gamepad1.right_stick_x;
             
             leftBumperPressed = gamepad1.left_bumper;
@@ -256,6 +256,7 @@ public class StarterBot extends LinearOpMode{
             telemetry.addData("angle double",am.GetNormalizedArmAngle());
             telemetry.addData("arm encoder", am.GetCurrentPosition());
             telemetry.addData("field oriented", fieldOriented);
+            telemetry.addData("rotational reading", s1.GetImuReading());
             telemetry.update();
         }
     }
