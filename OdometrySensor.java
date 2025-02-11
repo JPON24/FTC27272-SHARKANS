@@ -33,11 +33,11 @@ public class OdometrySensor {
         //PositionY 
         //currently using pid on odometry position readings, could be causing some of the oscillation problems
         // might be better to use motor ticks with our odometry for more accuracy
-        kp = 0.109375; //0.4375  0.109375 0.075
-        ki = 0.08375; //0.08375  0.0209375
-        kdx = 0.05; //0.18875  0.0471875
-        kdy = 0.05; //0.18875  0.0471875
-        kdh = 0.25; //0.25  0.0625
+        kp = 0.375; //0.4375  0.109375 0.075
+        // ki = 0.015; //0.08375  0.0209375 0.028375
+        kdx = 0.3; //0.18875  0.0471875 0.3 
+        kdy = 0.3; //0.18875  0.0471875 0.3
+        kdh = 0.5; //0.25  0.0625
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
         if (isAuton)
@@ -94,7 +94,7 @@ public class OdometrySensor {
     {
         if (!odometry.isConnected()) {return;}
         double distanceLenience = 2; //best value 1 old 0.6
-        double angleLenience = 3; //best value 4 old 3
+        double angleLenience = 15; //best value 4 old 3
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -103,7 +103,7 @@ public class OdometrySensor {
         pos = odometry.getPosition();
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
-        errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h))) / 5;
+        errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h))) / 10;
 
         for (int i = 0; i < 3; i++)
         {
