@@ -15,8 +15,9 @@ public class ClawServo{
     private Servo claw = null;
     private Servo wrist = null;
     
-    private double clawPos = 0.1;
+    private double clawPos = 0.0;
     private double wristPos = 0;
+    double tempWristPos = 0;
     private char wristMode = 'D';
     private double currentRotation;
     
@@ -32,7 +33,7 @@ public class ClawServo{
     {
         if (clawOpen)
         {
-            clawPos = 0.3; //initially
+            clawPos = 0.2; //initially
         }
         else
         {
@@ -49,7 +50,6 @@ public class ClawServo{
     // gonna need some revision as angle range is not actually 221, a little different
     private void MoveToPosition()
     {
-        double tempWristPos = 0;
         if (wristMode == 'N') //normal
         {
             if (am.GetNormalizedArmAngle() < 0.087) // less than 20 degrees
@@ -71,15 +71,15 @@ public class ClawServo{
         }
         else if(wristMode == 'D') //down
         {
-            tempWristPos = 0.05;
+            tempWristPos = GetWristConstant('D');
         }
         else if(wristMode == 'B') //back
         {
-            tempWristPos = 0.22;
+            tempWristPos = GetWristConstant('B');
         }
         else if (wristMode == 'G')
         {
-            tempWristPos = 0.47;
+            tempWristPos = GetWristConstant('G');
         }
         else
         {
@@ -115,10 +115,25 @@ public class ClawServo{
         return wrist.getPosition();
     }
     
-    public boolean GetClawPosition()
+    public double GetWristConstant(char mode)
+    {
+        switch (mode)
+        {
+            case 'D':
+                return 0.05;
+            case 'B':
+                return 0.585;
+            case 'G':
+                return 0.33;
+            default:
+                return 0;
+        }
+    }
+    
+    public boolean GetClawClosed()
     {
         // local claw pos
-        if(clawPos == 0.3)
+        if(claw.getPosition() == 0.2)
         {
             return true;
         }
@@ -128,7 +143,7 @@ public class ClawServo{
         }
     }
     
-    public double GetClawPositionReading()
+    public double GetClawPosition()
     {
         return claw.getPosition();
     }
