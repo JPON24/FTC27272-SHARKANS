@@ -52,14 +52,12 @@ public class MoveCommand  {
         {
             command.SetElementFalse('a');
         }
-        if (tgtClaw != cs.GetClawPosition()) // if move has to happen
-        {
-            command.SetElementFalse('c');
-        }
         if (tgtWrist != cs.GetWristState()) // if move has to happen
         {
             command.SetElementFalse('w');
         }
+
+        command.SetElementFalse('c');
         lastE = tgtE;
         lastA = tgtA;
         
@@ -77,16 +75,16 @@ public class MoveCommand  {
                 switch (key)
                 {
                     case 'm':
+                        s1.OdometryControl(speed,tgtX,tgtY,rot);
                         if (s1.GetBoolsCompleted())
                         {
                             command.SetElementTrue('m');
-                            dt.FieldOrientedTranslate(0,0,0,0);
+                            // dt.FieldOrientedTranslate(0,0,0,0);
                             break;
                         }
                         else
                         {
                             command.SetElementFalse('m');
-                            s1.OdometryControl(speed,tgtX,tgtY,rot);
                             break;
                         }
                     case 'e':
@@ -114,7 +112,7 @@ public class MoveCommand  {
                             break;
                         }
                     case 'c':
-                        if (cs.GetClawPosition() == tgtClaw)
+                        if (cs.GetClawClosed() == tgtClaw)
                         {
                             command.SetElementTrue('c');
                             break;
@@ -126,7 +124,7 @@ public class MoveCommand  {
                             break;
                         }
                     case 'w':
-                        if (cs.GetWristState() == tgtWrist)
+                        if (cs.GetWristPosition() == cs.GetWristConstant(tgtWrist))
                         {
                             command.SetElementTrue('w');
                             break;
@@ -138,8 +136,8 @@ public class MoveCommand  {
                             break;
                         }
                 }
+                cs.Update();
             }
-            cs.Update();
         }
     }
 
@@ -158,7 +156,7 @@ public class MoveCommand  {
         {
             command.SetElementFalse('a');
         }
-        if (tgtClaw != cs.GetClawPosition()) // if move has to happen
+        if (tgtClaw != cs.GetClawClosed()) // if move has to happen
         {
             command.SetElementFalse('c');
         }
@@ -204,7 +202,7 @@ public class MoveCommand  {
                         break;
                     }
                 case 'c':
-                    if (cs.GetClawPosition() == tgtClaw)
+                    if (cs.GetClawClosed() == tgtClaw)
                     {
                         command.SetElementTrue('c');
                         break;
@@ -239,7 +237,7 @@ public class MoveCommand  {
     
     public double GetClawPositionReading()
     {
-        return cs.GetClawPositionReading();
+        return cs.GetClawPosition();
     }
     
     public void UpdateClawPosition()
