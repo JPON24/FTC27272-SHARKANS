@@ -30,10 +30,10 @@ public class Drivetrain{
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         
-        frontLeft.setDirection(DcMotor.Direction.FORWARD);
+        frontLeft.setDirection(DcMotor.Direction.REVERSE);
         frontRight.setDirection(DcMotor.Direction.FORWARD);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
-        backRight.setDirection(DcMotor.Direction.REVERSE);
+        backRight.setDirection(DcMotor.Direction.FORWARD);
     }
     
     private double angleWrap(double rad)
@@ -46,7 +46,7 @@ public class Drivetrain{
         {
             rad += 2 * Math.PI;
         }
-        return rad;
+        return -rad;
     }
 
     public void FieldOrientedTranslate(double targetPowerX, double targetPowerY, double rotation, double currentRotation)
