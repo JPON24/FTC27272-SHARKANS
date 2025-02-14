@@ -18,12 +18,12 @@ public class CommandSequence extends LinearOpMode
     ClawServo cs = new ClawServo();
     
     boolean moving = true;
-    double speed = 1.1;
+    double speed = 1; // 1.1
 
     double halfWidth = 7.625;
-    double halfLength = 7.5;
+    double halfLength = 7.625;
     
-    double grabDistance = 6; // old 4.5
+    double grabDistance = 5; // old 4.5
     int grabHeight = -600;
     
     // use later for scalability
@@ -51,7 +51,7 @@ public class CommandSequence extends LinearOpMode
         int tgtExtension : range 0 - 800
         int tgtArmRotation : range -15, 5, 30, 45, 50, 60, 70, 80, 90
         boolean tgtClawOpen
-        char wristPosition : range 'N', 'D', 'B'
+        char wristPosition : range 'N', 'D', 'B','G'
         */
         
         // length = 15 inches
@@ -59,29 +59,30 @@ public class CommandSequence extends LinearOpMode
         // height = 15 inches
         // 260 degree ROM
         
-        // hook
+        
+        // hook  
         Hook(-7);
         
         // push
         Grab(0);
-        moveCmd.MoveToPosition(speed,-2,9,0,0,-4900,true,'G');
+        moveCmd.MoveToPosition(1,-2,9,0,0,-4900,true,'G');
         
         // hook
         Hook(-2);
         
         // push
-        Grab(10);
-        moveCmd.MoveToPosition(speed,3,9,0,0,-4900,true,'G');
+        Grab(10);  
+        moveCmd.MoveToPosition(1,3,9,0,0,-4900,true,'G');
     
         // hook
         Hook(3);
 
-        moveCmd.MoveToPosition(speed,35,18,0,0,grabHeight,false,'G');
-        moveCmd.MoveToPosition(speed,35,grabDistance,0,0,grabHeight,false,'G'); //7
-        moveCmd.MoveToPosition(speed,35,grabDistance,0,0,grabHeight,true,'G'); //7
-        sleep(200);
-        moveCmd.MoveToPosition(speed,35,grabDistance,0,0,-1500,true,'G'); //8
-        moveCmd.MoveToPosition(speed,8,12,0,0,-4900,true,'G');
+        moveCmd.MoveToPosition(1,35,18,0,0,grabHeight,false,'G');
+        moveCmd.MoveToPosition(0.6,35,grabDistance,0,0,grabHeight,false,'G'); //7
+        moveCmd.MoveToPosition(0.6,35,grabDistance,0,0,grabHeight,true,'G'); //7
+        sleep(150);
+        moveCmd.MoveToPosition(0.6,35,grabDistance,0,0,-1500,true,'G'); //8
+        moveCmd.MoveToPosition(1,8,12,0,0,-4900,true,'G');
         // // push
         // Grab(15);
 
@@ -89,30 +90,38 @@ public class CommandSequence extends LinearOpMode
         Hook(8);
 
         // end sequence
-        moveCmd.MoveToPosition(speed,50,8,0,0,-700,false,'G');
-        Stop();
+        moveCmd.MoveToPosition(1,0,8,0,0,-700,false,'G');
+        while (true)
+        {
+            moveCmd.MoveToPosition(1,0,8,0,360,-700,false,'G');
+            moveCmd.MoveToPosition(1,0,8,0,0,-700,false,'G');
+        }
+        // moveCmd.MoveToPosition(1,50,8,0,0,-700,false,'G');
+        // Stop();
     }
 
     private void Hook(int offset) // add offset constant
     {
-        moveCmd.MoveToPosition(speed,offset,18,0,0,-4900,true,'G'); //1
-        moveCmd.MoveToPosition(speed,offset,26,0,0,-4900,true,'G'); //1
-        moveCmd.MoveToPosition(speed,offset,26,0,0,-4575,true,'B'); //1
-        moveCmd.MoveToPosition(0.8,offset,18,0,0,-4575,true,'B'); //1
-        moveCmd.MoveToPosition(0.4,offset,15,0,0,-4575,false,'B');
+        moveCmd.MoveToPosition(1,offset,18,0,0,-4900,true,'G'); //1
+        moveCmd.MoveToPosition(1,offset,26,0,0,-4900,true,'G'); //1
+        moveCmd.MoveToPosition(1,offset,26,0,0,-4575,true,'B'); //1
+        moveCmd.MoveToPosition(1,offset,18,0,0,-4575,true,'B'); //1
+        moveCmd.MoveToPosition(1,offset,16,0,0,-4575,false,'B');
+        
     }
+    
 
     private void Grab(double offset)
     {
-        moveCmd.MoveToPosition(speed,32 + offset,19,0,0,-2000,false,'B'); //4
-        moveCmd.MoveToPosition(speed,32 + offset,50,0,0,grabHeight,false,'G'); //5
-        moveCmd.MoveToPosition(speed,41 + offset,50,0,0,grabHeight,false,'G'); //6
-        moveCmd.MoveToPosition(speed,41 + offset,25,0,0,grabHeight,false,'G');
-        // moveCmd.MoveToPosition(speed,41,18,0,0,grabHeight,false,'G');
-        moveCmd.MoveToPosition(0.4,41 + offset,grabDistance,0,0,grabHeight,false,'G'); //7
-        moveCmd.MoveToPosition(0.4,41 + offset,grabDistance,0,0,grabHeight,true,'G'); //7
-        sleep(200);
-        moveCmd.MoveToPosition(0.4,41 + offset,grabDistance,0,0,-1500,true,'G'); //8
+        moveCmd.MoveToPosition(1,32 + offset,19,0,0,-2000,false,'B'); //4
+        moveCmd.MoveToPosition(1,32 + offset,50,0,0,grabHeight,false,'G'); //5
+        moveCmd.MoveToPosition(1,41 + offset,50,0,0,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(1,41 + offset,30,0,0,grabHeight,false,'G');
+        // moveCmd.MoveToPosition(1,41,18,0,0,grabHeight,false,'G');
+        moveCmd.MoveToPosition(0.7,41 + offset,grabDistance,0,0,grabHeight,false,'G'); //7
+        moveCmd.MoveToPosition(0.7,41 + offset,grabDistance,0,0,grabHeight,true,'G'); //7
+        sleep(150);
+        moveCmd.MoveToPosition(0.7,41 + offset,grabDistance,0,0,-1500,true,'G'); //8
     }
     
     private void BasicPark()
@@ -126,9 +135,15 @@ public class CommandSequence extends LinearOpMode
 
     private void TestSequence()
     {
-        // moveCmd.MoveToPosition(speed,0,6,0,0,0,true,'N');
-        // moveCmd.MoveToPosition(speed,0,12,0,0,0,false,'N');
-        odo.OdometryControl(speed,0,12,0);
+        // moveCmd.MoveToPosition(speed,0,12,0,0,0,true,'N');
+        // moveCmd.MoveToPosition(speed,24,4,0,0,0,false,'N');
+        
+        // moveCmd.MoveToPosition(speed,0,0,0,0,0,true,'G');
+        // moveCmd.MoveToPosition(speed,0,12,0,0,0,true,'G');
+        // moveCmd.MoveToPosition(speed,12,12,0,0,0,true,'G');
+        // moveCmd.MoveToPosition(speed,12,0,0,0,0,true,'G');
+        
+        // odo.OdometryControl(speed,0,0,90);
         telemetry.addData("x", odo.GetPositionX());
         telemetry.addData("y", odo.GetPositionY());
         telemetry.addData("h", odo.GetImuReading());
@@ -163,7 +178,7 @@ public class CommandSequence extends LinearOpMode
                 
                 CommandSequence();
                 // TestSequence();
-                //BasicPark();
+                // BasicPark();
             }
         }
     }
