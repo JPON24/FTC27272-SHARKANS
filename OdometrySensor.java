@@ -21,23 +21,24 @@ public class OdometrySensor {
 
     boolean[] completedBools = new boolean[3];
     
+    
     double deltaTime, last_time;
     double integralX, integralY, integralH = 0;
-    double kp, ki, kdx, kdy, kdh;
+    double kpx, kpy, ki, kdx, kdy, kdh;
     double[] output = new double[3];
     double[] errors = new double[3];
     double[] previous = new double[3];
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
-        //PositionY 
         //currently using pid on odometry position readings, could be causing some of the oscillation problems
         // might be better to use motor ticks with our odometry for more accuracy
-        kp = 0.1; //0.4375  0.109375 0.075 0.2
-        // ki = 0.015; //0.08375  0.0209375 0.028375
-        kdx = 0.6; //0.18875  0.0471875 0.3 0.6 
-        kdy = 0.6; //0.18875  0.0471875 0.3 0.6
-        kdh = 0.5; //0.25  0.0625
+        kpx = 0.12; //0.1 0.04
+        kpy = 0.08; // 0.05
+        ki = 0.2; //0.8 0.2
+        kdx = 0.1; //0.01 //0.0083333333333333333 0.01
+        kdy = 0.15; //0.01 //0.0083333333333333333 0.01
+        kdh = 0.1; //0.01 //0.0083333333333333333 0.01
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
         if (isAuton)
@@ -50,12 +51,12 @@ public class OdometrySensor {
         odometry.setLinearScalar(40/41);
         odometry.setAngularScalar(1);
         odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0D));// disables accelerometer
-        odometry.setOffset(new SparkFunOTOS.Pose2D(0,3.5,0));
+        odometry.setOffset(new SparkFunOTOS.Pose2D(-0.375,3.625,0));
         dt.init(hwMap);
     }
     
     // maybe derivative not needed as velocity becomes near linear
-    double pid(double error, int index) 
+    public double pid(double error, int index) 
     {
         double output = 0;
         
@@ -64,7 +65,7 @@ public class OdometrySensor {
             previous[0] = error;
             integralX += error * dxTime.seconds();
             double derivative = (error - previous[0]) / dxTime.seconds();
-            output = kp * error + ki * integralX + kdx * derivative;
+            output = kpx * error + ki * integralX + kdx * derivative;
             dxTime.reset();
             integralX = 0;
         }
@@ -73,7 +74,7 @@ public class OdometrySensor {
             previous[1] = error;
             integralY += error * dyTime.seconds();
             double derivative = (error - previous[1]) / dyTime.seconds();
-            output = kp * error + ki * integralY + kdy * derivative;
+            output = kpy * error + ki * integralY + kdy * derivative;
             dyTime.reset();
             integralY = 0;
         }
@@ -82,19 +83,19 @@ public class OdometrySensor {
             previous[2] = error;
             integralH += error * dhTime.seconds();
             double derivative = (error - previous[2]) / dhTime.seconds();
-            output = kp * error + ki * integralH + kdh * derivative;
+            output = kpx * error + ki * integralH + kdh * derivative;
             dhTime.reset();
             integralH = 0;
         }
-        output = Range.clip(output, -1, 1);
+        output = Range.clip(output, -1, 1); // old coef 2*
         return output;
     }
     
     public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot)
     {
         if (!odometry.isConnected()) {return;}
-        double distanceLenience = 2.5; //best value 2.5
-        double angleLenience = 30; //best value 4 old 3
+        double distanceLenience = 1.75; //best value 1.75
+        double angleLenience = 12; //best value 4 old 3
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -116,6 +117,7 @@ public class OdometrySensor {
         {
             completedBools[0] = true;
             // output[0] = 0;
+            // integralX = 0;
         }
         else
         {
@@ -127,6 +129,7 @@ public class OdometrySensor {
         {
             completedBools[1] = true;
             // output[1] = 0;
+            // integralY = 0;
         }
         else
         {
@@ -138,25 +141,18 @@ public class OdometrySensor {
         {
             completedBools[2] = true;
             // output[2] = 0;
+            // integralH = 0;
         }
         else
         {
             // output[2] /= Math.abs(output[2]);
             completedBools[2] = false;
         }
-        // for (int i = 0; i < 3; i++)
-        // {
-        //     if (Math.abs(output[i]) < 0.15)
-        //     {
-        //         output[i] = 0;
-        //     }
-        // }
-        // output[0] = 0;
-        // output[2] = 0;
+        
         dt.FieldOrientedTranslate(speed * output[0], speed * output[1], 0.7 * speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
     }
     
-    private double angleWrap(double rad)
+    public double angleWrap(double rad)
     {
         while (rad > Math.PI)
         {
