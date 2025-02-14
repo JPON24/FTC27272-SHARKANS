@@ -33,7 +33,7 @@ public class ClawServo{
     {
         if (clawOpen)
         {
-            clawPos = 0.2; //initially
+            clawPos = 0.22; //initially
         }
         else
         {
@@ -122,9 +122,9 @@ public class ClawServo{
             case 'D':
                 return 0.05;
             case 'B':
-                return 0.585;
+                return 0.65; // old 0.585
             case 'G':
-                return 0.33;
+                return 0.39; // old 0.33  
             default:
                 return 0;
         }
@@ -133,7 +133,7 @@ public class ClawServo{
     public boolean GetClawClosed()
     {
         // local claw pos
-        if(claw.getPosition() == 0.2)
+        if(claw.getPosition() == 0.22)
         {
             return true;
         }
