@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.ArmLiftMotor;
 import org.firstinspires.ftc.teamcode.ClawServo;
 import org.firstinspires.ftc.teamcode.Drivetrain;
 import org.firstinspires.ftc.teamcode.Extension_1;
-import org.firstinspires.ftc.teamcode.OdometrySensor;
+import org.firstinspires.fatc.teamcode.OdometrySensor;
 import org.firstinspires.ftc.teamcode.MoveCommand;
 
 @TeleOp
@@ -34,6 +34,8 @@ public class StarterBot extends LinearOpMode{
     double currentArmSpeed = 0.9;
         
     boolean hookMacroActivated = false;
+    boolean zeroSnapping = false;
+    boolean canShiftZeroSnapping = false;
 
     @Override
     public void runOpMode()
@@ -47,6 +49,7 @@ public class StarterBot extends LinearOpMode{
         boolean dpadUp = false;
         boolean aButtonPressed1 = false;
         boolean xButtonPressed1 = false;
+        boolean yButtonPressed1 = false;
         
         //arm
         boolean xButtonPressed = false;
@@ -96,6 +99,7 @@ public class StarterBot extends LinearOpMode{
             dpadUp = gamepad1.dpad_up;
             aButtonPressed1 = gamepad1.a;
             xButtonPressed1 = gamepad1.x;
+            yButtonPressed1 = gamepad1.y;
             
             //arm
             xButtonPressed = gamepad2.x;
@@ -199,7 +203,7 @@ public class StarterBot extends LinearOpMode{
             }
             else if (dpadLeft2)//fix extension pos
             {
-                e1.ResetEncoders();
+                am.ResetEncodersUp();
             }
 
             if (aButtonPressed1)
@@ -210,9 +214,28 @@ public class StarterBot extends LinearOpMode{
             {
                 fieldOriented = false;
             }
+            
+            if (yButtonPressed1 && canShiftZeroSnapping)
+            {
+                canShiftZeroSnapping = false;
+                zeroSnapping = !zeroSnapping;
+            }
+            else if (!yButtonPressed && !canShiftZeroSnapping)
+            {
+                canShiftZeroSnapping = true;
+            }
+            
             if (fieldOriented)
             {
-                dt.FieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation, s1.GetImuReading());
+                if (zeroSnapping)
+                {
+                    double pidInput = Math.toDegrees(s1.angleWrap(Math.toRadians((0 - s1.GetImuReading())/5)));
+                    dt.FieldOrientedTranslate(targetPowerX,targetPowerY,s1.pid(pidInput,2), s1.GetImuReading());
+                }
+                else
+                {
+                    dt.FieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation, s1.GetImuReading());
+                }
             }
             else
             {
@@ -223,33 +246,33 @@ public class StarterBot extends LinearOpMode{
             //set arm height for grabbing samples off wall
             if (bButtonPressed)
             {
-                am.MoveToPosition(am.ConvertAngleToEncoder(211));
+                am.MoveToPosition(-600);
                 cs.setWristMode('C');
-                cs.MoveToPosition(0.47);
+                cs.MoveToPosition(0.39);
             }
             else if (rightBumperPressed2)
             {
-                am.MoveToPosition(-1650);
+                am.MoveToPosition(-4575);
                 cs.setWristMode('C');
-                cs.MoveToPosition(0.17);
+                cs.MoveToPosition(0.65);
             }
             else
             {
                 am.rotate(armLiftInput, 'T');
             }
             
-            if (rightTrigger2 > 0.5)
-            {
-                e1.Move(rightTrigger2,60, 'T');
-            }
-            else if (leftTrigger2 > 0.5)
-            {
-                e1.Move(-leftTrigger2,0,'T');
-            }
-            else
-            {
-                e1.Move(0,e1.GetCurrentPosition(),'T');
-            }
+            // if (rightTrigger2 > 0.5)
+            // {
+            //     e1.Move(rightTrigger2,60, 'T');
+            // }
+            // else if (leftTrigger2 > 0.5)
+            // {
+            //     e1.Move(-leftTrigger2,0,'T');
+            // }
+            // else
+            // {
+            //     e1.Move(0,e1.GetCurrentPosition(),'T');
+            // }
             
             telemetry.addData("wrist setting",cs.GetWristState());
             telemetry.addData("wrist position", cs.GetWristPosition());
