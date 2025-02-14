@@ -27,9 +27,9 @@ public class Extension_1 {
     {
         if (mode == 'T')
         {
-            if (speed > 0.1 && extension_1.getCurrentPosition() < 700)
+            if (speed > 0.1 && extension_1.getCurrentPosition() < 60)
             {
-                MoveToPosition(700, speed);
+                MoveToPosition(60, speed);
             }
             else if (speed < -0.1 && extension_1.getCurrentPosition() > 0)
             {
