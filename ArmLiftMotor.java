@@ -9,7 +9,7 @@ public class ArmLiftMotor {
     
     double speed = 0.9;
 
-    int topLimit = -6050; // old value 1780
+    int topLimit = -6500; // old value 1780
     int bottomLimit = 50;
     
     public void init(HardwareMap hwMap)
@@ -32,7 +32,7 @@ public class ArmLiftMotor {
     
     public void ResetEncoders()
     {
-        topLimit = -6050;
+        topLimit = -6500;
         bottomLimit = 50;
         armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -45,7 +45,7 @@ public class ArmLiftMotor {
     {
         ResetEncoders();
         topLimit = -50;
-        bottomLimit = 6050;
+        bottomLimit = 6500;
     }
     
     public void SetSpeed(double change)
@@ -78,14 +78,14 @@ public class ArmLiftMotor {
             }
             else
             {
-                MoveToPosition(armLiftL.getCurrentPosition() - 2);
+                MoveToPosition(armLiftL.getCurrentPosition());
             }
         }
         else if (mode == 'A')
         {
-            int encoderPosition = ConvertAngleToEncoder((int)targetPower);
-            speed = 0.9;
-            MoveToPosition(encoderPosition);
+            // int encoderPosition = ConvertAngleToEncoder((int)targetPower);
+            speed = 1;
+            MoveToPosition((int)targetPower);
         }
     }
     
@@ -112,7 +112,7 @@ public class ArmLiftMotor {
     {
         // increased due to high range
         int lenience = 10;
-        if (Math.abs(ConvertAngleToEncoder(tgt) - armLiftL.getCurrentPosition()) < lenience)
+        if (Math.abs(tgt - armLiftL.getCurrentPosition()) < lenience)
         {
             return true;
         }
