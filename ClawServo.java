@@ -13,20 +13,25 @@ public class ClawServo{
     ElapsedTime runtime = new ElapsedTime();
     
     private Servo claw = null;
-    private Servo wrist = null;
-    
+
+    private CRServo wristR = null;
+    private CRServo wristL = null;
+//    private Servo wrist = null;
+
     private double clawPos = 0.0;
     private double wristPos = 0;
     double tempWristPos = 0;
     private char wristMode = 'D';
     private double currentRotation;
     
-    public void init(HardwareMap hwMap)
+    public void init(HardwareMap hwMap, boolean auton)
     {
-        claw = hwMap.get(Servo.class, "claw");
-        wrist = hwMap.get(Servo.class, "wrist");
-        wrist.setDirection(Servo.Direction.FORWARD);
-        am.init(hwMap);
+//        claw = hwMap.get(Servo.class, "claw");
+//        wrist = hwMap.get(Servo.class, "wrist");
+//        wrist.setDirection(Servo.Direction.FORWARD);
+        wristR = hwMap.get(CRServo.class, "wristR");
+        wristL = hwMap.get(CRServo.class, "wristL");
+        am.init(hwMap, auton);
     }
     
     public void clawMove(boolean clawOpen)
@@ -88,6 +93,27 @@ public class ClawServo{
         
         wristPos = tempWristPos;
     }
+
+    private void MoveToPositionDiff()
+    {
+        double x = 0;
+        double y = 0;
+        if (wristMode == 'G')
+        {
+            x = 1;
+            y = 0.65;
+        }
+        else if (wristMode == 'B')
+        {
+            x = 0;
+            y = 0.39;
+        }
+        else
+        {
+            return;
+        }
+         MoveDiff(x,y);
+    }
     
     // used for shifting in custom mode
     public void MoveToPosition(double position)
@@ -96,13 +122,20 @@ public class ClawServo{
     }
     
     public void Update() {
-        MoveToPosition();
+//        MoveToPosition();
+//        MoveToPositionDiff();
         if (runtime.seconds() > 0.125)
         {
-            wrist.setPosition(wristPos);
-            claw.setPosition(clawPos);
-            runtime.reset();
+//            wrist.setPosition(wristPos);
+//            claw.setPosition(clawPos);
         }
+//        wristL.setPower((stickY - stickX)/2);
+//        wristR.setPower((stickY + stickX)/2);
+    }
+    
+    public void ResetRuntime()
+    {
+        runtime.reset();
     }
     
     public char GetWristState()
@@ -112,9 +145,23 @@ public class ClawServo{
     
     public double GetWristPosition()
     {
-        return wrist.getPosition();
+//        return wrist.getPosition();
+        return 0;
     }
-    
+
+    public void MoveDiff(double x, double y)
+    {
+        double outputL = y-x;
+        double outputR = y+x;
+        if (Math.abs(x) + Math.abs(y) > 1)
+        {
+            outputL /= 2;
+            outputR /= 2;
+        }
+        wristL.setPower(outputL);
+        wristR.setPower(outputR);
+    }
+
     public double GetWristConstant(char mode)
     {
         switch (mode)
