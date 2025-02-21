@@ -20,16 +20,14 @@ public class MoveCommand  {
     OdometrySensor s1 = new OdometrySensor();
     CommandSystem command = new CommandSystem();
 
-    double speed = 0.9;
-
     int lastE = 0;
     int lastA = 0;
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
         dt.init(hwMap);
-        cs.init(hwMap);
-        am.init(hwMap);
+        cs.init(hwMap, true);
+        am.init(hwMap, true);
         e1.init(hwMap);
         s1.init(hwMap, isAuton);
     }
@@ -57,7 +55,7 @@ public class MoveCommand  {
             command.SetElementFalse('w');
         }
 
-        command.SetElementFalse('c');
+//        command.SetElementFalse('c');
         lastE = tgtE;
         lastA = tgtA;
         
@@ -111,30 +109,21 @@ public class MoveCommand  {
                             am.rotate(tgtA,'A');
                             break;
                         }
-                    case 'c':
-                        if (cs.GetClawClosed() == tgtClaw)
-                        {
-                            command.SetElementTrue('c');
-                            break;
-                        }
-                        else
-                        {
-                            command.SetElementFalse('c');
-                            cs.clawMove(tgtClaw);
-                            break;
-                        }
+//                    case 'c':
+//                        if (cs.GetClawClosed() == tgtClaw)
+//                        {
+//                            command.SetElementTrue('c');
+//                            break;
+//                        }
+//                        else
+//                        {
+//                            command.SetElementFalse('c');
+//                            cs.clawMove(tgtClaw);
+//                            break;
+//                        }
                     case 'w':
-                        if (cs.GetWristPosition() == cs.GetWristConstant(tgtWrist))
-                        {
-                            command.SetElementTrue('w');
-                            break;
-                        }
-                        else
-                        {
-                            command.SetElementFalse('w');
-                            cs.setWristMode(tgtWrist);
-                            break;
-                        }
+                        command.SetElementTrue('w');
+                        cs.setWristMode(tgtWrist);
                 }
                 cs.Update();
             }
