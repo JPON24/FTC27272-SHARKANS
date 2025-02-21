@@ -24,7 +24,7 @@ public class OdometrySensor {
     
     double deltaTime, last_time;
     double integralX, integralY, integralH = 0;
-    double kpx, kpy, ki, kdx, kdy, kdh;
+    double kpx, kpy, kph, ki, kdx, kdy, kdh;
     double pY, iY, dY;
     double xAverage, yAverage, hAverage = 0;
     double[] output = new double[3];
@@ -41,12 +41,13 @@ public class OdometrySensor {
         // kdx = 0.1; //0.01 //0.0083333333333333333 0.01
         // kdy = 0.15; //0.01 //0.0083333333333333333 0.01
         // kdh = -0.1; //0.01 //0.0083333333333333333 0.01
-        kpx = 0.2; //0.2
+        kpx = 0.28; //0.2
         kpy = 0.2; //0.2
+        kph = 0.15;
         ki = 0.0; // 0.05
-        kdx = 0.16; // 0.045 0.1
-        kdy = 0.16; // 0.045 0.1
-        kdh = 0.16; // 0.045 0.1
+        kdx = 0.2; // 0.045 0.175
+        kdy = 0.175; // 0.045 0.175
+        kdh = 0.125; // 0.045 0.175
         
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
@@ -97,9 +98,9 @@ public class OdometrySensor {
             double derivative = (error - previous[1]) / dyTime.seconds();
             derivative = LowPass(yAverage, derivative);
 
-            pY = kpy * error;
-            iY = ki * integralY;
-            dY = kdy * derivative;
+//            pY = kpy * error;
+//            iY = ki * integralY;
+//            dY = kdy * derivative;
             output = kpy * error + ki * integralY + kdy * derivative;
             dyTime.reset();
 
@@ -116,7 +117,11 @@ public class OdometrySensor {
             double derivative = (error - previous[2]) / dhTime.seconds();
             derivative = LowPass(hAverage, derivative);
 
-            output = kpx * error + ki * integralH + kdh * derivative;
+            pY = kph * error;
+            iY = ki * integralH;
+            dY = kdh * derivative;
+
+            output = kph * error + ki * integralH + kdh * derivative;
             dhTime.reset();
 
             previous[2] = error;
@@ -134,8 +139,8 @@ public class OdometrySensor {
     public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot)
     {
         if (!odometry.isConnected()) {return;}
-        double distanceLenience = 0.5; //best value 1.75
-        double angleLenience = 12; //best value 4 old 3
+        double distanceLenience = 0.75; //best value 1.75
+        double angleLenience = 30; //best value 4 old 3
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -180,7 +185,7 @@ public class OdometrySensor {
             completedBools[2] = false;
         }
         
-        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], 0.7 * speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
+        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
     }
     
     public double angleWrap(double rad)
