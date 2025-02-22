@@ -41,19 +41,12 @@ public class MoveCommand  {
         // movement, will be driven by s1.GetBoolsCompleted()
         command.SetElementFalse('m'); 
 
-        // dont use 0 for minimum position of arm and extension because of this, use 1 instead
-        if (tgtE != lastE) // if extension must occur
-        {
-            command.SetElementFalse('e');
-        }
         if (tgtA != lastA) // if arm movement must occur
         {
             command.SetElementFalse('a');
         }
-        if (tgtWrist != cs.GetWristState()) // if move has to happen
-        {
-            command.SetElementFalse('w');
-        }
+
+        cs.SetWristMode(tgtWrist);
 
 //        command.SetElementFalse('c');
         lastE = tgtE;
@@ -85,19 +78,8 @@ public class MoveCommand  {
                             command.SetElementFalse('m');
                             break;
                         }
-                    case 'e':
-                        if (e1.GetCompleted(tgtE))
-                        {
-                            command.SetElementTrue('e');
-                            break;
-                        }
-                        else
-                        {
-                            command.SetElementFalse('e');
-                            e1.Move(1,tgtE,'A');
-                            break;
-                        }
                     case 'a':
+                        am.rotate(tgtA,'A');
                         if (am.GetCompleted(tgtA))
                         {
                             command.SetElementTrue('a');
@@ -106,7 +88,6 @@ public class MoveCommand  {
                         else
                         {
                             command.SetElementFalse('a');
-                            am.rotate(tgtA,'A');
                             break;
                         }
 //                    case 'c':
@@ -121,9 +102,6 @@ public class MoveCommand  {
 //                            cs.clawMove(tgtClaw);
 //                            break;
 //                        }
-                    case 'w':
-                        command.SetElementTrue('w');
-                        cs.setWristMode(tgtWrist);
                 }
                 cs.Update();
             }
@@ -211,7 +189,7 @@ public class MoveCommand  {
                     else
                     {
                         command.SetElementFalse('w');
-                        cs.setWristMode(tgtWrist);
+                        cs.SetWristMode(tgtWrist);
                         break;
                     }
             }
