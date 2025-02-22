@@ -1,16 +1,21 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.ArmLiftMotor;
 import org.firstinspires.ftc.teamcode.ClawServo;
 import org.firstinspires.ftc.teamcode.Drivetrain;
 import org.firstinspires.ftc.teamcode.Extension_1;
-import org.firstinspires.fatc.teamcode.OdometrySensor;
+import org.firstinspires.ftc.teamcode.OdometrySensor;
 import org.firstinspires.ftc.teamcode.MoveCommand;
 
+import java.nio.channels.FileChannel;
+
+@Config
 @TeleOp
 public class StarterBot extends LinearOpMode{
     Drivetrain dt = new Drivetrain();
@@ -28,12 +33,10 @@ public class StarterBot extends LinearOpMode{
     
     boolean canShiftWristType = true;
     boolean normalWristType = false;
-    boolean lastDpad2RightState = false;
     
     boolean canShiftArm = true;
-    double currentArmSpeed = 0.9;
-        
-    boolean hookMacroActivated = false;
+    double currentArmSpeed = 1;
+
     boolean zeroSnapping = false;
     boolean canShiftZeroSnapping = false;
 
@@ -69,142 +72,153 @@ public class StarterBot extends LinearOpMode{
         
         double leftTrigger2 = 0;
         double rightTrigger2 = 0;
+        
+        boolean canResetClawTimer = true;
+
+        FtcDashboard dashboard = FtcDashboard.getInstance();
 
         dt.init(hardwareMap);
-        cs.init(hardwareMap);
-        e1.init(hardwareMap);
-        am.init(hardwareMap);
+        cs.init(hardwareMap, false);
+//        e1.init(hardwareMap);
+//        am.init(hardwareMap, false);
         s1.init(hardwareMap, true);
-        moveCmd.init(hardwareMap, false);
+//        moveCmd.init(hardwareMap, false);
         waitForStart();
-        cs.clawMove(true);
-        cs.Update();
+//        cs.clawMove(true);
+//        cs.Update();
         while(opModeIsActive())
         {
             // triggers should be extension
             // joystick should be wrist movement
             // swap between normal and custom in teleop for wrist
-            
-            if (hookMacroActivated)
-            {
-                HookMacro();
-                continue;
-            }
+
             targetPowerX = gamepad1.left_stick_x;
             targetPowerY = -gamepad1.left_stick_y;
             targetRotation = gamepad1.right_stick_x;
-            
+
             leftBumperPressed = gamepad1.left_bumper;
             rightBumperPressed = gamepad1.right_bumper;
             dpadUp = gamepad1.dpad_up;
             aButtonPressed1 = gamepad1.a;
             xButtonPressed1 = gamepad1.x;
             yButtonPressed1 = gamepad1.y;
-            
+
             //arm
             xButtonPressed = gamepad2.x;
             aButtonPressed = gamepad2.a;
             yButtonPressed = gamepad2.y;
             bButtonPressed = gamepad2.b;
             armLiftInput = -gamepad2.left_stick_y;
-            wristInput = -gamepad2.right_stick_y;
-            
+//            wristInput = -gamepad2.right_stick_y;
+            double wristInputX = gamepad2.right_stick_x;
+            double wristInputY = -gamepad2.right_stick_y;
+
             dpadUp2 = gamepad2.dpad_up;
             dpadDown2 = gamepad2.dpad_down;
             dpadLeft2 = gamepad2.dpad_left;
             dpadRight2 = gamepad2.dpad_right;
             leftBumperPressed2 = gamepad2.left_bumper;
             rightBumperPressed2 = gamepad2.right_bumper;
-            
+
             leftTrigger2 = gamepad2.left_trigger;
             rightTrigger2 = gamepad2.right_trigger;
 
-            if (dpadRight2 && dpadRight2 != lastDpad2RightState)
-            {
-                hookMacroActivated = true;
-            }
-            
-            lastDpad2RightState = dpadRight2;
-            
+            cs.MoveDiff(wristInputX,wristInputY);
             //claw swapper
-            if (xButtonPressed)
-            {
-                cs.clawMove(true);
-            }
-            else if (aButtonPressed)
-            {
-                cs.clawMove(false);
-            }
-            // handles different wrist types based off button presses
-            SwapWristType('C',yButtonPressed);
-            
-            if (cs.GetWristState() == 'C')
-            {
-                runtime.reset();
-                if (wristInput < -0.1)
-                {
-                    cs.MoveToPosition(cs.GetWristPosition() + 1.75 * runtime.milliseconds());
-                }
-                else if (wristInput > 0.1)
-                {
-                    cs.MoveToPosition(cs.GetWristPosition() - 1.75 * runtime.milliseconds());
-                }
-            }
-
-            cs.Update();
-            
-            // drive
-            if (leftBumperPressed)
-            {
-                if (canShift && currentSpeed - speedInterval > 0)
-                {
-                    MoveSpeedShift(-speedInterval);
-                }
-            }
-            else if (rightBumperPressed)
-            {
-                if (canShift && currentSpeed + speedInterval <= 1)
-                {
-                    MoveSpeedShift(speedInterval);
-                }  
-            }
-            else
-            {
-                canShift = true;
-            }
-            
-            if (dpadUp)
-            {
-                s1.ResetImuReadings();
-            }
-            
-            //arm
-            if (leftBumperPressed2)
-            {
-                if (canShiftArm && currentArmSpeed == 0.9)
-                {
-                    ArmSpeedShift(0.2);
-                    canShiftArm = false;
-                }
-                else if (canShiftArm && currentArmSpeed == 0.2)
-                {
-                    ArmSpeedShift(0.9);
-                    canShiftArm = false;
-                }
-            }
-            else
-            {
-                canShiftArm = true;
-            }
-            
-            if(dpadUp2)//reset arm pos
-            {
-                am.ResetEncoders();
-            }
-            else if (dpadLeft2)//fix extension pos
-            {
-                am.ResetEncodersUp();
-            }
+//            if (rightTrigger2 > 0.7)
+//            {
+//                cs.clawMove(true);
+//                if (canResetClawTimer)
+//                {
+//                    canResetClawTimer = false;
+////                    cs.Update();
+//                    cs.ResetRuntime();
+//                }
+//            }
+//            else if (aButtonPressed)
+//            {
+//                cs.clawMove(false);
+//                if (canResetClawTimer)
+//                {
+//                    canResetClawTimer = false;
+////                    cs.Update();
+//                    cs.ResetRuntime();
+//                }
+//            }
+//            else
+//            {
+//                canResetClawTimer = true;
+//            }
+//            // handles different wrist types based off button presses
+//            SwapWristType('C',yButtonPressed);
+//
+//            if (cs.GetWristState() == 'C')
+//            {
+//                runtime.reset();
+//                if (wristInput < -0.1)
+//                {
+//                    cs.MoveToPosition(cs.GetWristPosition() + 0.5 * runtime.milliseconds());
+//                }
+//                else if (wristInput > 0.1)
+//                {
+//                    cs.MoveToPosition(cs.GetWristPosition() - 0.5 * runtime.milliseconds());
+//                }
+//            }
+//
+////            cs.Update();
+//
+//            // drive
+//            if (leftBumperPressed)
+//            {
+//                if (canShift && currentSpeed - speedInterval > 0)
+//                {
+//                    MoveSpeedShift(-speedInterval);
+//                }
+//            }
+//            else if (rightBumperPressed)
+//            {
+//                if (canShift && currentSpeed + speedInterval <= 1)
+//                {
+//                    MoveSpeedShift(speedInterval);
+//                }
+//            }
+//            else
+//            {
+//                canShift = true;
+//            }
+//
+//            if (dpadUp)
+//            {
+//                s1.ResetImuReadings();
+//            }
+//
+//            //arm
+//            if (leftBumperPressed2)
+//            {
+//                if (canShiftArm && currentArmSpeed == 1)
+//                {
+//                    ArmSpeedShift(0.3);
+//                    canShiftArm = false;
+//                }
+//                else if (canShiftArm && currentArmSpeed == 0.3)
+//                {
+//                    ArmSpeedShift(1);
+//                    canShiftArm = false;
+//                }
+//            }
+//            else
+//            {
+//                canShiftArm = true;
+//            }
+//
+//            if(dpadUp2)//reset arm pos
+//            {
+//                am.ResetEncoders();
+//            }
+//            else if (dpadLeft2)//fix extension pos
+//            {
+//                am.ResetEncodersUp();
+//            }
 
             if (aButtonPressed1)
             {
@@ -214,8 +228,10 @@ public class StarterBot extends LinearOpMode{
             {
                 fieldOriented = false;
             }
-            
-            if (yButtonPressed1 && canShiftZeroSnapping)
+
+
+
+            /*if (yButtonPressed1 && canShiftZeroSnapping)
             {
                 canShiftZeroSnapping = false;
                 zeroSnapping = !zeroSnapping;
@@ -224,7 +240,7 @@ public class StarterBot extends LinearOpMode{
             {
                 canShiftZeroSnapping = true;
             }
-            
+
             if (fieldOriented)
             {
                 if (zeroSnapping)
@@ -241,26 +257,32 @@ public class StarterBot extends LinearOpMode{
             {
                 dt.Translate(targetPowerX,targetPowerY,targetRotation);
             }
-            
-            
+
+
             //set arm height for grabbing samples off wall
             if (bButtonPressed)
             {
-                am.MoveToPosition(-600);
+                am.MoveToPosition(-750);
                 cs.setWristMode('C');
                 cs.MoveToPosition(0.39);
             }
             else if (rightBumperPressed2)
             {
-                am.MoveToPosition(-4575);
+                am.MoveToPosition(-4550);
                 cs.setWristMode('C');
                 cs.MoveToPosition(0.65);
+            }
+            else if (xButtonPressed)
+            {
+                am.MoveToPosition(-6400);
+                cs.setWristMode('C');
+                cs.MoveToPosition(0.2);
             }
             else
             {
                 am.rotate(armLiftInput, 'T');
-            }
-            
+            }*/
+
             // if (rightTrigger2 > 0.5)
             // {
             //     e1.Move(rightTrigger2,60, 'T');
@@ -273,13 +295,16 @@ public class StarterBot extends LinearOpMode{
             // {
             //     e1.Move(0,e1.GetCurrentPosition(),'T');
             // }
-            
-            telemetry.addData("wrist setting",cs.GetWristState());
-            telemetry.addData("wrist position", cs.GetWristPosition());
-            telemetry.addData("angle double",am.GetNormalizedArmAngle());
-            telemetry.addData("arm encoder", am.GetCurrentPosition());
-            telemetry.addData("field oriented", fieldOriented);
-            telemetry.addData("rotational reading", s1.GetImuReading());
+
+//            telemetry.addData("wrist setting",cs.GetWristState());
+//            telemetry.addData("wrist position", cs.GetWristPosition());
+//            telemetry.addData("angle double",am.GetNormalizedArmAngle());
+//            telemetry.addData("arm encoder", am.GetCurrentPosition());
+//            telemetry.addData("field oriented", fieldOriented);
+            dt.FieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation, s1.GetImuReading());
+            telemetry.addData("x position", s1.GetPositionX());
+            telemetry.addData("y position", s1.GetPositionY());
+            telemetry.addData("h position", s1.GetImuReading());
             telemetry.update();
         }
     }
@@ -305,52 +330,18 @@ public class StarterBot extends LinearOpMode{
             canShiftWristType = false;
             if (normalWristType)
             {
-                cs.setWristMode(additionalMode);
+                cs.SetWristMode(additionalMode);
                 normalWristType = false;
             }
             else
             {
-                cs.setWristMode('N');
+                cs.SetWristMode('N');
                 normalWristType = true;
             }
         }
         else if (!buttonPressed && !canShiftWristType)
         {
             canShiftWristType = true;  
-        }
-    }
-
-    private void HookMacro()
-    {
-        CancellableCommand(0,165,true,'D'); //1
-        CancellableCommand(0,150,true,'B'); //1
-        CancellableCommand(0,165,true,'B'); //1
-        hookMacroActivated = false;
-    }
-
-    private void CancellableCommand(int tgtE, int tgtA, boolean tgtClaw, char tgtWrist)
-    {
-        if (!hookMacroActivated)
-        {
-            return;
-        }
-        moveCmd.MoveToPositionCancellable(tgtE,tgtA,tgtClaw,tgtWrist);
-        while (!moveCmd.GetCommandState())
-        {
-            // if command deactivated then break out of loop
-            if (!hookMacroActivated)
-            {
-                break;
-            }
-
-            moveCmd.MoveToPositionCancellable(tgtE,tgtA,tgtClaw,tgtWrist);
-            // deactivate command if dpad right pressed
-            if (gamepad2.dpad_right && lastDpad2RightState != gamepad2.dpad_right)
-            {
-                hookMacroActivated = false;
-            }
-            
-            lastDpad2RightState = gamepad2.dpad_right;
         }
     }
 }
