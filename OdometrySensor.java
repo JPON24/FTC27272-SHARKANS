@@ -33,21 +33,13 @@ public class OdometrySensor {
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
-        //currently using pid on odometry position readings, could be causing some of the oscillation problems
-        // might be better to use motor ticks with our odometry for more accuracy
-        // kpx = 0.12; //0.1 0.04
-        // kpy = 0.08; // 0.05
-        // ki = 0.2; //0.8 0.2
-        // kdx = 0.1; //0.01 //0.0083333333333333333 0.01
-        // kdy = 0.15; //0.01 //0.0083333333333333333 0.01
-        // kdh = -0.1; //0.01 //0.0083333333333333333 0.01
         kpx = 0.28; //0.2
-        kpy = 0.2; //0.2
-        kph = 0.15;
+        kpy = 0.23; //0.2
+        kph = 0.21;
         ki = 0.0; // 0.05
         kdx = 0.2; // 0.045 0.175
         kdy = 0.175; // 0.045 0.175
-        kdh = 0.125; // 0.045 0.175
+        kdh = 0.15; // 0.045 0.175
         
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
@@ -157,33 +149,12 @@ public class OdometrySensor {
         }
         
         double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
-        
-        if (Math.abs(errors[0]) < distanceLenience)
-        {
-            completedBools[0] = true;
-        }
-        else
-        {
-            completedBools[0] = false;
-        }
 
-        if (Math.abs(errors[1]) < distanceLenience)
-        {
-            completedBools[1] = true;
-        }
-        else
-        {
-            completedBools[1] = false;
-        }
-        
-        if (Math.abs(errors[2]) < angleLenience)
-        {
-            completedBools[2] = true;
-        }
-        else
-        {
-            completedBools[2] = false;
-        }
+        completedBools[0] = Math.abs(errors[0]) < distanceLenience;
+
+        completedBools[1] = Math.abs(errors[1]) < distanceLenience;
+
+        completedBools[2] = Math.abs(errors[2]) < angleLenience;
         
         dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
     }
