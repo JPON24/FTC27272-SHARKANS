@@ -7,22 +7,28 @@ public class ArmLiftMotor {
     public DcMotor armLiftL = null;
     public DcMotor armLiftR = null;
     
-    double speed = 0.9;
+    double speed = 1;
 
     int topLimit = -6500; // old value 1780
     int bottomLimit = 50;
     
-    public void init(HardwareMap hwMap)
+    public void init(HardwareMap hwMap, boolean auton)
     {
         armLiftL = hwMap.get(DcMotor.class, "armLiftL");
         armLiftL.setTargetPosition(0);
-        armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (auton)
+        {
+            armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
         armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armLiftL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         
         armLiftR = hwMap.get(DcMotor.class, "armLiftR");
         armLiftR.setTargetPosition(0);
-        armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (auton)
+        {
+            armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
         armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armLiftR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         
@@ -43,7 +49,6 @@ public class ArmLiftMotor {
     
     public void ResetEncodersUp()
     {
-        ResetEncoders();
         topLimit = -50;
         bottomLimit = 6500;
     }
@@ -56,7 +61,7 @@ public class ArmLiftMotor {
     public double GetNormalizedArmAngle()
     {
         // 6933 = 260 * 6.846
-        double positionRange = 6050;
+        double positionRange = 6500;
         double temp = 0;
         if (armLiftR.getCurrentPosition() != 0)
         {
@@ -111,14 +116,7 @@ public class ArmLiftMotor {
     public boolean GetCompleted(int tgt)
     {
         // increased due to high range
-        int lenience = 10;
-        if (Math.abs(tgt - armLiftL.getCurrentPosition()) < lenience)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        int lenience = 50;
+        return Math.abs(tgt - armLiftL.getCurrentPosition()) < lenience;
     }
 }
