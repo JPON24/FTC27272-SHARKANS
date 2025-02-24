@@ -38,7 +38,7 @@ public class ArmLiftMotor {
     
     public void ResetEncoders()
     {
-        topLimit = -6500;
+        topLimit = -7000;
         bottomLimit = 50;
         armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -50,7 +50,7 @@ public class ArmLiftMotor {
     public void ResetEncodersUp()
     {
         topLimit = -50;
-        bottomLimit = 6500;
+        bottomLimit = 7000;
     }
     
     public void SetSpeed(double change)
@@ -61,7 +61,7 @@ public class ArmLiftMotor {
     public double GetNormalizedArmAngle()
     {
         // 6933 = 260 * 6.846
-        double positionRange = 6500;
+        double positionRange = 7000;
         double temp = 0;
         if (armLiftR.getCurrentPosition() != 0)
         {
@@ -111,6 +111,16 @@ public class ArmLiftMotor {
     public int GetCurrentPosition()
     {
         return armLiftL.getCurrentPosition();
+    }
+
+    public double GetArmSpeed()
+    {
+        return speed;
+    }
+
+    public void SetArmSpeed(double temp)
+    {
+        speed = temp;
     }
 
     public boolean GetCompleted(int tgt)
