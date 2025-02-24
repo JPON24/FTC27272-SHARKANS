@@ -30,6 +30,10 @@ public class OdometrySensor {
     double[] output = new double[3];
     double[] errors = new double[3];
     double[] previous = new double[3];
+
+    private double angleOffset = 0;
+
+    double normalizeDivider = 0;
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
@@ -147,8 +151,6 @@ public class OdometrySensor {
         {
             output[i] = pid(errors[i],i);
         }
-        
-        double maxXYOutput = Math.max(Math.abs(output[0]),Math.abs(output[1]));
 
         completedBools[0] = Math.abs(errors[0]) < distanceLenience;
 
@@ -156,7 +158,7 @@ public class OdometrySensor {
 
         completedBools[2] = Math.abs(errors[2]) < angleLenience;
         
-        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h))));
+        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h + angleOffset))));
     }
     
     public double angleWrap(double rad)
@@ -171,10 +173,10 @@ public class OdometrySensor {
         }
         return -rad;
     }
-    
+
     public void ResetImuReadings()
     {
-        odometry.resetTracking();
+        angleOffset = odometry.getPosition().h;
     }
 
     public double GetImuReading()
