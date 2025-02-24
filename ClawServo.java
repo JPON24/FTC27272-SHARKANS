@@ -18,17 +18,22 @@ public class ClawServo{
 
     private double clawPos = 0.0;
 
-    private double wristPosX = 0;
-    private double wristPosY = 0;
+    private double wristPosL = 0;
+    private double wristPosR = 0;
 
     private char wristMode = 'D';
     private double currentRotation;
+
+    private boolean auton = true;
     
     public void init(HardwareMap hwMap, boolean auton)
     {
         wristR = hwMap.get(Servo.class, "wristR");
         wristL = hwMap.get(Servo.class, "wristL");
+        wristL.setDirection(Servo.Direction.FORWARD);
+        wristR.setDirection(Servo.Direction.REVERSE);
         am.init(hwMap, auton);
+        this.auton = auton;
     }
     
     public void clawMove(boolean clawOpen)
@@ -49,26 +54,29 @@ public class ClawServo{
 
         if (wristMode == 'G')
         {
-            wristPosX = 0.5;
-            wristPosY =  0.35;
+            wristPosL = 0.31;
+            wristPosR = 0.31;
         }
         else if (wristMode == 'B')
         {
-            wristPosX = 1;
-            wristPosY = 0.39;
+            wristPosL = 0;
+            wristPosR = 0.58;
         }
         else
         {
-            wristPosX = 0.5;
-            wristPosY = 0.5;
+            wristPosL = 0;
+            wristPosR = 0;
         }
     }
 
     public void Update() {
         if (runtime.seconds() > 0.125)
         {
-            MoveDiff(wristPosX,wristPosY);
-            claw.setPosition(clawPos);
+            if (auton)
+            {
+                SetDiffPos(wristPosL,wristPosR);
+            }
+//            claw.setPosition(clawPos);
         }
     }
     
@@ -80,12 +88,19 @@ public class ClawServo{
     public void SetWristMode(char temp)
     {
         wristMode = temp;
+        MoveToPositionDiff();
     }
 
     public void MoveDiff(double x, double y)
     {
-        wristL.setPosition(GetWristLTgt(x, y));
-        wristR.setPosition(GetWristRTgt(x, y));
+        wristL.setPosition(1 - ((y + x) / 2));
+        wristR.setPosition((y + x) / 2);
+    }
+
+    public void SetDiffPos(double positionL, double positionR)
+    {
+        wristL.setPosition(positionL);
+        wristR.setPosition(positionR);
     }
     
     public boolean GetClawClosed()
