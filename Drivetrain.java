@@ -46,7 +46,7 @@ public class Drivetrain{
         {
             rad += 2 * Math.PI;
         }
-        return -rad;
+        return rad;
     }
 
     public void FieldOrientedTranslate(double targetPowerX, double targetPowerY, double rotation, double currentRotation)
