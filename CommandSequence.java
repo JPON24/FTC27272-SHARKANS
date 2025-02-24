@@ -28,9 +28,9 @@ public class CommandSequence extends LinearOpMode
     
     double grabDistance = 4; // old 4.5
     int grabHeight = -700;
-    int hookHeight = -4475;
+    int hookHeight = -4525;
 
-    double initialMoveInDistance = 14;
+    double initialMoveInDistance = 16;
     
     // use later for scalability
     // double halfLength = 8.625; //y
@@ -62,30 +62,29 @@ public class CommandSequence extends LinearOpMode
 
         moveCmd.MoveToPosition(speed,0,15,0,0,hookHeight,true,'G'); //1
         Hook(0);
-        moveCmd.MoveToPosition(speed,32,20,0,0,-2500,false,'G'); //5
-
+        moveCmd.MoveToPosition(speed,32,20,0,0,-2850,false,'G'); //5
         Push(0);
         Push(10);
-        moveCmd.MoveToPosition(speed,52,48,0,0,grabHeight,false,'G'); //5
-        moveCmd.MoveToPosition(speed,57,48,0,0,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,52,42,0,0,grabHeight,false,'G'); //5
+        moveCmd.MoveToPosition(speed,56,42,0,0,grabHeight,false,'G'); //6
 
         Grab(15);
-        moveCmd.MoveToPosition(speed,4,initialMoveInDistance,0,0,hookHeight,true,'G');
+        moveCmd.MoveToPosition(speed,-2,initialMoveInDistance,0,0,hookHeight,true,'B');
 
+        Hook(-2);
+
+        Grab(0);
+        moveCmd.MoveToPosition(speed,2,initialMoveInDistance,0,0,hookHeight,true,'B');
+
+        Hook(2);
+
+        Grab(0);
+        moveCmd.MoveToPosition(speed,4,initialMoveInDistance,0,0,hookHeight,true,'B');
         Hook(4);
 
         Grab(0);
-        moveCmd.MoveToPosition(speed,-4,initialMoveInDistance,0,0,hookHeight,true,'G');
-
-        Hook(-3);
-
-        Grab(0);
-        moveCmd.MoveToPosition(speed,-8,initialMoveInDistance,0,0,hookHeight,true,'G');
-        Hook(-6);
-
-        Grab(0);
-        moveCmd.MoveToPosition(speed,-12,initialMoveInDistance,0,0,hookHeight,true,'G');
-        Hook(-9);
+        moveCmd.MoveToPosition(speed,6,initialMoveInDistance,0,0,hookHeight,true,'B');
+        Hook(6);
 
         moveCmd.MoveToPosition(speed,41,6,0,0,0,false,'D');
         Stop();
@@ -93,21 +92,21 @@ public class CommandSequence extends LinearOpMode
 
     private void Hook(int offset) // add offset constant
     {
-        moveCmd.MoveToPosition(speed,offset,26,0,0,hookHeight,true,'B'); //1
-        moveCmd.MoveToPosition(speed,offset,23,0,0,hookHeight,false,'B'); //1S
+        moveCmd.MoveToPosition(speed,offset,24,0,0,hookHeight,true,'B'); //1
     }
 
     private void Grab(double offset)
     {
         moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,grabHeight,false,'G'); //7
-        moveCmd.MoveToPosition(0.5,42 + offset,grabDistance,0,0,grabHeight,true,'G'); //7
-        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,-1000,true,'G'); //8
+        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,grabHeight,true,'G'); //7
+//        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,-850,true,'G'); //8
     }
 
     private void Push(double offset)
     {
-        moveCmd.MoveToPosition(speed,32 + offset,48,0,0,grabHeight,false,'G'); //5
-        moveCmd.MoveToPosition(speed,42 + offset,48,0,0,grabHeight,false,'G'); //6
+        if (offset != 0) {moveCmd.MoveToPosition(speed,32 + offset,42,0,0,grabHeight,false,'G'); }
+        else {moveCmd.MoveToPosition(speed,32 + offset,42,0,0,-1500,false,'G'); }
+        moveCmd.MoveToPosition(speed,42 + offset,42,0,0,grabHeight,false,'G'); //6
         moveCmd.MoveToPosition(speed,42 + offset,8,0,0,grabHeight,false,'G'); //6
     }
 
@@ -152,7 +151,7 @@ public class CommandSequence extends LinearOpMode
         dt.init(hardwareMap);
         moveCmd.init(hardwareMap, true);
         odo.init(hardwareMap,true);
-//        cs.init(hardwareMap, true);
+        cs.init(hardwareMap, true);
 
         double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
         double normalizedVolts = (1 - volts/14) + volts/14 * 0.857; // reduced to account for volt drops during auton
