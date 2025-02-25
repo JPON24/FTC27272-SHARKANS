@@ -2,10 +2,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.robot.Robot;
-import com.qualcomm.robotcore.robot.RobotState;
-import org.firstinspires.ftc.teamcode.ArmLiftMotor;
 
 public class ClawServo{
     ArmLiftMotor am = new ArmLiftMotor();
@@ -22,7 +18,6 @@ public class ClawServo{
     private double wristPosR = 0;
 
     private char wristMode = 'D';
-    private double currentRotation;
 
     private boolean auton = true;
     
@@ -32,13 +27,13 @@ public class ClawServo{
         wristL = hwMap.get(Servo.class, "wristL");
         wristL.setDirection(Servo.Direction.FORWARD);
         wristR.setDirection(Servo.Direction.REVERSE);
-        am.init(hwMap, auton);
+        am.init(hwMap);
         this.auton = auton;
     }
     
-    public void clawMove(boolean clawOpen)
+    public void SetClawOpen(boolean temp)
     {
-        if (clawOpen)
+        if (temp)
         {
             clawPos = 0.22; //initially
         }
@@ -62,6 +57,16 @@ public class ClawServo{
             wristPosL = 0;
             wristPosR = 0.58;
         }
+        else if (wristMode == 'M')
+        {
+            wristPosL = 0.55;
+            wristPosR = 0.55;
+        }
+        else if (wristMode == 'D')
+        {
+            wristPosL = 0.2;
+            wristPosR = 0.2;
+        }
         else
         {
             wristPosL = 0;
@@ -79,22 +84,11 @@ public class ClawServo{
 //            claw.setPosition(clawPos);
         }
     }
-    
-    public void ResetRuntime()
-    {
-        runtime.reset();
-    }
 
     public void SetWristMode(char temp)
     {
         wristMode = temp;
         MoveToPositionDiff();
-    }
-
-    public void MoveDiff(double x, double y)
-    {
-        wristL.setPosition(1 - ((y + x) / 2));
-        wristR.setPosition((y + x) / 2);
     }
 
     public void SetDiffPos(double positionL, double positionR)
@@ -126,25 +120,5 @@ public class ClawServo{
     public double GetWristRPosition()
     {
         return wristR.getPosition();
-    }
-
-    public double GetWristLTgt(double x, double y)
-    {
-        double output = y-x;
-        if (Math.abs(x) + Math.abs(y) > 1)
-        {
-            output /= 2;
-        }
-        return output;
-    }
-
-    public double GetWristRTgt(double x, double y)
-    {
-        double output = y+x;
-        if (Math.abs(x) + Math.abs(y) > 1)
-        {
-            output /= 2;
-        }
-        return output;
     }
 }
