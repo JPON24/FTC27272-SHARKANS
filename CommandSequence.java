@@ -5,11 +5,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import org.firstinspires.ftc.teamcode.Drivetrain;
-import org.firstinspires.ftc.teamcode.MoveCommand;
-import org.firstinspires.ftc.teamcode.OdometrySensor;
-import org.firstinspires.ftc.teamcode.ClawServo;
 
 @Config
 @Autonomous
@@ -46,8 +41,8 @@ public class CommandSequence extends LinearOpMode
         dt.FieldOrientedTranslate(0,0,0,0);
         moving = false;
     }
-    
-    private void Sequence()
+
+    private void SpecimenSequence()
     {
         /* Parameter order --
         double speed : range 0 - 1
@@ -60,15 +55,15 @@ public class CommandSequence extends LinearOpMode
         char wristPosition : range 'N', 'D', 'B','G'
         */
 
-        moveCmd.MoveToPosition(speed,0,15,0,0,hookHeight,true,'G'); //1
+        moveCmd.MoveToPosition(speed,0,18,0,0,hookHeight,true,'G'); //1
         Hook(0);
         moveCmd.MoveToPosition(speed,32,20,0,0,-2850,false,'G'); //5
         Push(0);
         Push(10);
-        moveCmd.MoveToPosition(speed,52,42,0,0,grabHeight,false,'G'); //5
-        moveCmd.MoveToPosition(speed,56,42,0,0,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,52,48,0,0,grabHeight,false,'G'); //5
+        moveCmd.MoveToPosition(speed,58,48,0,0,grabHeight,false,'G'); //6
 
-        Grab(15);
+        Grab(16);
         moveCmd.MoveToPosition(speed,-2,initialMoveInDistance,0,0,hookHeight,true,'B');
 
         Hook(-2);
@@ -86,13 +81,14 @@ public class CommandSequence extends LinearOpMode
         moveCmd.MoveToPosition(speed,6,initialMoveInDistance,0,0,hookHeight,true,'B');
         Hook(6);
 
-        moveCmd.MoveToPosition(speed,41,6,0,0,0,false,'D');
+        moveCmd.MoveToPosition(speed,41,6,0,0,0,false,'/');
         Stop();
     }
 
     private void Hook(int offset) // add offset constant
     {
         moveCmd.MoveToPosition(speed,offset,24,0,0,hookHeight,true,'B'); //1
+        moveCmd.MoveToPosition(speed,offset,18,0,0,hookHeight,true,'B'); //1
     }
 
     private void Grab(double offset)
@@ -104,16 +100,16 @@ public class CommandSequence extends LinearOpMode
 
     private void Push(double offset)
     {
-        if (offset != 0) {moveCmd.MoveToPosition(speed,32 + offset,42,0,0,grabHeight,false,'G'); }
-        else {moveCmd.MoveToPosition(speed,32 + offset,42,0,0,-1500,false,'G'); }
-        moveCmd.MoveToPosition(speed,42 + offset,42,0,0,grabHeight,false,'G'); //6
+        if (offset != 0) {moveCmd.MoveToPosition(speed,32 + offset,48,0,0,grabHeight,false,'G'); }
+        else {moveCmd.MoveToPosition(speed,32 + offset,48,0,0,-1500,false,'G'); }
+        moveCmd.MoveToPosition(speed,42 + offset,48,0,0,grabHeight,false,'G'); //6
         moveCmd.MoveToPosition(speed,42 + offset,8,0,0,grabHeight,false,'G'); //6
     }
 
     private void BasicPark()
     {
         dt.Translate(0.5,0,0);
-        cs.clawMove(true);
+        cs.SetClawOpen(true);
         cs.Update();
         sleep(7500);
         Stop();
@@ -123,6 +119,36 @@ public class CommandSequence extends LinearOpMode
     {
         odo.OdometryControl(speed, 0, 0, 180);
         UpdateTelemetry();
+    }
+
+    private void BasketSequence()
+    {
+        DunkBasket();
+        GrabSpec(0);
+        DunkBasket();
+        GrabSpec(10);
+        DunkBasket();
+        GrabSpec(21);
+        FirstLevelAscent();
+    }
+
+    private void DunkBasket()
+    {
+        moveCmd.MoveToPosition(speed,-12,12,45,0,-3000,true,'D');
+        moveCmd.MoveToPosition(speed,-12,12,45,0,-3000,false,'D');
+    }
+
+    private void GrabSpec(double offset)
+    {
+        moveCmd.MoveToPosition(speed, -7 - offset, 26,0,0,-6500,false,'M');
+        moveCmd.MoveToPosition(speed, -7 - offset, 26,0,0,-6500,true,'M');
+    }
+
+    private void FirstLevelAscent()
+    {
+        moveCmd.MoveToPosition(speed, 0, 52, 0, 0, -3000, false, '/');
+        moveCmd.MoveToPosition(speed, 0, 52, 90, 0, -3000, false, '/');
+        moveCmd.MoveToPosition(speed, 12, 52, 0, 0, -4500, false, '/');
     }
 
     private void UpdateTelemetry()
@@ -164,8 +190,8 @@ public class CommandSequence extends LinearOpMode
             if (moving)
             {
                 // maybe add arm speed change when hover/moving
-
-                Sequence();
+                SpecimenSequence();
+//                BasketSequence();
 //                TestSequence();
                 // BasicPark();
             }
