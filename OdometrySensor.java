@@ -55,7 +55,7 @@ public class OdometrySensor {
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
         odometry.setLinearScalar(40/41);
-        odometry.setAngularScalar(1);
+        odometry.setAngularScalar(239/240);
         odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0D));// disables accelerometer
         odometry.setOffset(new SparkFunOTOS.Pose2D(-0.375,3.625,0));
         dt.init(hwMap);
@@ -173,12 +173,6 @@ public class OdometrySensor {
         }
         return -rad;
     }
-
-    public void ResetImuReadings()
-    {
-        angleOffset = odometry.getPosition().h;
-    }
-
     public double GetImuReading()
     {
         return odometry.getPosition().h;
@@ -244,7 +238,7 @@ public class OdometrySensor {
     {
         for (int i = 0; i < 3; i++)
         {
-            if (completedBools[i] == false)
+            if (!completedBools[i])
             {
                 return false;
             }
