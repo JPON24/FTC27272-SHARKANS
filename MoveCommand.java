@@ -24,7 +24,7 @@ public class MoveCommand  {
     {
         dt.init(hwMap);
         cs.init(hwMap, true);
-        am.init(hwMap, true);
+        am.init(hwMap);
         s1.init(hwMap, isAuton);
     }
 
