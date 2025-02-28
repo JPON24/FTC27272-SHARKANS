@@ -1,15 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import java.util.HashMap;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import org.firstinspires.ftc.teamcode.Drivetrain;
-import org.firstinspires.ftc.teamcode.ClawServo;
-import org.firstinspires.ftc.teamcode.ArmLiftMotor;
-import org.firstinspires.ftc.teamcode.OdometrySensor;
-import org.firstinspires.ftc.teamcode.CommandSystem;
 
 public class MoveCommand  {
     Drivetrain dt = new Drivetrain();
@@ -46,6 +39,7 @@ public class MoveCommand  {
         lastA = tgtA;
         
         s1.OdometryControl(speed,tgtX,tgtY,rot);
+        cs.SetClawOpen(tgtClaw);
 
         localCopy = command.GetMap();
         
@@ -74,7 +68,7 @@ public class MoveCommand  {
                             break;
                         }
                     case 'a':
-                        am.rotate(tgtA,'A');
+                        am.Rotate(tgtA,'A');
                         if (am.GetCompleted(tgtA))
                         {
                             command.SetElementTrue('a');
@@ -120,10 +114,12 @@ public class MoveCommand  {
 
         localCopy = command.GetMap();
 
+        cs.SetWristMode(tgtWrist);
+        cs.SetClawOpen(tgtClaw);
+
         // for every key (m, e, a, c, w)
         for (Character key : localCopy.keySet())
         {
-            cs.SetWristMode(tgtWrist);
             // like an if else but more efficient
             // if a subsystem has reached it's position, set it to complete
             // otherwise, set it to false and stop moving it 
@@ -143,7 +139,7 @@ public class MoveCommand  {
                         break;
                     }
                 case 'a':
-                    am.rotate(tgtA,'A');
+                    am.Rotate(tgtA,'A');
                     if (am.GetCompleted(tgtA))
                     {
                         command.SetElementTrue('a');
@@ -174,15 +170,5 @@ public class MoveCommand  {
     public boolean GetCommandState()
     {
         return command.GetBoolsCompleted();
-    }
-    
-    public double GetClawPositionReading()
-    {
-        return cs.GetClawPosition();
-    }
-    
-    public void UpdateClawPosition()
-    {
-        cs.Update();
     }
 }
