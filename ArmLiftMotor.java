@@ -1,5 +1,4 @@
 package org.firstinspires.ftc.teamcode;
-import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -12,23 +11,19 @@ public class ArmLiftMotor {
     int topLimit = -6500; // old value 1780
     int bottomLimit = 50;
     
-    public void init(HardwareMap hwMap, boolean auton)
+    public void init(HardwareMap hwMap)
     {
         armLiftL = hwMap.get(DcMotor.class, "armLiftL");
         armLiftL.setTargetPosition(0);
-        if (auton)
-        {
-            armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        }
+
+        armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armLiftL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         
         armLiftR = hwMap.get(DcMotor.class, "armLiftR");
         armLiftR.setTargetPosition(0);
-        if (auton)
-        {
-            armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        }
+
+        armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armLiftR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         
@@ -52,24 +47,8 @@ public class ArmLiftMotor {
         topLimit = -50;
         bottomLimit = 7000;
     }
-    
-    public void SetSpeed(double change)
-    {
-        speed = change;
-    }
-   
-    public double GetNormalizedArmAngle()
-    {
-        // 6933 = 260 * 6.846
-        double positionRange = 7000;
-        double temp = 0;
-        if (armLiftR.getCurrentPosition() != 0)
-        {
-            temp = Math.abs(armLiftL.getCurrentPosition()) / positionRange;
-        }
-        return temp;
-    }
-    public void rotate(double targetPower, char mode)
+
+    public void Rotate(double targetPower, char mode)
     {    
         if (mode == 'T')
         {
@@ -83,12 +62,11 @@ public class ArmLiftMotor {
             }
             else
             {
-                MoveToPosition(armLiftL.getCurrentPosition());
+                MoveToPosition(armLiftR.getCurrentPosition());
             }
         }
         else if (mode == 'A')
         {
-            // int encoderPosition = ConvertAngleToEncoder((int)targetPower);
             speed = 1;
             MoveToPosition((int)targetPower);
         }
@@ -101,11 +79,6 @@ public class ArmLiftMotor {
         
         armLiftL.setTargetPosition(position);
         armLiftR.setTargetPosition(position);
-    }
-
-    public int ConvertAngleToEncoder(int tgtPower)
-    {
-        return (int)(-tgtPower * 26.3);
     }
     
     public int GetCurrentPosition()
@@ -126,7 +99,7 @@ public class ArmLiftMotor {
     public boolean GetCompleted(int tgt)
     {
         // increased due to high range
-        int lenience = 50;
+        int lenience = 10;
         return Math.abs(tgt - armLiftL.getCurrentPosition()) < lenience;
     }
 }
