@@ -18,12 +18,9 @@ public class CommandSequence extends LinearOpMode
     boolean moving = true;
     double speed = 1; // 1.1
 
-    double halfWidth = 7.625;
-    double halfLength = 7.625;
-    
-    double grabDistance = 4; // old 4.5
-    int grabHeight = -700;
-    int hookHeight = -4525;
+    double grabDistance = 7; // old 4.5
+    int grabHeight = -600;
+    int hookHeight = -4730;
 
     double initialMoveInDistance = 16;
     
@@ -55,7 +52,7 @@ public class CommandSequence extends LinearOpMode
         char wristPosition : range 'N', 'D', 'B','G'
         */
 
-        moveCmd.MoveToPosition(speed,0,18,0,0,hookHeight,true,'G'); //1
+        moveCmd.MoveToPosition(speed,0,18,0,0,hookHeight,true,'B'); //1
         Hook(0);
         moveCmd.MoveToPosition(speed,32,20,0,0,-2850,false,'G'); //5
         Push(0);
@@ -87,14 +84,16 @@ public class CommandSequence extends LinearOpMode
 
     private void Hook(int offset) // add offset constant
     {
-        moveCmd.MoveToPosition(speed,offset,24,0,0,hookHeight,true,'B'); //1
-        moveCmd.MoveToPosition(speed,offset,18,0,0,hookHeight,true,'B'); //1
+        moveCmd.MoveToPosition(1, 0 + offset, 16, 0, 0,hookHeight, true, 'B');
+        moveCmd.MoveToPosition(1, 0 + offset, 26, 0, 0,hookHeight, true, 'B');
+        moveCmd.MoveToPosition(1, 0 + offset, 20, 0, 0,hookHeight, false, 'B');
     }
 
     private void Grab(double offset)
     {
-        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,grabHeight,false,'G'); //7
-        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,grabHeight,true,'G'); //7
+        moveCmd.MoveToPosition(1, 42, grabDistance, 0, 0,grabHeight, false, 'G'); //7
+        moveCmd.MoveToPosition(1, 42, grabDistance, 0, 0,grabHeight, true, 'G'); //7
+        moveCmd.MoveToPosition(1, 42, grabDistance, 0, 0,-900, true, 'G'); //7
 //        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,-850,true,'G'); //8
     }
 
@@ -134,8 +133,8 @@ public class CommandSequence extends LinearOpMode
 
     private void DunkBasket()
     {
-        moveCmd.MoveToPosition(speed,-12,12,45,0,-3000,true,'D');
-        moveCmd.MoveToPosition(speed,-12,12,45,0,-3000,false,'D');
+        moveCmd.MoveToPosition(speed,-12,12,135,0,-3000,true,'D');
+        moveCmd.MoveToPosition(speed,-12,12,135,0,-3000,false,'D');
     }
 
     private void GrabSpec(double offset)
