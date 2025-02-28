@@ -25,8 +25,7 @@ public class ClawServo{
     {
         wristR = hwMap.get(Servo.class, "wristR");
         wristL = hwMap.get(Servo.class, "wristL");
-        wristL.setDirection(Servo.Direction.FORWARD);
-        wristR.setDirection(Servo.Direction.REVERSE);
+        claw = hwMap.get(Servo.class, "claw");
         am.init(hwMap);
         this.auton = auton;
     }
@@ -42,20 +41,21 @@ public class ClawServo{
             clawPos = 0;
         }
     }
-    
+
+    // rezero
     private void MoveToPositionDiff()
     {
         // 0.5 is normal position
 
         if (wristMode == 'G')
         {
-            wristPosL = 0.31;
-            wristPosR = 0.31;
+            wristPosL = 0;
+            wristPosR = 0;
         }
         else if (wristMode == 'B')
         {
-            wristPosL = 0;
-            wristPosR = 0.58;
+            wristPosL = 1;
+            wristPosR = 0.555;
         }
         else if (wristMode == 'M')
         {
@@ -81,7 +81,7 @@ public class ClawServo{
             {
                 SetDiffPos(wristPosL,wristPosR);
             }
-//            claw.setPosition(clawPos);
+            claw.setPosition(clawPos);
         }
     }
 
