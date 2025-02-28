@@ -20,8 +20,7 @@ public class OdometrySensor {
     SparkFunOTOS.Pose2D pos;
 
     boolean[] completedBools = new boolean[3];
-    
-    
+
     double deltaTime, last_time;
     double integralX, integralY, integralH = 0;
     double kpx, kpy, kph, ki, kdx, kdy, kdh;
@@ -32,8 +31,6 @@ public class OdometrySensor {
     double[] previous = new double[3];
 
     private double angleOffset = 0;
-
-    double normalizeDivider = 0;
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
@@ -94,9 +91,6 @@ public class OdometrySensor {
             double derivative = (error - previous[1]) / dyTime.seconds();
             derivative = LowPass(yAverage, derivative);
 
-//            pY = kpy * error;
-//            iY = ki * integralY;
-//            dY = kdy * derivative;
             output = kpy * error + ki * integralY + kdy * derivative;
             dyTime.reset();
 
