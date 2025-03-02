@@ -1,6 +1,5 @@
 
 package org.firstinspires.ftc.teamcode;
-import org.firstinspires.ftc.robotcore.external.*;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
