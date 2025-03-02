@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.Drivetrain;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -24,7 +23,7 @@ public class OdometrySensor {
     double deltaTime, last_time;
     double integralX, integralY, integralH = 0;
     double kpx, kpy, kph, ki, kdx, kdy, kdh;
-    double pY, iY, dY;
+    double iX, iY, iH;
     double xAverage, yAverage, hAverage = 0;
     double[] output = new double[3];
     double[] errors = new double[3];
@@ -37,7 +36,7 @@ public class OdometrySensor {
         kpx = 0.28; //0.2
         kpy = 0.23; //0.2
         kph = 0.21;
-        ki = 0.0; // 0.05
+        ki = 0; // 0.05
         kdx = 0.2; // 0.045 0.175
         kdy = 0.175; // 0.045 0.175
         kdh = 0.15; // 0.045 0.175
@@ -51,9 +50,9 @@ public class OdometrySensor {
         }
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
-        odometry.setLinearScalar(40/41);
-        odometry.setAngularScalar(239/240);
-        odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0D));// disables accelerometer
+        odometry.setLinearScalar(0.99);
+        odometry.setAngularScalar(1);
+//        odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0D));// disables accelerometer
         odometry.setOffset(new SparkFunOTOS.Pose2D(-0.375,3.625,0));
         dt.init(hwMap);
     }
@@ -73,53 +72,58 @@ public class OdometrySensor {
         if (index == 0)
         {
             integralX += error * dxTime.seconds();
-            double derivative = (error - previous[0]) / dxTime.seconds();
-            derivative = LowPass(xAverage, derivative);
-
-            output = kpx * error + ki * integralX + kdx * derivative;
-            dxTime.reset();
-            previous[0] = error;
 
             if (previous[0] * error < 0)
             {
                 integralX = 0;
             }
+
+            double derivative = (error - previous[0]) / dxTime.seconds();
+            derivative = LowPass(xAverage, derivative);
+
+            iX = integralX;
+
+            output = kpx * error + ki * integralX + kdx * derivative;
+            dxTime.reset();
+            previous[0] = error;
         }
         else if (index == 1)
         {
             integralY += error * dyTime.seconds();
-            double derivative = (error - previous[1]) / dyTime.seconds();
-            derivative = LowPass(yAverage, derivative);
-
-            output = kpy * error + ki * integralY + kdy * derivative;
-            dyTime.reset();
-
-            previous[1] = error;
 
             if (previous[1] * error < 0)
             {
                 integralY = 0;
             }
+
+            double derivative = (error - previous[1]) / dyTime.seconds();
+            derivative = LowPass(yAverage, derivative);
+
+            iY = integralY;
+
+            output = kpy * error + ki * integralY + kdy * derivative;
+            dyTime.reset();
+
+            previous[1] = error;
         }
         else
         {
             integralH += error * dhTime.seconds();
-            double derivative = (error - previous[2]) / dhTime.seconds();
-            derivative = LowPass(hAverage, derivative);
-
-            pY = kph * error;
-            iY = ki * integralH;
-            dY = kdh * derivative;
-
-            output = kph * error + ki * integralH + kdh * derivative;
-            dhTime.reset();
-
-            previous[2] = error;
 
             if (previous[2] * error < 0)
             {
                 integralH = 0;
             }
+
+            double derivative = (error - previous[2]) / dhTime.seconds();
+            derivative = LowPass(hAverage, derivative);
+
+            iH = integralH;
+
+            output = kph * error + ki * integralH + kdh * derivative;
+            dhTime.reset();
+
+            previous[2] = error;
 
         }
         output = Range.clip(output, -1, 1); // old coef 2*
@@ -129,8 +133,8 @@ public class OdometrySensor {
     public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot)
     {
         if (!odometry.isConnected()) {return;}
-        double distanceLenience = 0.75; //best value 1.75
-        double angleLenience = 30; //best value 4 old 3
+        double distanceLenience = 0.5; //best value 1.75
+        double angleLenience = 20; //best value 4 old 3
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -151,8 +155,7 @@ public class OdometrySensor {
         completedBools[1] = Math.abs(errors[1]) < distanceLenience;
 
         completedBools[2] = Math.abs(errors[2]) < angleLenience;
-        
-        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], Math.toDegrees(angleWrap(Math.toRadians(pos.h + angleOffset))));
+        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], pos.h);
     }
     
     public double angleWrap(double rad)
@@ -212,9 +215,9 @@ public class OdometrySensor {
         return output[2];
     }
 
-    public double GetPorportionalY()
+    public double GetIntegralX()
     {
-        return pY;
+        return iX;
     }
 
     public double GetIntegralY()
@@ -222,9 +225,9 @@ public class OdometrySensor {
         return iY;
     }
 
-    public double GetDerivativeY()
+    public double GetIntegralH()
     {
-        return dY;
+        return iH;
     }
 
     
