@@ -21,7 +21,7 @@ public class MoveCommand  {
         s1.init(hwMap, isAuton);
     }
 
-    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, int tgtE, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, int tgtA, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
@@ -39,13 +39,14 @@ public class MoveCommand  {
         lastA = tgtA;
         
         s1.OdometryControl(speed,tgtX,tgtY,rot);
-        cs.SetClawOpen(tgtClaw);
 
         localCopy = command.GetMap();
+
+        cs.SetWristMode(tgtWrist);
+        cs.SetClawOpen(tgtClaw);
         
         while (!command.GetBoolsCompleted())
         {
-            cs.SetWristMode(tgtWrist);
             // for every key (m, e, a, c, w)
             for (Character key : localCopy.keySet())
             {
@@ -79,18 +80,6 @@ public class MoveCommand  {
                             command.SetElementFalse('a');
                             break;
                         }
-//                    case 'c':
-//                        if (cs.GetClawClosed() == tgtClaw)
-//                        {
-//                            command.SetElementTrue('c');
-//                            break;
-//                        }
-//                        else
-//                        {
-//                            command.SetElementFalse('c');
-//                            cs.clawMove(tgtClaw);
-//                            break;
-//                        }
                 }
             }
 
@@ -98,7 +87,7 @@ public class MoveCommand  {
         }
     }
 
-    public void MoveToPositionCancellable(double speed, double x, double y, double h, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPositionCancellable(double speed, double x, double y, double h,double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
@@ -107,15 +96,11 @@ public class MoveCommand  {
         command.SetElementFalse('m');
         command.SetElementFalse('a');
 
-//        if (tgtClaw != cs.GetClawClosed()) // if move has to happen
-//        {
-//            command.SetElementFalse('c');
-//        }
-
         localCopy = command.GetMap();
 
         cs.SetWristMode(tgtWrist);
         cs.SetClawOpen(tgtClaw);
+        am.SetArmSpeed(speedA);
 
         // for every key (m, e, a, c, w)
         for (Character key : localCopy.keySet())
@@ -150,18 +135,6 @@ public class MoveCommand  {
                         command.SetElementFalse('a');
                         break;
                     }
-//                case 'c':
-//                    if (cs.GetClawClosed() == tgtClaw)
-//                    {
-//                        command.SetElementTrue('c');
-//                        break;
-//                    }
-//                    else
-//                    {
-//                        command.SetElementFalse('c');
-//                        cs.clawMove(tgtClaw);
-//                        break;
-//                    }
             }
         }
         cs.Update();
