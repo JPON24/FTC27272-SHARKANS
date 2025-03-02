@@ -29,7 +29,9 @@ public class OdometrySensor {
     double[] errors = new double[3];
     double[] previous = new double[3];
 
-    private double angleOffset = 0;
+    double localTgtX = 0;
+
+    double runtimeXSum = 0;
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
@@ -48,12 +50,13 @@ public class OdometrySensor {
             odometry.resetTracking();
             odometry.begin();
         }
+        odometry.begin();
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
-        odometry.setLinearScalar(0.99);
+        odometry.setLinearScalar(1);
         odometry.setAngularScalar(1);
-//        odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0D));// disables accelerometer
-        odometry.setOffset(new SparkFunOTOS.Pose2D(-0.375,3.625,0));
+//        odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0B));
+        odometry.setOffset(new SparkFunOTOS.Pose2D(0.4375,3.625,0));
         dt.init(hwMap);
     }
 
@@ -141,10 +144,12 @@ public class OdometrySensor {
         last_time = now;
         
         pos = odometry.getPosition();
+
+//        xIntegral.reset();
+
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
         errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h))) / 5;
-
         for (int i = 0; i < 3; i++)
         {
             output[i] = pid(errors[i],i);
@@ -170,6 +175,14 @@ public class OdometrySensor {
         }
         return -rad;
     }
+
+    public void SetRuntimeXSum(double temp)
+    {
+        runtimeXSum = temp;
+    }
+
+    public double GetIntegralSumX() {return runtimeXSum;}
+
     public double GetImuReading()
     {
         return odometry.getPosition().h;
@@ -184,7 +197,9 @@ public class OdometrySensor {
     {
         return odometry.getPosition().y;
     }
-    
+
+    public double GetTargetX() {return localTgtX;}
+
     public double GetErrorX()
     {
         return errors[0];
