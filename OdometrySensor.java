@@ -23,25 +23,29 @@ public class OdometrySensor {
     double deltaTime, last_time;
     double integralX, integralY, integralH = 0;
     double kpx, kpy, kph, ki, kdx, kdy, kdh;
-    double iX, iY, iH;
+    double iX, iY, iH, pX, dX;
     double xAverage, yAverage, hAverage = 0;
     double[] output = new double[3];
     double[] errors = new double[3];
     double[] previous = new double[3];
 
-    double localTgtX = 0;
-
     double runtimeXSum = 0;
+    double lastX = 0;
+
+    double runtimeYSum = 0;
+    double lastY = 0;
+
+    double highestError = 0;
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
-        kpx = 0.28; //0.2
-        kpy = 0.23; //0.2
-        kph = 0.21;
-        ki = 0; // 0.05
-        kdx = 0.2; // 0.045 0.175
-        kdy = 0.175; // 0.045 0.175
-        kdh = 0.15; // 0.045 0.175
+        kpx = 0.31; //0.28
+        kpy = 0.23; //0.23
+        kph = 0.21; // 0.21
+        ki = 0; // 0
+        kdx = 0.2; // 0.2
+        kdy = 0.175; // 0.175
+        kdh = 0.15; // 0.15
         
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
@@ -83,7 +87,6 @@ public class OdometrySensor {
 
             double derivative = (error - previous[0]) / dxTime.seconds();
             derivative = LowPass(xAverage, derivative);
-
             iX = integralX;
 
             output = kpx * error + ki * integralX + kdx * derivative;
@@ -101,7 +104,6 @@ public class OdometrySensor {
 
             double derivative = (error - previous[1]) / dyTime.seconds();
             derivative = LowPass(yAverage, derivative);
-
             iY = integralY;
 
             output = kpy * error + ki * integralY + kdy * derivative;
@@ -121,6 +123,8 @@ public class OdometrySensor {
             double derivative = (error - previous[2]) / dhTime.seconds();
             derivative = LowPass(hAverage, derivative);
 
+            pX = kph * error;
+            dX = derivative;
             iH = integralH;
 
             output = kph * error + ki * integralH + kdh * derivative;
@@ -132,12 +136,21 @@ public class OdometrySensor {
         output = Range.clip(output, -1, 1); // old coef 2*
         return output;
     }
+
+    private void Integrals()
+    {
+        runtimeXSum += Math.abs(GetPositionX() - lastX);
+        lastX = GetPositionX();
+
+        runtimeYSum += Math.abs(GetPositionY() - lastY);
+        lastY = GetPositionY();
+    }
     
     public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot)
     {
         if (!odometry.isConnected()) {return;}
         double distanceLenience = 0.5; //best value 1.75
-        double angleLenience = 20; //best value 4 old 3
+        double angleLenience = 100; //best value 4 old 3
         
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -145,22 +158,55 @@ public class OdometrySensor {
         
         pos = odometry.getPosition();
 
-//        xIntegral.reset();
+        Integrals();
 
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
-        errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h))) / 5;
-        for (int i = 0; i < 3; i++)
+        if (Math.abs(errors[0]) > highestError)
         {
-            output[i] = pid(errors[i],i);
+            highestError = Math.abs(errors[0]);
+        }
+        if (Math.abs(errors[1]) > highestError)
+        {
+            highestError = Math.abs(errors[1]);
         }
 
+        errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
+//        for (int i = 0; i < 3; i++)
+//        {
+//            output[i] = pid(errors[i],i);
+//        }
+
+        // normalized against one another
+        // should create weird diagonal movement
+        // might have to add increased magnitude to error, currently between -1 and 1
+        output[0] = pid(errors[0]/highestError,0);
+        output[1] = pid(errors[1]/highestError, 1);
+        output[2] = pid(errors[2],2);
+
+        // could add non linearity with sin?
+        // * math.pi to convert value to radians
+        output[0] = Math.sin(output[0] * Math.PI);
+        output[1] = Math.sin(output[1] * Math.PI);
+
         completedBools[0] = Math.abs(errors[0]) < distanceLenience;
-
         completedBools[1] = Math.abs(errors[1]) < distanceLenience;
-
         completedBools[2] = Math.abs(errors[2]) < angleLenience;
+
+        // almost!! non linearity is nice but oscillates heavily
+//        double sigmoidX = Sigmoid(output[0] / highestOutput) * output[0]/Math.abs(output[0]);
+//        double sigmoidY = Sigmoid(output[1] / highestOutput) * output[0]/Math.abs(output[0]);
+//        double tanHX = Math.tanh(output[0]/pid(highestError,0));
+//        double tanHY = Math.tanh(output[1]/pid(highestError,1));
+//        double sinX = Math.sin(output[0]);
+//        double sinY = Math.sin(output[1]);
+
         dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], pos.h);
+    }
+
+    private double Sigmoid(double x)
+    {
+        return 1 / Math.pow(2.718,-x);
     }
     
     public double angleWrap(double rad)
@@ -183,6 +229,8 @@ public class OdometrySensor {
 
     public double GetIntegralSumX() {return runtimeXSum;}
 
+    public double GetIntegralSumY() {return runtimeYSum;}
+
     public double GetImuReading()
     {
         return odometry.getPosition().h;
@@ -197,8 +245,6 @@ public class OdometrySensor {
     {
         return odometry.getPosition().y;
     }
-
-    public double GetTargetX() {return localTgtX;}
 
     public double GetErrorX()
     {
@@ -219,6 +265,10 @@ public class OdometrySensor {
     {
         return output[0];
     }
+
+    public double GetDerivativeX() { return dX; }
+
+    public double GetPorportionalX() {return pX;}
     
     public double GetOutputY()
     {
@@ -255,6 +305,7 @@ public class OdometrySensor {
                 return false;
             }
         }
+        highestError = 0;
         return true;
     }
 } 
