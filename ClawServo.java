@@ -55,7 +55,12 @@ public class ClawServo{
         else if (wristMode == 'B')
         {
             wristPosL = 0.854; // 1
-            wristPosR = 0.656; // 0.555
+            wristPosR = 0.6; // 0.555
+        }
+        else if (wristMode == 'S')
+        {
+            wristPosL = 0.6;
+            wristPosR = 0.8;
         }
         else if (wristMode == 'M')
         {
