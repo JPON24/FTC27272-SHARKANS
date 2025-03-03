@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import java.util.HashMap;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class MoveCommand  {
     Drivetrain dt = new Drivetrain();
@@ -10,6 +11,8 @@ public class MoveCommand  {
     ArmLiftMotor am = new ArmLiftMotor();
     OdometrySensor s1 = new OdometrySensor();
     CommandSystem command = new CommandSystem();
+
+    ElapsedTime timeout = new ElapsedTime();
 
     int lastA = 0;
     
@@ -21,7 +24,7 @@ public class MoveCommand  {
         s1.init(hwMap, isAuton);
     }
 
-    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
@@ -35,52 +38,50 @@ public class MoveCommand  {
             command.SetElementFalse('a');
         }
 
-//        command.SetElementFalse('c');
         lastA = tgtA;
         
-        s1.OdometryControl(speed,tgtX,tgtY,rot);
+        s1.OdometryControl(speed,tgtX + s1.GetIntegralSumX() * 0.014,tgtY - s1.GetIntegralSumY() * 0.01,rot);
 
         localCopy = command.GetMap();
 
         cs.SetWristMode(tgtWrist);
         cs.SetClawOpen(tgtClaw);
-        
-        while (!command.GetBoolsCompleted())
-        {
+        am.SetArmSpeed(speedA);
+
+        timeout.reset();
+
+        while (!command.GetBoolsCompleted()) {
             // for every key (m, e, a, c, w)
-            for (Character key : localCopy.keySet())
-            {
+            for (Character key : localCopy.keySet()) {
                 // like an if else but more efficient
                 // if a subsystem has reached it's position, set it to complete
                 // otherwise, set it to false and stop moving it 
-                switch (key)
-                {
+                switch (key) {
                     case 'm':
-                        s1.OdometryControl(speed,tgtX,tgtY,rot);
-                        if (s1.GetBoolsCompleted())
-                        {
+                        s1.OdometryControl(speed, tgtX + s1.GetIntegralSumX() * 0.014, tgtY - s1.GetIntegralSumY() * 0.01, rot);
+                        if (s1.GetBoolsCompleted()) {
                             command.SetElementTrue('m');
                             // dt.FieldOrientedTranslate(0,0,0,0);
                             break;
-                        }
-                        else
-                        {
+                        } else {
                             command.SetElementFalse('m');
                             break;
                         }
                     case 'a':
-                        am.Rotate(tgtA,'A');
-                        if (am.GetCompleted(tgtA))
-                        {
+                        am.Rotate(tgtA, 'A');
+                        if (am.GetCompleted(tgtA)) {
                             command.SetElementTrue('a');
                             break;
-                        }
-                        else
-                        {
+                        } else {
                             command.SetElementFalse('a');
                             break;
                         }
                 }
+            }
+
+            if (timeout.seconds() > 5)
+            {
+                break;
             }
 
             cs.Update();
