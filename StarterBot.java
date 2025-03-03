@@ -29,7 +29,7 @@ public class StarterBot extends LinearOpMode{
 
     double localOffset = 6;
     double localOffsetIncrement = 1;
-    double grabDistance = 2;
+    double grabDistance = 2.5;
 
     boolean canShiftArm = true;
 
@@ -72,6 +72,9 @@ public class StarterBot extends LinearOpMode{
         moveCmd.init(hardwareMap, false);
         waitForStart();
         cs.SetDiffPos(0.44,0.99);
+        am.Rotate(0,'T');
+        am.SetLocalNeutral(50);
+        am.Rotate(0,'T');
         while(opModeIsActive())
         {
             // triggers should be extension
@@ -233,7 +236,6 @@ public class StarterBot extends LinearOpMode{
         telemetry.addData("localL", localDiffL);
         telemetry.addData("localR", localDiffR);
         telemetry.addData("INTEGRAL",s1.GetIntegralSumX());
-        telemetry.addData("TGT X", s1.GetTargetX());
         telemetry.update();
     }
 
@@ -259,6 +261,7 @@ public class StarterBot extends LinearOpMode{
 //                TeleopMoveCommandRT(1,-20,47,0,0,false,'/');
                 if (gamepad1.right_trigger < 0.8)
                 {
+                    normalControl = true;
                     return;
                 }
                 dt.FieldOrientedTranslate(-1,0,0,s1.GetImuReading());
@@ -304,16 +307,16 @@ public class StarterBot extends LinearOpMode{
         {
             normalControl = false;
 
-            TeleopMoveCommandY(1, 0 + localOffset, 16, 0, 0.2,1275, true, 'B');
-            TeleopMoveCommandY(1, 0 + localOffset, 27.5, 0,0.5, 1275, true, 'B');
-            dt.FieldOrientedTranslate(0,0,0,s1.GetImuReading());
+            TeleopMoveCommandY(1, 0 + localOffset, 16, 0, 0.25,1275, true, 'B');
+            TeleopMoveCommandY(1, 0 + localOffset, 27, 0,0.5, 1275, true, 'B');
+            s1.OdometryControl(0,0 + localOffset, 27, 0);
             cs.SetClawOpen(false);
             cs.Update();
-            sleep(200);
-            dt.FieldOrientedTranslate(0,0,0,s1.GetImuReading());
+            sleep(150);
+            s1.OdometryControl(0,0 + localOffset, 27, 0);
             cs.Update();
             cs.SetWristMode('S');
-            sleep(200);
+            sleep(150);
             TeleopMoveCommandY(1, 0 + localOffset, 16, 0, 0.5,1275, false, 'S');
 
             localOffset -= localOffsetIncrement;
@@ -331,10 +334,10 @@ public class StarterBot extends LinearOpMode{
             TeleopMoveCommandB(1, 40, 6, 0,0.5, 190, false, 'G');
             TeleopMoveCommandB(1, 40, grabDistance, 0, 0.5,190, false, 'G');
             TeleopMoveCommandB(1, 40, grabDistance, 0, 0.5,190, true, 'G');
-            dt.FieldOrientedTranslate(0,0,0,s1.GetImuReading());
+            s1.OdometryControl(0,40, grabDistance, 0);
             cs.SetClawOpen(true);
-            sleep(200);
-            TeleopMoveCommandB(1, 40, grabDistance,0, 0.2,270, true, 'G');
+            sleep(150);
+            TeleopMoveCommandB(0.5, 40, grabDistance,0, 1,270, true, 'G');
             canStartGrabMacro = false;
         }
         else if (!b)
