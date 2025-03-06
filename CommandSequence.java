@@ -18,7 +18,7 @@ public class CommandSequence extends LinearOpMode
     boolean moving = true;
     double speed = 1; // 1.1
 
-    double grabDistance = 2.5; // old 4.5
+    double grabDistance = 3; // old 4.5
     int grabHeight = 190;
     int hookHeight = 1275;
 
@@ -69,12 +69,12 @@ public class CommandSequence extends LinearOpMode
     private void Hook(int offset) // add offset constant
     {
         moveCmd.MoveToPosition(1, 0 + offset, 16, 0,0.5,hookHeight, true, 'B');
-        moveCmd.MoveToPosition(1, 0 + offset, 27, 0,0.5,hookHeight, true, 'B');
-        odo.OdometryControl(0,0 + offset, 27, 0);
+        moveCmd.MoveToPosition(1, 0 + offset, 26.5, 0,0.5,hookHeight, true, 'B');
+        odo.OdometryControl(0,0 + offset, 26.5, 0);
         cs.SetClawOpen(false);
         cs.Update();
         sleep(150);
-        odo.OdometryControl(0,0 + offset, 27, 0);
+        odo.OdometryControl(0,0 + offset, 26.5, 0);
         cs.Update();
         cs.SetWristMode('S');
         sleep(150);
@@ -142,12 +142,12 @@ public class CommandSequence extends LinearOpMode
 
     private void UpdateTelemetry()
     {
-//        telemetry.addData("x", odo.GetPositionX());
-//        telemetry.addData("y", odo.GetPositionY());
-//        telemetry.addData("h", odo.GetImuReading());
-//        telemetry.addData("ex", odo.GetErrorX());
-//        telemetry.addData("eh", odo.GetErrorH());
-//        telemetry.addData("ey", odo.GetErrorY());
+        telemetry.addData("x", odo.GetPositionX());
+        telemetry.addData("y", odo.GetPositionY());
+        telemetry.addData("h", odo.GetImuReading());
+        telemetry.addData("ex", odo.GetErrorX());
+        telemetry.addData("eh", odo.GetErrorH());
+        telemetry.addData("ey", odo.GetErrorY());
         telemetry.addData("PROPORTIONAL", odo.GetPorportionalX());
         telemetry.addData("DERIVATIVE", odo.GetDerivativeX());
         telemetry.update();
@@ -158,7 +158,7 @@ public class CommandSequence extends LinearOpMode
 //        moveCmd.MoveToPosition(speed,-24,0,-90,0,false,'/');
 //        UpdateTelemetry();
 //        moveCmd.MoveToPosition(speed,-12,0,-90,0,false,'/');
-        odo.OdometryControl(speed, 0, 0, 90);
+        odo.OdometryControl(speed, 12, 6, 0);
         UpdateTelemetry();
     }
     
@@ -185,9 +185,9 @@ public class CommandSequence extends LinearOpMode
             if (moving)
             {
                 // maybe add arm speed change when hover/moving
-                SpecimenSequence();
+//                SpecimenSequence();
 //                BasketSequence();
-//                TestSequence();
+                TestSequence();
                 // BasicPark();
             }
         }
