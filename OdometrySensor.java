@@ -39,17 +39,19 @@ public class OdometrySensor {
 
     double maximumOutputX = 1;
     double maximumOutputY = 1;
+
+    double diagonalScalar = 0;
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
-        kpx = 0.29; //0.29
-        kpy = 0.26; //0.26
+        kpx = 0.38; //0.29 0.38 0.39 0.42 0.48
+        kpy = 0.24; //0.26 0.31 0.26
         kph = 0.21; // 0.21
-        kix = 0.015; // 0.015
-        kiy = 0.015; // 0.005
+        kix = 0.01; // 0.015 0 0.005
+        kiy = 0; // 0.005 0
         kih = 0.43; // 0.43
-        kdx = 0.23; // 0.23
-        kdy = 0.15; // 0.15
+        kdx = 0.28; // 0.23 0.25
+        kdy = 0.21; // 0.15 0.14 0.2
         kdh = 0.15; // 0.15
         
         last_time = 0;
@@ -78,12 +80,16 @@ public class OdometrySensor {
     }
 
     // maybe derivative not needed as velocity becomes near linear
-    public double pid(double error, int index) 
+    public double pid(double error, int index, double distanceLenience)
     {
         double output = 0;
         if (index == 0)
         {
-            integralX += error * dxTime.seconds();
+            if (distanceLenience != 0.6)
+            {
+                integralX += error * dxTime.seconds();
+            }
+//            integralX += error * dxTime.seconds();
 
             if (previous[0] * error < 0)
             {
@@ -100,14 +106,23 @@ public class OdometrySensor {
 
             NewHighestOutputX(Math.abs(output));
             output = Range.clip(output, -1, 1); // old coef 2*
-            if (Math.max(maximumOutputX, maximumOutputY) == maximumOutputY)
+            if (Math.max(Math.abs(maximumOutputX), Math.abs(maximumOutputY)) == Math.abs(maximumOutputY) && error > Math.abs(0.5))
             {
-                output *= DiagonalScalar(maximumOutputX,maximumOutputY);
+//                output *= DiagonalScalar(maximumOutputX,maximumOutputY);
+                output = DiagonalScalar(Math.abs(maximumOutputX),Math.abs(maximumOutputY))  * output / Math.abs(output);
             }
+//            else if (Math.max(maximumOutputX, maximumOutputY) == maximumOutputX && error > Math.abs(0.5))
+//            {
+////                output /= Math.abs(output);
+//            }
         }
         else if (index == 1)
         {
-            integralY += error * dyTime.seconds();
+            if (distanceLenience != 0.6)
+            {
+                integralY += error * dyTime.seconds();
+            }
+//            integralY += error * dyTime.seconds();
 
             if (previous[1] * error < 0)
             {
@@ -120,6 +135,17 @@ public class OdometrySensor {
             pX = kph * error;
             dX = derivative;
 
+            if (new ArmLiftMotor().GetLocalNeutral() == 1275)
+            {
+                kpy = 0.32;
+                kdy = 0.3;
+            }
+            else
+            {
+                kpy = 0.24;
+                kdy = 0.21;
+            }
+
             output = kpy * error + kiy * integralY + kdy * derivative;
             dyTime.reset();
 
@@ -127,10 +153,15 @@ public class OdometrySensor {
             NewHighestOutputY(Math.abs(output));
             output = Range.clip(output, -1, 1); // old coef 2*
 
-            if (Math.max(maximumOutputX, maximumOutputY) == maximumOutputX)
+            if (Math.max(Math.abs(maximumOutputX), Math.abs(maximumOutputY)) == Math.abs(maximumOutputX) && error > Math.abs(0.5))
             {
-                output *= DiagonalScalar(maximumOutputX,maximumOutputY);
+//                output *= DiagonalScalar(maximumOutputX,maximumOutputY);
+                output = DiagonalScalar(Math.abs(maximumOutputX),Math.abs(maximumOutputY)) * output / Math.abs(output);
             }
+//            else if (Math.max(maximumOutputX, maximumOutputY) == maximumOutputY && error > Math.abs(0.5))
+//            {
+////                output /= Math.abs(output);
+//            }
         }
         else
         {
@@ -166,12 +197,12 @@ public class OdometrySensor {
         lastY = GetPositionY();
     }
     
-    public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot)
+    public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot, double distanceLenience)
     {
         if (!odometry.isConnected()) {return;}
-        double distanceLenience = 1; //best value 1.75
-        double angleLenience = 100; //best value 4 old 3
-        
+//        distanceLenience; //best value 1.75
+        double angleLenience = 50; //best value 4 old 3
+
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
         last_time = now;
@@ -181,8 +212,8 @@ public class OdometrySensor {
         Integrals();
         if (auton)
         {
-            tgtX += runtimeXSum * 0.013;
-            tgtY += runtimeYSum * 0.011;
+            tgtX += runtimeXSum * 0.0155;
+            tgtY -= runtimeYSum * 0.0029;
         }
 
         errors[0] = tgtX - pos.x;
@@ -197,9 +228,9 @@ public class OdometrySensor {
         // normalized against one another
         // should create weird diagonal movement
         // might have to add increased magnitude to error, currently between -1 and 1
-        output[0] = pid(errors[0],0);
-        output[1] = pid(errors[1], 1);
-        output[2] = pid(errors[2],2);
+        output[0] = pid(errors[0],0, distanceLenience);
+        output[1] = pid(errors[1], 1, distanceLenience);
+        output[2] = pid(errors[2],2, distanceLenience);
 
         if (tgtRot == 1)
         {
@@ -248,7 +279,13 @@ public class OdometrySensor {
 
     private double DiagonalScalar(double x, double y)
     {
-        return Math.min(x,y) / Math.max(x,y);
+        diagonalScalar = Math.max((Math.min(x,y) / Math.max(x,y)),0.25);
+        return diagonalScalar;
+    }
+
+    public double GetDiagonalScalar()
+    {
+        return diagonalScalar;
     }
 
     public double angleWrap(double rad)
@@ -347,6 +384,9 @@ public class OdometrySensor {
                 return false;
             }
         }
+        integralX = 0;
+        integralY = 0;
+        integralH = 0;
         maximumOutputX = 1;
         maximumOutputY = 1;
         return true;
