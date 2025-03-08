@@ -24,7 +24,7 @@ public class MoveCommand  {
         s1.init(hwMap, isAuton);
     }
 
-    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, double d, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
@@ -40,7 +40,7 @@ public class MoveCommand  {
 
         lastA = tgtA;
         
-        s1.OdometryControl(speed,tgtX + s1.GetIntegralSumX() * 0.014,tgtY - s1.GetIntegralSumY() * 0.01,rot);
+        s1.OdometryControl(speed,tgtX,tgtY,rot, d);
 
         localCopy = command.GetMap();
 
@@ -58,7 +58,7 @@ public class MoveCommand  {
                 // otherwise, set it to false and stop moving it 
                 switch (key) {
                     case 'm':
-                        s1.OdometryControl(speed, tgtX + s1.GetIntegralSumX() * 0.014, tgtY - s1.GetIntegralSumY() * 0.01, rot);
+                        s1.OdometryControl(speed, tgtX, tgtY, rot, d);
                         if (s1.GetBoolsCompleted()) {
                             command.SetElementTrue('m');
                             // dt.FieldOrientedTranslate(0,0,0,0);
@@ -88,7 +88,7 @@ public class MoveCommand  {
         }
     }
 
-    public void MoveToPositionCancellable(double speed, double x, double y, double h,double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPositionCancellable(double speed, double x, double y, double h, double d, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
@@ -112,7 +112,7 @@ public class MoveCommand  {
             switch (key)
             {
                 case 'm':
-                    s1.OdometryControl(speed,x,y,h);
+                    s1.OdometryControl(speed,x,y,h,d);
                     if (s1.GetBoolsCompleted())
                     {
                         command.SetElementTrue('m');
