@@ -18,9 +18,17 @@ public class CommandSequence extends LinearOpMode
     boolean moving = true;
     double speed = 1; // 1.1
 
-    double grabDistance = 3; // old 4.5
+    double grabDistance = 4; // old 4.5
     int grabHeight = 190;
     int hookHeight = 1275;
+
+    double runtimeXSumScalar = 0.01966; // 0.0115
+    double runtimeYSumScalar = 0.0029; // 0.0115
+
+    double preciseLenience = 0.5;
+    double arcLenience = 2;
+
+
 
     double initialMoveInDistance = 16;
     
@@ -42,11 +50,11 @@ public class CommandSequence extends LinearOpMode
     private void SpecimenSequence()
     {
         Hook(0);
-        moveCmd.MoveToPosition(speed,32,24,0,0.5,grabHeight,false,'G'); //5
+        moveCmd.MoveToPosition(speed,32,24,0,arcLenience,0.5,grabHeight,false,'G'); //5
         Push(0);
         Push(10);
-        moveCmd.MoveToPosition(speed,52,44,0,0.5,grabHeight,false,'G'); //5
-        moveCmd.MoveToPosition(speed,58,44,0,0.5,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,52,44,0,arcLenience,0.5,grabHeight,false,'G'); //5
+        moveCmd.MoveToPosition(speed,58,44,0,preciseLenience,0.5,grabHeight,false,'G'); //6
 
         Grab(18);
 
@@ -62,43 +70,43 @@ public class CommandSequence extends LinearOpMode
         Grab(0);
         Hook(-2);
 
-        moveCmd.MoveToPosition(speed,41,6,0,0.5,0,false,'/');
+        moveCmd.MoveToPosition(speed,41,6,0,arcLenience,0.5,0,false,'/');
         Stop();
     }
 
     private void Hook(int offset) // add offset constant
     {
-        moveCmd.MoveToPosition(1, 0 + offset, 16, 0,0.5,hookHeight, true, 'B');
-        moveCmd.MoveToPosition(1, 0 + offset, 26.5, 0,0.5,hookHeight, true, 'B');
-        odo.OdometryControl(0,0 + offset, 26.5, 0);
+        moveCmd.MoveToPosition(1, 0 + offset, 16, 0,arcLenience,0.5,hookHeight, true, 'B');
+        moveCmd.MoveToPosition(1, 0 + offset, 26.5, 0, preciseLenience,0.5,hookHeight, true, 'B');
+        odo.OdometryControl(0,0 + offset, 26.5, 0, arcLenience);
         cs.SetClawOpen(false);
         cs.Update();
         sleep(150);
-        odo.OdometryControl(0,0 + offset, 26.5, 0);
+        odo.OdometryControl(0,0 + offset, 26.5, 0, arcLenience);
         cs.Update();
         cs.SetWristMode('S');
         sleep(150);
-        moveCmd.MoveToPosition(1, 0 + offset, 16, 0,0.5,hookHeight, false, 'S');
+        moveCmd.MoveToPosition(1, 0 + offset, 16, 0,arcLenience,0.5, hookHeight, false, 'S');
     }
 
     private void Grab(double offset)
     {
-        moveCmd.MoveToPosition(1, 40 + offset, 6, 0,0.5,grabHeight, false, 'G'); //7
-        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,0.5,grabHeight, false, 'G'); //7
-        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,0.5,grabHeight, true, 'G'); //7
-        odo.OdometryControl(0,40 + offset, grabDistance, 0);
+        moveCmd.MoveToPosition(1, 40 + offset, 6, 0,0.5,arcLenience,grabHeight, false, 'G'); //7
+        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,0.5,preciseLenience,grabHeight, false, 'G'); //7
+        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,0.5,preciseLenience,grabHeight, true, 'G'); //7
+        odo.OdometryControl(0,40 + offset, grabDistance, 0, 2);
         cs.SetClawOpen(true);
         sleep(150);
-        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,1,230, true, 'G'); //7
+        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,1,preciseLenience,270, true, 'G'); //7
 //        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,-850,true,'G'); //8
     }
 
     // could try rotational push for speed
     private void Push(double offset)
     {
-        moveCmd.MoveToPosition(speed,32 + offset,44,0,1,grabHeight,false,'G');
-        moveCmd.MoveToPosition(speed,42 + offset,44,0,1,grabHeight,false,'G'); //6
-        moveCmd.MoveToPosition(speed,42 + offset,10,0,1,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,32 + offset,44,0,1,preciseLenience,grabHeight,false,'G');
+        moveCmd.MoveToPosition(speed,42 + offset,44,0,1,preciseLenience,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,42 + offset,10,0,1,arcLenience,grabHeight,false,'G'); //6
     }
 
     private void BasicPark()
@@ -110,35 +118,35 @@ public class CommandSequence extends LinearOpMode
         Stop();
     }
 
-    private void BasketSequence()
-    {
-        DunkBasket();
-        GrabSpec(0);
-        DunkBasket();
-        GrabSpec(10);
-        DunkBasket();
-        GrabSpec(21);
-        FirstLevelAscent();
-    }
+//    private void BasketSequence()
+//    {
+//        DunkBasket();
+//        GrabSpec(0);
+//        DunkBasket();
+//        GrabSpec(10);
+//        DunkBasket();
+//        GrabSpec(21);
+//        FirstLevelAscent();
+//    }
 
-    private void DunkBasket()
-    {
-        moveCmd.MoveToPosition(speed,-12,12,135,0.5,750,true,'D');
-        moveCmd.MoveToPosition(speed,-12,12,135,0.5,750,false,'D');
-    }
-
-    private void GrabSpec(double offset)
-    {
-        moveCmd.MoveToPosition(speed, -7 - offset, 26,0,0.5,1650,false,'M');
-        moveCmd.MoveToPosition(speed, -7 - offset, 26,0,0.5,1650,true,'M');
-    }
-
-    private void FirstLevelAscent()
-    {
-        moveCmd.MoveToPosition(speed, 0, 52, 0, 0.5, 750, false, '/');
-        moveCmd.MoveToPosition(speed, 0, 52, 90, 0.5, 750, false, '/');
-        moveCmd.MoveToPosition(speed, 12, 52, 0, 0.5, 1125, false, '/');
-    }
+//    private void DunkBasket()
+//    {
+//        moveCmd.MoveToPosition(speed,-12,12,135,0.5,750,true,'D');
+//        moveCmd.MoveToPosition(speed,-12,12,135,0.5,750,false,'D');
+//    }
+//
+//    private void GrabSpec(double offset)
+//    {
+//        moveCmd.MoveToPosition(speed, -7 - offset, 26,0,0.5,1650,false,'M');
+//        moveCmd.MoveToPosition(speed, -7 - offset, 26,0,0.5,1650,true,'M');
+//    }
+//
+//    private void FirstLevelAscent()
+//    {
+//        moveCmd.MoveToPosition(speed, 0, 52, 0, 0.5, 750, false, '/');
+//        moveCmd.MoveToPosition(speed, 0, 52, 90, 0.5, 750, false, '/');
+//        moveCmd.MoveToPosition(speed, 12, 52, 0, 0.5, 1125, false, '/');
+//    }
 
     private void UpdateTelemetry()
     {
@@ -150,23 +158,52 @@ public class CommandSequence extends LinearOpMode
         telemetry.addData("ey", odo.GetErrorY());
         telemetry.addData("PROPORTIONAL", odo.GetPorportionalX());
         telemetry.addData("DERIVATIVE", odo.GetDerivativeX());
+        telemetry.addData("INTEGRAL X", odo.GetIntegralSumX());
+        telemetry.addData("INTEGRAL Y", odo.GetIntegralSumY());
         telemetry.update();
     }
+
+    /*
+    x = 2.36/120
+    y = 1.45/500
+     */
 
     private void TestSequence()
     {
 //        moveCmd.MoveToPosition(speed,-24,0,-90,0,false,'/');
 //        UpdateTelemetry();
 //        moveCmd.MoveToPosition(speed,-12,0,-90,0,false,'/');
-        odo.OdometryControl(speed, 12, 6, 0);
+        moveCmd.MoveToPosition(speed,12,0,0,0.5,0.5,1275,false,'/');
+        moveCmd.MoveToPosition(speed,12,12,0,0.5,0.5,1275,false,'/');
+        moveCmd.MoveToPosition(speed,0,0,0,0.5,0.5,1275,false,'/');
+//        odo.OdometryControl(speed, 12, 6, 0, 0.5);
         UpdateTelemetry();
+    }
+
+    private void IntegralTest()
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            moveCmd.MoveToPosition(speed,0,50,0,0.5,0,0,false,'/');
+            moveCmd.MoveToPosition(speed,0,0,0,0.5,0,0,false,'/');
+        }
+        for (int i = 0; i < 5; i++)
+        {
+            moveCmd.MoveToPosition(speed,12,0,0,0.5,0,0,false,'/');
+            moveCmd.MoveToPosition(speed,0,0,0,0.5,0,0,false,'/');
+        }
+        while (true)
+        {
+            dt.FieldOrientedTranslate(0,0,0,0);
+            UpdateTelemetry();
+        }
     }
     
     @Override
     public void runOpMode() 
     {
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = dashboard.getTelemetry();
+//        FtcDashboard dashboard = FtcDashboard.getInstance();
+//        telemetry = dashboard.getTelemetry();
 
         dt.init(hardwareMap);
         moveCmd.init(hardwareMap, true);
@@ -188,6 +225,7 @@ public class CommandSequence extends LinearOpMode
 //                SpecimenSequence();
 //                BasketSequence();
                 TestSequence();
+//                IntegralTest();
                 // BasicPark();
             }
         }
