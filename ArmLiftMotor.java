@@ -46,7 +46,7 @@ public class ArmLiftMotor {
         armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 //        armLiftR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        armLiftR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        armLiftR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         
         armLiftL.setDirection(DcMotor.Direction.FORWARD); // REVERSE
         armLiftR.setDirection(DcMotor.Direction.REVERSE); // FORWARD
@@ -96,6 +96,7 @@ public class ArmLiftMotor {
         else if (mode == 'A')
         {
 //            speed = 1;
+            localNeutral = (int)targetPower;
             MoveToPosition((int)targetPower);
         }
     }
@@ -184,6 +185,8 @@ public class ArmLiftMotor {
     {
         return armLiftL.getCurrentPosition();
     }
+
+    public int GetLocalNeutral() { return localNeutral; }
 
     public double GetArmSpeed()
     {
