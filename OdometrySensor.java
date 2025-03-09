@@ -44,16 +44,18 @@ public class OdometrySensor {
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
-        kpx = 0.38; //0.29 0.38 0.39 0.42 0.48
-        kpy = 0.24; //0.26 0.31 0.26
-        kph = 0.21; // 0.21
-        kix = 0.01; // 0.015 0 0.005
-        kiy = 0; // 0.005 0
-        kih = 0.43; // 0.43
-        kdx = 0.28; // 0.23 0.25
-        kdy = 0.21; // 0.15 0.14 0.2
-        kdh = 0.15; // 0.15
-        
+//        kpx = 0.38; //0.38
+//        kpy = 0.24; //0.24
+//        kph = 0.34; // 0.21
+//        kix = 0.01; // 0.01
+//        kiy = 0; //  0
+//        kih = 0.01; // 0.43
+//        kdx = 0.25; // 0.28
+//        kdy = 0.15; // 0.21
+//        kdh = 0.25; // 0.15
+
+        TuningDown();
+
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
         if (isAuton)
@@ -72,6 +74,32 @@ public class OdometrySensor {
         dt.init(hwMap);
     }
 
+    public void TuningDown()
+    {
+        kpx = 0.38; //0.38
+        kpy = 0.2; //0.2
+        kph = 0.34; // 0.34
+        kix = 0.0; // 0.01
+        kiy = 0.0; // 0.01
+        kih = 0.01; // 0.01
+        kdx = 0.32; // 0.3
+        kdy = 0.13; // 0.13
+        kdh = 0.25; // 0.25
+    }
+
+    public void TuningUp()
+    {
+        kpx = 0.38; //0.38
+        kpy = 0.24; //0.24
+        kph = 0.34; // 0.21
+        kix = 0.01; // 0.01
+        kiy = 0; //  0
+        kih = 0.01; // 0.43
+        kdx = 0.25; // 0.28
+        kdy = 0.15; // 0.21
+        kdh = 0.25; // 0.15
+    }
+
     private double LowPass(double average, double newValue)
     {
         average = (average * 0.85) + (0.15 * newValue);
@@ -85,11 +113,11 @@ public class OdometrySensor {
         double output = 0;
         if (index == 0)
         {
-            if (distanceLenience != 0.6)
-            {
-                integralX += error * dxTime.seconds();
-            }
-//            integralX += error * dxTime.seconds();
+//            if (distanceLenience != 0.6)
+//            {
+//                integralX += error * dxTime.seconds();
+//            }
+            integralX += error * dxTime.seconds();
 
             if (previous[0] * error < 0)
             {
@@ -109,7 +137,7 @@ public class OdometrySensor {
             if (Math.max(Math.abs(maximumOutputX), Math.abs(maximumOutputY)) == Math.abs(maximumOutputY) && error > Math.abs(0.5))
             {
 //                output *= DiagonalScalar(maximumOutputX,maximumOutputY);
-                output = DiagonalScalar(Math.abs(maximumOutputX),Math.abs(maximumOutputY))  * output / Math.abs(output);
+                output = DiagonalScalar(Math.abs(maximumOutputX),Math.abs(maximumOutputY),0.35)  * output / Math.abs(output);
             }
 //            else if (Math.max(maximumOutputX, maximumOutputY) == maximumOutputX && error > Math.abs(0.5))
 //            {
@@ -118,11 +146,11 @@ public class OdometrySensor {
         }
         else if (index == 1)
         {
-            if (distanceLenience != 0.6)
-            {
-                integralY += error * dyTime.seconds();
-            }
-//            integralY += error * dyTime.seconds();
+//            if (distanceLenience != 0.6)
+//            {
+//                integralY += error * dyTime.seconds();
+//            }
+            integralY += error * dyTime.seconds();
 
             if (previous[1] * error < 0)
             {
@@ -135,17 +163,6 @@ public class OdometrySensor {
             pX = kph * error;
             dX = derivative;
 
-            if (new ArmLiftMotor().GetLocalNeutral() == 1275)
-            {
-                kpy = 0.32;
-                kdy = 0.3;
-            }
-            else
-            {
-                kpy = 0.24;
-                kdy = 0.21;
-            }
-
             output = kpy * error + kiy * integralY + kdy * derivative;
             dyTime.reset();
 
@@ -156,7 +173,7 @@ public class OdometrySensor {
             if (Math.max(Math.abs(maximumOutputX), Math.abs(maximumOutputY)) == Math.abs(maximumOutputX) && error > Math.abs(0.5))
             {
 //                output *= DiagonalScalar(maximumOutputX,maximumOutputY);
-                output = DiagonalScalar(Math.abs(maximumOutputX),Math.abs(maximumOutputY)) * output / Math.abs(output);
+                output *= DiagonalScalar(Math.abs(maximumOutputX),Math.abs(maximumOutputY),0.05) * output / Math.abs(output);
             }
 //            else if (Math.max(maximumOutputX, maximumOutputY) == maximumOutputY && error > Math.abs(0.5))
 //            {
@@ -197,11 +214,11 @@ public class OdometrySensor {
         lastY = GetPositionY();
     }
     
-    public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot, double distanceLenience)
+    public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot, double distanceLenience, int axis)
     {
         if (!odometry.isConnected()) {return;}
 //        distanceLenience; //best value 1.75
-        double angleLenience = 50; //best value 4 old 3
+        double angleLenience = 40; //best value 15
 
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -224,6 +241,15 @@ public class OdometrySensor {
 //
 //        errors[0] /= maximumError;
 //        errors[1] /= maximumError;
+
+        if (new ArmLiftMotor().GetLocalNeutral() == 1275)
+        {
+            TuningUp();
+        }
+        else
+        {
+            TuningDown();
+        }
 
         // normalized against one another
         // should create weird diagonal movement
@@ -249,6 +275,20 @@ public class OdometrySensor {
 
         completedBools[0] = Math.abs(errors[0]) < distanceLenience;
         completedBools[1] = Math.abs(errors[1]) < distanceLenience;
+
+
+        if (axis == 0)
+        {
+//            output[1] = 0;
+            output[1] = output[1] / Math.abs(output[1]) * 0.1;
+            completedBools[1] = true;
+        }
+        else if (axis == 1)
+        {
+            output[0] *= 0.4;
+//            output[0] = output[0] / Math.abs(output[0]) * 0.2;
+            completedBools[0] = true;
+        }
 
         // almost!! non linearity is nice but oscillates heavily
 //        double sigmoidX = Sigmoid(output[0] / highestOutput) * output[0]/Math.abs(output[0]);
@@ -277,9 +317,9 @@ public class OdometrySensor {
         }
     }
 
-    private double DiagonalScalar(double x, double y)
+    private double DiagonalScalar(double x, double y, double min)
     {
-        diagonalScalar = Math.max((Math.min(x,y) / Math.max(x,y)),0.25);
+        diagonalScalar = Math.max((Math.min(x,y) / Math.max(x,y)),min);
         return diagonalScalar;
     }
 
@@ -386,7 +426,6 @@ public class OdometrySensor {
         }
         integralX = 0;
         integralY = 0;
-        integralH = 0;
         maximumOutputX = 1;
         maximumOutputY = 1;
         return true;
