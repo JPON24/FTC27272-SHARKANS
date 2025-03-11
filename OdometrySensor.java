@@ -14,8 +14,8 @@ public class OdometrySensor {
     ElapsedTime dxTime = new ElapsedTime();
     ElapsedTime dyTime = new ElapsedTime();
     ElapsedTime dhTime = new ElapsedTime();
-    
-    SparkFunOTOS odometry; 
+
+    SparkFunOTOS odometry;
     SparkFunOTOS.Pose2D pos;
 
     boolean[] completedBools = new boolean[3];
@@ -41,9 +41,8 @@ public class OdometrySensor {
     double maximumOutputY = 1;
 
     double diagonalScalar = 0;
-    
-    public void init(HardwareMap hwMap, boolean isAuton)
-    {
+
+    public void init(HardwareMap hwMap, boolean isAuton) {
 //        kpx = 0.38; //0.38
 //        kpy = 0.24; //0.24
 //        kph = 0.34; // 0.21
@@ -58,8 +57,7 @@ public class OdometrySensor {
 
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
-        if (isAuton)
-        {
+        if (isAuton) {
             odometry.resetTracking();
             odometry.begin();
         }
@@ -70,57 +68,51 @@ public class OdometrySensor {
         odometry.setLinearScalar(1);
         odometry.setAngularScalar(1);
 //        odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0B));
-        odometry.setOffset(new SparkFunOTOS.Pose2D(0.4375,3.625,0));
+        // remeasure
+        odometry.setOffset(new SparkFunOTOS.Pose2D(0.4375, 3.625, 0));
         dt.init(hwMap);
     }
 
-    public void TuningDown()
-    {
-        kpx = 0.38; //0.38
-        kpy = 0.2; //0.2
-        kph = 0.34; // 0.34
+    // gear ratio moving from 1.25 to 1.4
+    // scalar of 1.123
+
+    public void TuningDown() {
+        kpx = 0.38; //0.38 1.14
+        kpy = 0.2; //0.2 0.6
+        kph = 0.34; // 0.34 1.12
         kix = 0.0; // 0.01
         kiy = 0.0; // 0.01
-        kih = 0.01; // 0.01
-        kdx = 0.32; // 0.3
-        kdy = 0.13; // 0.13
+        kih = 0.01 ; // 0.01
+        kdx = 0.32; // 0.32 0.16
+        kdy = 0.13; // 0.13 0.065
+        kdh = 0.25; // 0.25 0.25
+    }
+
+    public void TuningUp() {
+        kpx = 0.38; //0.38
+        kpy = 0.24; //0.24
+        kph = 0.34; // 0.34
+        kix = 0; // 0.01
+        kiy = 0; //  0
+        kih = 0.01; // 0.43
+        kdx = 0.25; // 0.25
+        kdy = 0.15; // 0.15
         kdh = 0.25; // 0.25
     }
 
-    public void TuningUp()
-    {
-        kpx = 0.38; //0.38
-        kpy = 0.24; //0.24
-        kph = 0.34; // 0.21
-        kix = 0.01; // 0.01
-        kiy = 0; //  0
-        kih = 0.01; // 0.43
-        kdx = 0.25; // 0.28
-        kdy = 0.15; // 0.21
-        kdh = 0.25; // 0.15
-    }
-
-    private double LowPass(double average, double newValue)
-    {
+    private double LowPass(double average, double newValue) {
         average = (average * 0.85) + (0.15 * newValue);
 
         return average;
     }
 
     // maybe derivative not needed as velocity becomes near linear
-    public double pid(double error, int index, double distanceLenience)
-    {
+    public double pid(double error, int index, double distanceLenience) {
         double output = 0;
-        if (index == 0)
-        {
-//            if (distanceLenience != 0.6)
-//            {
-//                integralX += error * dxTime.seconds();
-//            }
+        if (index == 0) {
             integralX += error * dxTime.seconds();
 
-            if (previous[0] * error < 0)
-            {
+            if (previous[0] * error < 0) {
                 integralX = 0;
             }
             iX = integralX;
@@ -134,26 +126,13 @@ public class OdometrySensor {
 
             NewHighestOutputX(Math.abs(output));
             output = Range.clip(output, -1, 1); // old coef 2*
-            if (Math.max(Math.abs(maximumOutputX), Math.abs(maximumOutputY)) == Math.abs(maximumOutputY) && error > Math.abs(0.5))
-            {
-//                output *= DiagonalScalar(maximumOutputX,maximumOutputY);
-                output = DiagonalScalar(Math.abs(maximumOutputX),Math.abs(maximumOutputY),0.35)  * output / Math.abs(output);
+            if (Math.max(Math.abs(maximumOutputX), Math.abs(maximumOutputY)) == Math.abs(maximumOutputY) && error > Math.abs(0.5)) {
+                output = DiagonalScalar(Math.abs(maximumOutputX), Math.abs(maximumOutputY), 0.35) * output / Math.abs(output);
             }
-//            else if (Math.max(maximumOutputX, maximumOutputY) == maximumOutputX && error > Math.abs(0.5))
-//            {
-////                output /= Math.abs(output);
-//            }
-        }
-        else if (index == 1)
-        {
-//            if (distanceLenience != 0.6)
-//            {
-//                integralY += error * dyTime.seconds();
-//            }
+        } else if (index == 1) {
             integralY += error * dyTime.seconds();
 
-            if (previous[1] * error < 0)
-            {
+            if (previous[1] * error < 0) {
                 integralY = 0;
             }
 
@@ -170,22 +149,13 @@ public class OdometrySensor {
             NewHighestOutputY(Math.abs(output));
             output = Range.clip(output, -1, 1); // old coef 2*
 
-            if (Math.max(Math.abs(maximumOutputX), Math.abs(maximumOutputY)) == Math.abs(maximumOutputX) && error > Math.abs(0.5))
-            {
-//                output *= DiagonalScalar(maximumOutputX,maximumOutputY);
-                output *= DiagonalScalar(Math.abs(maximumOutputX),Math.abs(maximumOutputY),0.05) * output / Math.abs(output);
+            if (Math.max(Math.abs(maximumOutputX), Math.abs(maximumOutputY)) == Math.abs(maximumOutputX) && error > Math.abs(0.5)) {
+                output *= DiagonalScalar(Math.abs(maximumOutputX), Math.abs(maximumOutputY), 0.3) * output / Math.abs(output);
             }
-//            else if (Math.max(maximumOutputX, maximumOutputY) == maximumOutputY && error > Math.abs(0.5))
-//            {
-////                output /= Math.abs(output);
-//            }
-        }
-        else
-        {
+        } else {
             integralH += error * dhTime.seconds();
 
-            if (previous[2] * error < 0)
-            {
+            if (previous[2] * error < 0) {
                 integralH = 0;
             }
 
@@ -205,30 +175,29 @@ public class OdometrySensor {
         return output;
     }
 
-    private void Integrals()
-    {
+    private void Integrals() {
         runtimeXSum += Math.abs(GetPositionX() - lastX);
         lastX = GetPositionX();
 
         runtimeYSum += Math.abs(GetPositionY() - lastY);
         lastY = GetPositionY();
     }
-    
-    public void OdometryControl(double speed, double tgtX,double tgtY,double tgtRot, double distanceLenience, int axis)
-    {
-        if (!odometry.isConnected()) {return;}
+
+    public void OdometryControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis) {
+        if (!odometry.isConnected()) {
+            return;
+        }
 //        distanceLenience; //best value 1.75
-        double angleLenience = 40; //best value 15
+        double angleLenience = 60; //best value 15
 
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
         last_time = now;
-        
+
         pos = odometry.getPosition();
 
         Integrals();
-        if (auton)
-        {
+        if (auton) {
             tgtX += runtimeXSum * 0.0155;
             tgtY -= runtimeYSum * 0.0029;
         }
@@ -237,90 +206,61 @@ public class OdometrySensor {
         errors[1] = tgtY - pos.y;
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
-//        NewHighestOutput(Math.abs(errors[0]), Math.abs(errors[1]));
-//
-//        errors[0] /= maximumError;
-//        errors[1] /= maximumError;
-
-        if (new ArmLiftMotor().GetLocalNeutral() == 1275)
-        {
+        if (new ArmLiftMotor().GetLocalNeutral() == 1275) {
             TuningUp();
-        }
-        else
-        {
+        } else {
             TuningDown();
         }
 
         // normalized against one another
         // should create weird diagonal movement
         // might have to add increased magnitude to error, currently between -1 and 1
-        output[0] = pid(errors[0],0, distanceLenience);
+        output[0] = pid(errors[0], 0, distanceLenience);
         output[1] = pid(errors[1], 1, distanceLenience);
-        output[2] = pid(errors[2],2, distanceLenience);
+        output[2] = pid(errors[2], 2, distanceLenience);
 
-        if (tgtRot == 1)
-        {
+        if (tgtRot == 1) {
             completedBools[2] = true;
             output[2] = 0;
-        }
-        else
-        {
+        } else {
             completedBools[2] = Math.abs(errors[2]) < angleLenience;
         }
-
-        // could add non linearity with sin?
-        // * math.pi to convert value to radians
-//        output[0] = Math.sin(output[0] * Math.PI);
-//        output[1] = Math.sin(output[1] * Math.PI);
 
         completedBools[0] = Math.abs(errors[0]) < distanceLenience;
         completedBools[1] = Math.abs(errors[1]) < distanceLenience;
 
 
-        if (axis == 0)
-        {
-//            output[1] = 0;
-            output[1] = output[1] / Math.abs(output[1]) * 0.1;
+        if (axis == 0) {
+            output[1] = output[1] / Math.abs(output[1]) * 0.2;
             completedBools[1] = true;
-        }
-        else if (axis == 1)
-        {
+        } else if (axis == 1) {
             output[0] *= 0.4;
-//            output[0] = output[0] / Math.abs(output[0]) * 0.2;
             completedBools[0] = true;
         }
-
-        // almost!! non linearity is nice but oscillates heavily
-//        double sigmoidX = Sigmoid(output[0] / highestOutput) * output[0]/Math.abs(output[0]);
-//        double sigmoidY = Sigmoid(output[1] / highestOutput) * output[0]/Math.abs(output[0]);
-//        double tanHX = Math.tanh(output[0]/pid(highestError,0));
-//        double tanHY = Math.tanh(output[1]/pid(highestError,1));
-//        double sinX = Math.sin(output[0]);
-//        double sinY = Math.sin(output[1]);
 
         dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], pos.h);
     }
 
-    private void NewHighestOutputX(double x)
-    {
-        if (x > maximumOutputX)
-        {
+    private void NewHighestOutputX(double x) {
+        if (x > maximumOutputX) {
             maximumOutputX = x;
         }
     }
 
-    private void NewHighestOutputY(double y)
-    {
-        if (y > maximumOutputY)
-        {
+    private void NewHighestOutputY(double y) {
+        if (y > maximumOutputY) {
             maximumOutputY = y;
         }
     }
 
-    private double DiagonalScalar(double x, double y, double min)
-    {
-        diagonalScalar = Math.max((Math.min(x,y) / Math.max(x,y)),min);
+    private double DiagonalScalar(double x, double y, double min) {
+        diagonalScalar = Math.max((Math.min(x, y) / Math.max(x, y)), min);
         return diagonalScalar;
+    }
+
+    public void Rehome()
+    {
+        odometry.resetTracking();
     }
 
     public double GetDiagonalScalar()
