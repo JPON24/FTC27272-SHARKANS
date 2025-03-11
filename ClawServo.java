@@ -34,11 +34,11 @@ public class ClawServo{
     {
         if (temp)
         {
-            clawPos = 0.22; //initially
+            clawPos = 0.99; //initially
         }
         else
         {
-            clawPos = 0;
+            clawPos = 0.6;
         }
     }
 
@@ -54,8 +54,8 @@ public class ClawServo{
         }
         else if (wristMode == 'B')
         {
-            wristPosL = 0.854; // 1
-            wristPosR = 0.6; // 0.555
+            wristPosL = 0.9; // 1
+            wristPosR = 0.46; // 0.555
         }
         else if (wristMode == 'S')
         {
