@@ -29,7 +29,8 @@ public class StarterBot extends LinearOpMode{
 
     double localOffset = 4;
     double localOffsetIncrement = 2;
-    double grabDistance = 4; // 4 with proper wall
+    double grabDistance = 5; // 4 with proper wall
+    double hookDistance = 22.5;
 
     boolean canShiftArm = true;
 
@@ -43,15 +44,22 @@ public class StarterBot extends LinearOpMode{
 
 
     double runtimeXSum = 0;
-    double runtimeXSumScalar = 0.013; // 0.0115
+    double runtimeXSumScalar = 0.009; // 0.0115
     double lastX = 0;
 
     double runtimeYSum = 0;
-    double runtimeYSumScalar = 0.0035; // 0.014
+    double runtimeYSumScalar = 0; // 0.014 0.0035
     double lastY = 0;
 
     double preciseLenience = 0.6;
-    double arcLenience = 5;
+    double arcLenience = 4.75;
+
+    double xLocalRehomePos = 0;
+
+    double yLocalRehomePos = 0;
+
+    double xRehomePos = 2;
+    double yRehomePos = 31.5;
 
     /*
        ANGLED APPROACH
@@ -73,9 +81,11 @@ public class StarterBot extends LinearOpMode{
         dt.init(hardwareMap);
         cs.init(hardwareMap, false);
         am.init(hardwareMap);
-        s1.init(hardwareMap, false);
+        s1.init(hardwareMap, true);
         moveCmd.init(hardwareMap, false);
         waitForStart();
+        // 0.275
+        // 0.99
         cs.SetDiffPos(0.44,0.99);
         am.Rotate(0,'T');
         am.SetLocalNeutral(50);
@@ -95,6 +105,7 @@ public class StarterBot extends LinearOpMode{
             boolean bButtonPressed = gamepad1.b;
 
             boolean dpadUpPressed = gamepad1.dpad_up;
+            boolean dpadDownPressed = gamepad1.dpad_down;
 
             boolean leftBumperPressed = gamepad1.left_bumper;
             boolean rightBumperPressed = gamepad1.right_bumper;
@@ -124,11 +135,12 @@ public class StarterBot extends LinearOpMode{
                 FieldOrientedToggle(aButtonPressed, xButtonPressed);
                 SpeedShift(leftBumperPressed,rightBumperPressed);
                 dt.FieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation, s1.GetImuReading());
+                Rehoming(dpadDownPressed);
 
                 ResetTopEncoder(yButtonPressed2);
                 ResetDownEncoder(xButtonPressed2);
                 ArmSpeedToggle(armToggle);
-                ClawControl(clawClose,clawOpen);
+                ClawControl(clawOpen,clawClose);
                 ArmControl(armInputUp,armInputDown);
                 DiffControl(wristInputX, wristInputY);
             }
@@ -155,6 +167,17 @@ public class StarterBot extends LinearOpMode{
     wristR = 0.555
     armPosition - -4650
      */
+
+    private void Rehoming(boolean pressed)
+    {
+        if (!pressed) {return;}
+
+        s1.Rehome();
+        xLocalRehomePos = xRehomePos;
+        yLocalRehomePos = yRehomePos;
+        runtimeXSum = 0;
+        runtimeYSum = 0;
+    }
 
     private void Integrals()
     {
@@ -317,8 +340,9 @@ public class StarterBot extends LinearOpMode{
         {
             normalControl = false;
 // should be 23 for move in y
-            TeleopMoveCommandY(1, 0 + localOffset, grabDistance + 4, 0,2,2,0.25,1275, true, 'B');
-            TeleopMoveCommandY(0.5, 0 + localOffset, 20, 0,preciseLenience,1,0.5, 1275, true, 'B');
+            TeleopMoveCommandY(1, 40, grabDistance + 2, 0,preciseLenience,2,0.25,1250, true, 'B');
+            TeleopMoveCommandY(1, 0 + localOffset, grabDistance + 2, 0,preciseLenience,0,0.25,1250, true, 'B');
+            TeleopMoveCommandY(0.8, 0 + localOffset, hookDistance, 0,preciseLenience,1,0.5, 1250, true, 'B');
 //            TeleopMoveCommandY(0.5, 0 + localOffset, 23.5, 0,preciseLenience,1,0.5, 1275, true, 'B');
             if (gamepad1.y)
             {
@@ -337,7 +361,7 @@ public class StarterBot extends LinearOpMode{
                 normalControl = true;
                 return;
             }
-            TeleopMoveCommandY(1, 0 + localOffset, 16, 0, preciseLenience,1,0.5,1275, false, 'S');
+            TeleopMoveCommandY(1, 0 + localOffset, 14, 0, preciseLenience,1,0.5,1250, false, 'S');
 
             localOffset -= localOffsetIncrement;
         }
@@ -351,10 +375,10 @@ public class StarterBot extends LinearOpMode{
     {
         if (b && canStartGrabMacro)
         {
-//            TeleopMoveCommandB(1, 40, grabDistance + 4, 0,preciseLenience,1,0.5, 190, false, 'G');
-            TeleopMoveCommandB(1, 40, grabDistance + 4, 0,1,2,0.5, 190, false, 'G');
-            TeleopMoveCommandB(0.5, 40, grabDistance, 0,preciseLenience, 1,0.5,190, false, 'G');
-            TeleopMoveCommandB(0.1, 40, grabDistance, 0,arcLenience, 2,0.5,190, true, 'G');
+//            TeleopMoveCommandB(1, 40, grabDistance + 4, 0,preciseLenience,1,0.5, 190, false, 'G');\
+            TeleopMoveCommandB(1, 40, grabDistance + 4, 0,1,2,0.5, 145, false, 'G');
+            TeleopMoveCommandB(0.45, 40, grabDistance, 0,preciseLenience, 2,0.5,145, false, 'G');
+            TeleopMoveCommandB(0.1, 40, grabDistance, 0,arcLenience, 2,0.5,145, true, 'G');
             if (gamepad1.b)
             {
 //            s1.OdometryControl(0,40, grabDistance, 0,arcLenience);
@@ -367,8 +391,8 @@ public class StarterBot extends LinearOpMode{
                 normalControl = true;
                 return;
             }
-            TeleopMoveCommandB(0.5, 40, grabDistance,0,preciseLenience,1,1,1275, true, 'G');
-            TeleopMoveCommandB(1, 40, grabDistance + 4,0,preciseLenience,1,1,1275, true, 'G');
+            TeleopMoveCommandB(0.5, 40, grabDistance,0,preciseLenience,1,1,1250, true, 'G');
+//            TeleopMoveCommandB(1, 40, grabDistance + 4,0,preciseLenience,1,1,1275, true, 'G');
             canStartGrabMacro = false;
         }
         else if (!b)
@@ -384,7 +408,7 @@ public class StarterBot extends LinearOpMode{
             Integrals();
             TelemetryPrint();
             cs.SetClawOpen(claw);
-            moveCmd.MoveToPositionCancellable(speed,x + runtimeXSum * runtimeXSumScalar,y - runtimeYSum * runtimeYSumScalar,h,d,axis,speedA,a,claw,wrist);
+            moveCmd.MoveToPositionCancellable(speed,x + runtimeXSum * runtimeXSumScalar - xLocalRehomePos,y - runtimeYSum * runtimeYSumScalar - yLocalRehomePos,h,d,axis,speedA,a,claw,wrist);
             if (!gamepad1.b) {
                 normalControl = true;
                 am.SetLocalNeutral(a);
@@ -401,7 +425,7 @@ public class StarterBot extends LinearOpMode{
             Integrals();
             TelemetryPrint();
             cs.SetClawOpen(claw);
-            moveCmd.MoveToPositionCancellable(speed,x + runtimeXSum * runtimeXSumScalar,y - runtimeYSum * runtimeYSumScalar,h,d,axis,speedA,a,claw,wrist);
+            moveCmd.MoveToPositionCancellable(speed,x + runtimeXSum * runtimeXSumScalar - xLocalRehomePos,y - runtimeYSum * runtimeYSumScalar - yLocalRehomePos,h,d,axis,speedA,a,claw,wrist);
             if (!gamepad1.y) {
                 normalControl = true;
                 am.SetLocalNeutral(a);
@@ -417,7 +441,7 @@ public class StarterBot extends LinearOpMode{
         {
             Integrals();
             TelemetryPrint();
-            moveCmd.MoveToPositionCancellable(speed,x + runtimeXSum * runtimeXSumScalar,y - runtimeYSum * runtimeYSumScalar,h,d,axis,speedA,a,claw,wrist);
+            moveCmd.MoveToPositionCancellable(speed,x + runtimeXSum * runtimeXSumScalar - xLocalRehomePos,y - runtimeYSum * runtimeYSumScalar - yLocalRehomePos,h,d,axis,speedA,a,claw,wrist);
             TelemetryPrint();
             if (gamepad1.right_trigger < 0.8) {
                 normalControl = true;
