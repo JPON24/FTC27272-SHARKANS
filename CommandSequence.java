@@ -14,27 +14,18 @@ public class CommandSequence extends LinearOpMode
     Drivetrain dt = new Drivetrain();
     OdometrySensor odo = new OdometrySensor();
     ClawServo cs = new ClawServo();
+    ArmLiftMotor am = new ArmLiftMotor();
 
     boolean moving = true;
     double speed = 1; // 1.1
 
-    double grabDistance = 4; // old 4.5
-    int grabHeight = 190;
-    int hookHeight = 1275;
+    double grabDistance = 4.75; // old 4.5
+    double hookDistance = 22.5;
+    int grabHeight = 145;
+    int hookHeight = 1250;
 
-    double runtimeXSumScalar = 0.01966; // 0.0115
-    double runtimeYSumScalar = 0.0029; // 0.0115
-
-    double preciseLenience = 0.5;
-    double arcLenience = 2;
-
-
-
-    double initialMoveInDistance = 16;
-
-    // use later for scalability
-    // double halfLength = 8.625; //y
-    // double halfWidth = 7.625; //x
+    double preciseLenience = 0.6;
+    double arcLenience = 10;
 
     private void ContinueMovement()
     {
@@ -49,26 +40,27 @@ public class CommandSequence extends LinearOpMode
 
     private void SpecimenSequence()
     {
-        Hook(0);
-        moveCmd.MoveToPosition(speed,32,24,0,arcLenience,2,0.5,grabHeight,false,'G'); //5
+        moveCmd.MoveToPosition(speed,32,19,0,arcLenience,2,0.5,grabHeight,false,'G'); //5
         Push(0);
         Push(10);
-        moveCmd.MoveToPosition(speed,52,44,0,arcLenience,2,0.5,grabHeight,false,'G'); //5
-        moveCmd.MoveToPosition(speed,58,44,0,preciseLenience,2,0.5,grabHeight,false,'G'); //6
-
-        Grab(18);
-
-        Hook(6);
+        moveCmd.MoveToPosition(speed,52,49,0,arcLenience,2,0.5,grabHeight,false,'G'); //5
+        moveCmd.MoveToPosition(speed,57,49,0,preciseLenience,2,0.5,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,57,10,0,preciseLenience,2,0.5,grabHeight,false,'G'); //6
 
         Grab(0);
-
-        Hook(4);
-
-        Grab(0);
-        Hook(2);
+        Hook(-9);
 
         Grab(0);
-        Hook(-2);
+        Hook(-6);
+
+        Grab(0);
+        Hook(-3);
+
+        Grab(0);
+        Hook(0);
+
+        Grab(0);
+        Hook(3);
 
         moveCmd.MoveToPosition(speed,41,6,0,arcLenience,2,0.5,0,false,'/');
         Stop();
@@ -76,36 +68,40 @@ public class CommandSequence extends LinearOpMode
 
     private void Hook(int offset) // add offset constant
     {
-        moveCmd.MoveToPosition(1, 0 + offset, 16, 0,arcLenience,2,.5,hookHeight, true, 'B');
-        moveCmd.MoveToPosition(1, 0 + offset, 26.5, 0, preciseLenience,2,0.5,hookHeight, true, 'B');
-        odo.OdometryControl(0,0 + offset, 26.5, 0, arcLenience,2);
+        moveCmd.MoveToPosition(1, 0 + offset, grabDistance + 2, 0,preciseLenience,0,0.25,1250, true, 'B');
+        moveCmd.MoveToPosition(0.8, 0 + offset, hookDistance, 0,preciseLenience,1,0.5, 1250, true, 'B');
+//            TeleopMoveCommandY(0.5, 0 + localOffset, 23.5, 0,preciseLenience,1,0.5, 1275, true, 'B');
+        dt.FieldOrientedTranslate(0,0,0,0);
+//            s1.OdometryControl(0,0 + localOffset, 23, 0, arcLenience);
         cs.SetClawOpen(false);
         cs.Update();
         sleep(150);
-        odo.OdometryControl(0,0 + offset, 26.5, 0, arcLenience,2);
+        dt.FieldOrientedTranslate(0,0,0,0);
         cs.Update();
         cs.SetWristMode('S');
         sleep(150);
-        moveCmd.MoveToPosition(1, 0 + offset, 16, 0,arcLenience,2,0.5, hookHeight, false, 'S');
+        moveCmd.MoveToPosition(1, 0 + offset, 14, 0, preciseLenience,1,0.5,1250, false, 'S');
     }
 
     private void Grab(double offset)
     {
-        moveCmd.MoveToPosition(1, 40 + offset, 6, 0,0.5,2,arcLenience,grabHeight, false, 'G'); //7
-        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,0.5,2,preciseLenience,grabHeight, false, 'G'); //7
-        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,0.5,2,preciseLenience,grabHeight, true, 'G'); //7
-        odo.OdometryControl(0,40 + offset, grabDistance, 0, 2,2);
+        moveCmd.MoveToPosition(1, 40 + offset, grabDistance + 4, 0,1,2,0.5, 145, false, 'G');
+        moveCmd.MoveToPosition(0.6, 40 + offset, grabDistance, 0,preciseLenience, 2,0.5,145, false, 'G');
+        moveCmd.MoveToPosition(0.5, 40 + offset, grabDistance, 0,arcLenience, 2,0.5,145, true, 'G');
+//            s1.OdometryControl(0,40, grabDistance, 0,arcLenience);
+        dt.FieldOrientedTranslate(0,0,0,0);
         cs.SetClawOpen(true);
-        sleep(150);
-        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,1,2,preciseLenience,270, true, 'G'); //7
+        sleep(200);
+        moveCmd.MoveToPosition(0.5, 40 + offset, grabDistance,0,preciseLenience,1,1,1250, true, 'G');
+        moveCmd.MoveToPosition(1, 40 + offset, grabDistance + 2, 0,preciseLenience,2,0.25,1250, true, 'B');
 //        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,-850,true,'G'); //8
     }
 
     // could try rotational push for speed
     private void Push(double offset)
     {
-        moveCmd.MoveToPosition(speed,32 + offset,44,0,1,2,preciseLenience,grabHeight,false,'G');
-        moveCmd.MoveToPosition(speed,42 + offset,44,0,1,2,preciseLenience,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,32 + offset,49,0,1,2,preciseLenience,grabHeight,false,'G');
+        moveCmd.MoveToPosition(speed,42 + offset,49,0,1,2,preciseLenience,grabHeight,false,'G'); //6
         moveCmd.MoveToPosition(speed,42 + offset,10,0,1,2,arcLenience,grabHeight,false,'G'); //6
     }
 
@@ -118,36 +114,6 @@ public class CommandSequence extends LinearOpMode
         Stop();
     }
 
-//    private void BasketSequence()
-//    {
-//        DunkBasket();
-//        GrabSpec(0);
-//        DunkBasket();
-//        GrabSpec(10);
-//        DunkBasket();
-//        GrabSpec(21);
-//        FirstLevelAscent();
-//    }
-
-//    private void DunkBasket()
-//    {
-//        moveCmd.MoveToPosition(speed,-12,12,135,0.5,750,true,'D');
-//        moveCmd.MoveToPosition(speed,-12,12,135,0.5,750,false,'D');
-//    }
-//
-//    private void GrabSpec(double offset)
-//    {
-//        moveCmd.MoveToPosition(speed, -7 - offset, 26,0,0.5,1650,false,'M');
-//        moveCmd.MoveToPosition(speed, -7 - offset, 26,0,0.5,1650,true,'M');
-//    }
-//
-//    private void FirstLevelAscent()
-//    {
-//        moveCmd.MoveToPosition(speed, 0, 52, 0, 0.5, 750, false, '/');
-//        moveCmd.MoveToPosition(speed, 0, 52, 90, 0.5, 750, false, '/');
-//        moveCmd.MoveToPosition(speed, 12, 52, 0, 0.5, 1125, false, '/');
-//    }
-
     private void UpdateTelemetry()
     {
         telemetry.addData("x", odo.GetPositionX());
@@ -158,8 +124,8 @@ public class CommandSequence extends LinearOpMode
         telemetry.addData("ey", odo.GetErrorY());
         telemetry.addData("PROPORTIONAL", odo.GetPorportionalX());
         telemetry.addData("DERIVATIVE", odo.GetDerivativeX());
-        telemetry.addData("INTEGRAL X", odo.GetIntegralSumX());
-        telemetry.addData("INTEGRAL Y", odo.GetIntegralSumY());
+//        telemetry.addData("INTEGRAL X", odo.GetIntegralSumX());
+//        telemetry.addData("INTEGRAL Y", odo.GetIntegralSumY());
         telemetry.update();
     }
 
@@ -187,7 +153,10 @@ public class CommandSequence extends LinearOpMode
 //        UpdateTelemetry();
 //        moveCmd.MoveToPosition(speed,-12,0,-90,0,false,'/');
         odo.TuningDown();
-        moveCmd.MoveToPosition(speed,12,0,0,0.5,2,0.5,190,false,'/');
+//        moveCmd.MoveToPosition(speed,12,0,0,0.5,2,0.5,190,false,'/');
+
+        odo.OdometryControl(1,12,0,0,0.5,2);
+
 //        moveCmd.MoveToPosition(speed,12,12,0,0.5,2,0.5,190,false,'/');
 //        moveCmd.MoveToPosition(speed,0,0,0,0.5,2,0.5,190,false,'/');
 //        odo.OdometryControl(speed, 12, 6, 0, 0.5);
@@ -232,11 +201,19 @@ public class CommandSequence extends LinearOpMode
         moveCmd.init(hardwareMap, true);
         odo.init(hardwareMap,true);
         cs.init(hardwareMap, true);
+        am.init(hardwareMap);
+
+        cs.SetDiffPos(0.44, 0.99);
+        cs.SetClawOpen(true);
+        cs.Update();
+//        am.Rotate(0,'T');
+//        am.SetLocalNeutral(50);
+//        am.Rotate(0,'T');
 
         double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
         // removed for maximum speed possible
-        double normalizedVolts = (1 - volts/14) + volts/14 * 0.857; // reduced to account for volt drops during auton
-        speed *= normalizedVolts;
+//        double normalizedVolts = (1 - volts/14) + volts/14 * 0.857; // reduced to account for volt drops during auton
+//        speed *= normalizedVolts;
 
         waitForStart();
         ContinueMovement(); //just in case
@@ -245,10 +222,10 @@ public class CommandSequence extends LinearOpMode
             if (moving)
             {
                 // maybe add arm speed change when hover/moving
-//                SpecimenSequence();
+                SpecimenSequence();
 //                BasketSequence();
 //                TestSequenceUp();
-                TestSequenceDown();
+//                TestSequenceDown();
 //                IntegralTest();
 //                RotationSequence();
                 // BasicPark();
