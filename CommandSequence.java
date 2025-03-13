@@ -19,8 +19,8 @@ public class CommandSequence extends LinearOpMode
     boolean moving = true;
     double speed = 1; // 1.1
 
-    double grabDistance = 4.75; // old 4.5
-    double hookDistance = 22.5;
+    double grabDistance = 6; // old 4.5
+    double hookDistance = 22.5; // 22.5
     int grabHeight = 145;
     int hookHeight = 1250;
 
@@ -43,35 +43,36 @@ public class CommandSequence extends LinearOpMode
         moveCmd.MoveToPosition(speed,32,19,0,arcLenience,2,0.5,grabHeight,false,'G'); //5
         Push(0);
         Push(10);
-        moveCmd.MoveToPosition(speed,52,49,0,arcLenience,2,0.5,grabHeight,false,'G'); //5
-        moveCmd.MoveToPosition(speed,57,49,0,preciseLenience,2,0.5,grabHeight,false,'G'); //6
-        moveCmd.MoveToPosition(speed,57,10,0,preciseLenience,2,0.5,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,52,47,0,arcLenience,1,0.5,grabHeight,false,'G'); //5
+        moveCmd.MoveToPosition(speed,58,47,0,preciseLenience,2,0.5,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,58,12,0,preciseLenience,1,0.5,grabHeight,false,'G'); //6
 
         Grab(0);
-        Hook(-9);
+        Hook(4);
 
         Grab(0);
-        Hook(-6);
+        Hook(4);
 
         Grab(0);
-        Hook(-3);
+        Hook(4);
 
         Grab(0);
-        Hook(0);
+        Hook(4);
 
         Grab(0);
-        Hook(3);
+        Hook(4);
 
-        moveCmd.MoveToPosition(speed,41,6,0,arcLenience,2,0.5,0,false,'/');
+        moveCmd.MoveToPosition(speed,40,10,0,0.25 ,2,0.5,0,false,'G');
         Stop();
     }
 
     private void Hook(int offset) // add offset constant
     {
-        moveCmd.MoveToPosition(1, 0 + offset, grabDistance + 2, 0,preciseLenience,0,0.25,1250, true, 'B');
-        moveCmd.MoveToPosition(0.8, 0 + offset, hookDistance, 0,preciseLenience,1,0.5, 1250, true, 'B');
+        moveCmd.MoveToPosition(1, 0 + offset, grabDistance + 2, 0,preciseLenience,0,1,1250, true, 'B');
+        moveCmd.MoveToPosition(0.8, 0 + offset, hookDistance, 0,preciseLenience,1,1, 1250, true, 'B');
+//        moveCmd.MoveToPosition(0.8, 0 + offset - 4, hookDistance, 0,preciseLenience,0,0.5, 1250, true, 'B');
 //            TeleopMoveCommandY(0.5, 0 + localOffset, 23.5, 0,preciseLenience,1,0.5, 1275, true, 'B');
-        dt.FieldOrientedTranslate(0,0,0,0);
+        dt.FieldOrientedTranslate(-1,0,0,0);
 //            s1.OdometryControl(0,0 + localOffset, 23, 0, arcLenience);
         cs.SetClawOpen(false);
         cs.Update();
@@ -100,9 +101,9 @@ public class CommandSequence extends LinearOpMode
     // could try rotational push for speed
     private void Push(double offset)
     {
-        moveCmd.MoveToPosition(speed,32 + offset,49,0,1,2,preciseLenience,grabHeight,false,'G');
-        moveCmd.MoveToPosition(speed,42 + offset,49,0,1,2,preciseLenience,grabHeight,false,'G'); //6
-        moveCmd.MoveToPosition(speed,42 + offset,10,0,1,2,arcLenience,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,32 + offset,47,0,1,1,preciseLenience,grabHeight,false,'G');
+        moveCmd.MoveToPosition(speed,42 + offset,47,0,1,2,preciseLenience,grabHeight,false,'G'); //6
+        moveCmd.MoveToPosition(speed,42 + offset,12,0,1,1,preciseLenience,grabHeight,false,'G'); //6
     }
 
     private void BasicPark()
