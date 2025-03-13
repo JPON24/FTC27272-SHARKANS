@@ -19,8 +19,8 @@ public class CommandSequence extends LinearOpMode
     boolean moving = true;
     double speed = 1; // 1.1
 
-    double grabDistance = 6; // old 4.5
-    double hookDistance = 22.5; // 22.5
+    double grabDistance = 7; // old 4.5
+    double hookDistance = 24; // 22.5
     int grabHeight = 145;
     int hookHeight = 1250;
 
@@ -72,7 +72,8 @@ public class CommandSequence extends LinearOpMode
         moveCmd.MoveToPosition(0.8, 0 + offset, hookDistance, 0,preciseLenience,1,1, 1250, true, 'B');
 //        moveCmd.MoveToPosition(0.8, 0 + offset - 4, hookDistance, 0,preciseLenience,0,0.5, 1250, true, 'B');
 //            TeleopMoveCommandY(0.5, 0 + localOffset, 23.5, 0,preciseLenience,1,0.5, 1275, true, 'B');
-        dt.FieldOrientedTranslate(-1,0,0,0);
+//        odo.OdometryControl(1, offset-3, hookDistance,0,preciseLenience,0);
+        dt.FieldOrientedTranslate(-1,0,0,odo.GetImuReading());
 //            s1.OdometryControl(0,0 + localOffset, 23, 0, arcLenience);
         cs.SetClawOpen(false);
         cs.Update();
@@ -94,7 +95,7 @@ public class CommandSequence extends LinearOpMode
         cs.SetClawOpen(true);
         sleep(200);
         moveCmd.MoveToPosition(0.5, 40 + offset, grabDistance,0,preciseLenience,1,1,1250, true, 'G');
-        moveCmd.MoveToPosition(1, 40 + offset, grabDistance + 2, 0,preciseLenience,2,0.25,1250, true, 'B');
+        moveCmd.MoveToPosition(1, 40 + offset, grabDistance + 2, 0,preciseLenience,2,1,1250, true, 'B');
 //        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,-850,true,'G'); //8
     }
 
@@ -215,7 +216,6 @@ public class CommandSequence extends LinearOpMode
         // removed for maximum speed possible
 //        double normalizedVolts = (1 - volts/14) + volts/14 * 0.857; // reduced to account for volt drops during auton
 //        speed *= normalizedVolts;
-
         waitForStart();
         ContinueMovement(); //just in case
         while(opModeIsActive())
