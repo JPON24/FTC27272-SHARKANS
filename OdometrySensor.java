@@ -198,15 +198,15 @@ public class OdometrySensor {
 
         Integrals();
         if (auton) {
-            tgtX += runtimeXSum * 0.0155;
-            tgtY -= runtimeYSum * 0.0029;
+            tgtX += runtimeXSum * 0.0164;
+            tgtY -= runtimeYSum * 0.005;
         }
 
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
-        if (new ArmLiftMotor().GetLocalNeutral() == 1275) {
+        if (new ArmLiftMotor().GetLocalNeutral() == 1250) {
             TuningUp();
         } else {
             TuningDown();
