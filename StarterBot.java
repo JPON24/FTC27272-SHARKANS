@@ -28,9 +28,9 @@ public class StarterBot extends LinearOpMode{
     double diffSpeed = 0.5;
 
     double localOffset = 4;
-    double localOffsetIncrement = 2;
-    double grabDistance = 5; // 4 with proper wall
-    double hookDistance = 22.5;
+    double localOffsetIncrement = 4;
+    double grabDistance = 7; // 4 with proper wall
+    double hookDistance = 24;
 
     boolean canShiftArm = true;
 
@@ -44,15 +44,15 @@ public class StarterBot extends LinearOpMode{
 
 
     double runtimeXSum = 0;
-    double runtimeXSumScalar = 0.009; // 0.0115
+    double runtimeXSumScalar = 0.0156; // 0.0164
     double lastX = 0;
 
     double runtimeYSum = 0;
-    double runtimeYSumScalar = 0; // 0.014 0.0035
+    double runtimeYSumScalar = 0.0063; // 0.028
     double lastY = 0;
 
     double preciseLenience = 0.6;
-    double arcLenience = 4.75;
+    double arcLenience = 10;
 
     double xLocalRehomePos = 0;
 
@@ -81,7 +81,7 @@ public class StarterBot extends LinearOpMode{
         dt.init(hardwareMap);
         cs.init(hardwareMap, false);
         am.init(hardwareMap);
-        s1.init(hardwareMap, true);
+        s1.init(hardwareMap, false);
         moveCmd.init(hardwareMap, false);
         waitForStart();
         // 0.275
@@ -208,7 +208,7 @@ public class StarterBot extends LinearOpMode{
     {
         if (dpadUpPressed)
         {
-            localOffset = 4;
+            localOffset = 3;
         }
     }
 
@@ -343,10 +343,12 @@ public class StarterBot extends LinearOpMode{
             TeleopMoveCommandY(1, 40, grabDistance + 2, 0,preciseLenience,2,0.25,1250, true, 'B');
             TeleopMoveCommandY(1, 0 + localOffset, grabDistance + 2, 0,preciseLenience,0,0.25,1250, true, 'B');
             TeleopMoveCommandY(0.8, 0 + localOffset, hookDistance, 0,preciseLenience,1,0.5, 1250, true, 'B');
+//            TeleopMoveCommandY(0.8, 0 + localOffset - localOffsetIncrement, hookDistance, 0,preciseLenience,0,0.5, 1250, true, 'B');
+
 //            TeleopMoveCommandY(0.5, 0 + localOffset, 23.5, 0,preciseLenience,1,0.5, 1275, true, 'B');
             if (gamepad1.y)
             {
-                dt.FieldOrientedTranslate(0,0,0,0);
+                dt.FieldOrientedTranslate(-1,0,0,0);
 //            s1.OdometryControl(0,0 + localOffset, 23, 0, arcLenience);
                 cs.SetClawOpen(false);
                 cs.Update();
@@ -362,8 +364,7 @@ public class StarterBot extends LinearOpMode{
                 return;
             }
             TeleopMoveCommandY(1, 0 + localOffset, 14, 0, preciseLenience,1,0.5,1250, false, 'S');
-
-            localOffset -= localOffsetIncrement;
+//            localOffset -= localOffsetIncrement;
         }
         else if (!y)
         {
@@ -377,8 +378,8 @@ public class StarterBot extends LinearOpMode{
         {
 //            TeleopMoveCommandB(1, 40, grabDistance + 4, 0,preciseLenience,1,0.5, 190, false, 'G');\
             TeleopMoveCommandB(1, 40, grabDistance + 4, 0,1,2,0.5, 145, false, 'G');
-            TeleopMoveCommandB(0.45, 40, grabDistance, 0,preciseLenience, 2,0.5,145, false, 'G');
-            TeleopMoveCommandB(0.1, 40, grabDistance, 0,arcLenience, 2,0.5,145, true, 'G');
+            TeleopMoveCommandB(0.6, 40, grabDistance, 0,preciseLenience, 2,0.5,145, false, 'G');
+            TeleopMoveCommandB(0.35, 40, grabDistance, 0,arcLenience, 2,0.5,145, true, 'G');
             if (gamepad1.b)
             {
 //            s1.OdometryControl(0,40, grabDistance, 0,arcLenience);
