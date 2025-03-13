@@ -59,8 +59,8 @@ public class CommandSequence extends LinearOpMode
         Grab(0);
         Hook(4);
 
-        Grab(0);
-        Hook(4);
+//        Grab(0);
+//        Hook(4);
 
         moveCmd.MoveToPosition(speed,40,10,0,0.25 ,2,0.5,0,false,'G');
         Stop();
