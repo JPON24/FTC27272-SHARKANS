@@ -198,8 +198,8 @@ public class OdometrySensor {
 
         Integrals();
         if (auton) {
-            tgtX += runtimeXSum * 0.0164;
-            tgtY -= runtimeYSum * 0.005;
+            tgtX += runtimeXSum * 0.0156;
+            tgtY -= runtimeYSum * 0.0063;
         }
 
         errors[0] = tgtX - pos.x;
