@@ -9,7 +9,7 @@ public class MoveCommand  {
     Drivetrain dt = new Drivetrain();
     ClawServo cs = new ClawServo();
     ArmLiftMotor am = new ArmLiftMotor();
-    OdometrySensor s1 = new OdometrySensor();
+    SharkDrive shark = new SharkDrive();
     CommandSystem command = new CommandSystem();
 
     ElapsedTime timeout = new ElapsedTime();
@@ -21,10 +21,10 @@ public class MoveCommand  {
         dt.init(hwMap);
         cs.init(hwMap, true);
         am.init(hwMap);
-        s1.init(hwMap, isAuton);
+        shark.init(hwMap, isAuton);
     }
 
-    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, double d, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, double d, int axis, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
@@ -40,7 +40,7 @@ public class MoveCommand  {
 
         lastA = tgtA;
         
-        s1.OdometryControl(speed,tgtX,tgtY,rot, d);
+        shark.OdometryControl(speed,tgtX,tgtY,rot,d,axis);
 
         localCopy = command.GetMap();
 
@@ -58,8 +58,8 @@ public class MoveCommand  {
                 // otherwise, set it to false and stop moving it 
                 switch (key) {
                     case 'm':
-                        s1.OdometryControl(speed, tgtX, tgtY, rot, d);
-                        if (s1.GetBoolsCompleted()) {
+                        shark.OdometryControl(speed, tgtX, tgtY, rot, d, axis);
+                        if (shark.GetBoolsCompleted()) {
                             command.SetElementTrue('m');
                             // dt.FieldOrientedTranslate(0,0,0,0);
                             break;
@@ -79,7 +79,7 @@ public class MoveCommand  {
                 }
             }
 
-            if (timeout.seconds() > 5)
+            if (timeout.seconds() > 3.5)
             {
                 break;
             }
@@ -88,7 +88,7 @@ public class MoveCommand  {
         }
     }
 
-    public void MoveToPositionCancellable(double speed, double x, double y, double h, double d, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPositionCancellable(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
@@ -102,6 +102,7 @@ public class MoveCommand  {
         cs.SetWristMode(tgtWrist);
         cs.SetClawOpen(tgtClaw);
         am.SetArmSpeed(speedA);
+        am.Rotate(tgtA,'A');
 
         // for every key (m, e, a, c, w)
         for (Character key : localCopy.keySet())
@@ -112,8 +113,8 @@ public class MoveCommand  {
             switch (key)
             {
                 case 'm':
-                    s1.OdometryControl(speed,x,y,h,d);
-                    if (s1.GetBoolsCompleted())
+                    shark.OdometryControl(speed,x,y,h,d,axis);
+                    if (shark.GetBoolsCompleted())
                     {
                         command.SetElementTrue('m');
                         // dt.FieldOrientedTranslate(0,0,0,0);
@@ -125,7 +126,6 @@ public class MoveCommand  {
                         break;
                     }
                 case 'a':
-                    am.Rotate(tgtA,'A');
                     if (am.GetCompleted(tgtA))
                     {
                         command.SetElementTrue('a');
