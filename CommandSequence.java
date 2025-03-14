@@ -57,7 +57,7 @@ public class CommandSequence extends LinearOpMode
         Hook(4);
 
         Grab(0);
-        Hook(4);
+        Hook(2);
 
 //        Grab(0);
 //        Hook(4);
