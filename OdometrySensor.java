@@ -42,6 +42,8 @@ public class OdometrySensor {
 
     double diagonalScalar = 0;
 
+    double angleLenience = 60;
+
     public void init(HardwareMap hwMap, boolean isAuton) {
 //        kpx = 0.38; //0.38
 //        kpy = 0.24; //0.24
@@ -188,7 +190,6 @@ public class OdometrySensor {
             return;
         }
 //        distanceLenience; //best value 1.75
-        double angleLenience = 60; //best value 15
 
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
@@ -286,6 +287,11 @@ public class OdometrySensor {
         runtimeXSum = temp;
     }
 
+    public void SetAngleLenience(double temp)
+    {
+        angleLenience = temp;
+    }
+
     public double GetIntegralSumX() {return runtimeXSum;}
 
     public double GetIntegralSumY() {return runtimeYSum;}
@@ -294,12 +300,12 @@ public class OdometrySensor {
     {
         return odometry.getPosition().h;
     }
-    
+
     public double GetPositionX()
     {
         return odometry.getPosition().x;
     }
-    
+
     public double GetPositionY()
     {
         return odometry.getPosition().y;
@@ -309,17 +315,17 @@ public class OdometrySensor {
     {
         return errors[0];
     }
-    
+
     public double GetErrorY()
     {
         return errors[1];
     }
-    
+
     public double GetErrorH()
     {
         return errors[2];
     }
-    
+
     public double GetOutputX()
     {
         return output[0];
@@ -328,12 +334,12 @@ public class OdometrySensor {
     public double GetDerivativeX() { return dX; }
 
     public double GetPorportionalX() {return pX;}
-    
+
     public double GetOutputY()
     {
         return output[1];
     }
-    
+
     public double GetOutputH()
     {
         return output[2];
@@ -354,7 +360,7 @@ public class OdometrySensor {
         return iH;
     }
 
-    
+
     public boolean GetBoolsCompleted()
     {
         for (int i = 0; i < 3; i++)
