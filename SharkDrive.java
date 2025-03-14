@@ -3,12 +3,12 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import org.firstinspires.ftc.teamcode.Drivetrain;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
-public class OdometrySensor {
+public class SharkDrive {
     Drivetrain dt = new Drivetrain();
     ElapsedTime runtime = new ElapsedTime();
     ElapsedTime dxTime = new ElapsedTime();
@@ -199,7 +199,7 @@ public class OdometrySensor {
 
         Integrals();
         if (auton) {
-            tgtX += runtimeXSum * 0.0156;
+            tgtX += runtimeXSum * 0.0002;
             tgtY -= runtimeYSum * 0.0063;
         }
 
@@ -377,3 +377,12 @@ public class OdometrySensor {
         return true;
     }
 } 
+
+/*
+Congratulations!! You found this useless comment
+
+:D
+
+IF YOU ARE PICKING UP THIS CODE BASE I AM GENUINELY SORRY
+PS. I strongly recommend coffee when updating this code
+ */
