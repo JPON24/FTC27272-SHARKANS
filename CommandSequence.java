@@ -12,7 +12,7 @@ public class CommandSequence extends LinearOpMode
 {
     MoveCommand moveCmd = new MoveCommand();
     Drivetrain dt = new Drivetrain();
-    OdometrySensor odo = new OdometrySensor();
+    SharkDrive shark = new SharkDrive();
     ClawServo cs = new ClawServo();
     ArmLiftMotor am = new ArmLiftMotor();
 
@@ -20,7 +20,7 @@ public class CommandSequence extends LinearOpMode
     double speed = 1; // 1.1
 
     double grabDistance = 7; // old 4.5
-    double hookDistance = 24; // 22.5
+    double hookDistance = 23.5; // 22.5
     int grabHeight = 145;
     int hookHeight = 1250;
 
@@ -73,7 +73,7 @@ public class CommandSequence extends LinearOpMode
 //        moveCmd.MoveToPosition(0.8, 0 + offset - 4, hookDistance, 0,preciseLenience,0,0.5, 1250, true, 'B');
 //            TeleopMoveCommandY(0.5, 0 + localOffset, 23.5, 0,preciseLenience,1,0.5, 1275, true, 'B');
 //        odo.OdometryControl(1, offset-3, hookDistance,0,preciseLenience,0);
-        dt.FieldOrientedTranslate(-1,0,0,odo.GetImuReading());
+        dt.FieldOrientedTranslate(-1,0,0, shark.GetImuReading());
 //            s1.OdometryControl(0,0 + localOffset, 23, 0, arcLenience);
         cs.SetClawOpen(false);
         cs.Update();
@@ -118,14 +118,14 @@ public class CommandSequence extends LinearOpMode
 
     private void UpdateTelemetry()
     {
-        telemetry.addData("x", odo.GetPositionX());
-        telemetry.addData("y", odo.GetPositionY());
-        telemetry.addData("h", odo.GetImuReading());
-        telemetry.addData("ex", odo.GetErrorX());
-        telemetry.addData("eh", odo.GetErrorH());
-        telemetry.addData("ey", odo.GetErrorY());
-        telemetry.addData("PROPORTIONAL", odo.GetPorportionalX());
-        telemetry.addData("DERIVATIVE", odo.GetDerivativeX());
+        telemetry.addData("x", shark.GetPositionX());
+        telemetry.addData("y", shark.GetPositionY());
+        telemetry.addData("h", shark.GetImuReading());
+        telemetry.addData("ex", shark.GetErrorX());
+        telemetry.addData("eh", shark.GetErrorH());
+        telemetry.addData("ey", shark.GetErrorY());
+        telemetry.addData("PROPORTIONAL", shark.GetPorportionalX());
+        telemetry.addData("DERIVATIVE", shark.GetDerivativeX());
 //        telemetry.addData("INTEGRAL X", odo.GetIntegralSumX());
 //        telemetry.addData("INTEGRAL Y", odo.GetIntegralSumY());
         telemetry.update();
@@ -141,7 +141,7 @@ public class CommandSequence extends LinearOpMode
 //        moveCmd.MoveToPosition(speed,-24,0,-90,0,false,'/');
 //        UpdateTelemetry();
 //        moveCmd.MoveToPosition(speed,-12,0,-90,0,false,'/');
-        odo.TuningUp();
+        shark.TuningUp();
         moveCmd.MoveToPosition(speed,12,0,0,0.5,2,0.5,1275,false,'/');
         moveCmd.MoveToPosition(speed,12,12,0,0.5,2,0.5,1275,false,'/');
         moveCmd.MoveToPosition(speed,0,0,0,0.5,2,0.5,1275,false,'/');
@@ -154,10 +154,10 @@ public class CommandSequence extends LinearOpMode
 //        moveCmd.MoveToPosition(speed,-24,0,-90,0,false,'/');
 //        UpdateTelemetry();
 //        moveCmd.MoveToPosition(speed,-12,0,-90,0,false,'/');
-        odo.TuningDown();
+        shark.TuningDown();
 //        moveCmd.MoveToPosition(speed,12,0,0,0.5,2,0.5,190,false,'/');
 
-        odo.OdometryControl(1,12,0,0,0.5,2);
+        shark.OdometryControl(1,12,0,0,0.5,2);
 
 //        moveCmd.MoveToPosition(speed,12,12,0,0.5,2,0.5,190,false,'/');
 //        moveCmd.MoveToPosition(speed,0,0,0,0.5,2,0.5,190,false,'/');
@@ -196,18 +196,18 @@ public class CommandSequence extends LinearOpMode
     @Override
     public void runOpMode()
     {
-//        FtcDashboard dashboard = FtcDashboard.getInstance();
-//        telemetry = dashboard.getTelemetry();
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
 
         dt.init(hardwareMap);
         moveCmd.init(hardwareMap, true);
-        odo.init(hardwareMap,true);
+        shark.init(hardwareMap,true);
         cs.init(hardwareMap, true);
         am.init(hardwareMap);
 
-        cs.SetDiffPos(0.44, 0.99);
-        cs.SetClawOpen(true);
-        cs.Update();
+//        cs.SetDiffPos(0.44, 0.99);
+//        cs.SetClawOpen(true);
+//        cs.Update();
 //        am.Rotate(0,'T');
 //        am.SetLocalNeutral(50);
 //        am.Rotate(0,'T');
