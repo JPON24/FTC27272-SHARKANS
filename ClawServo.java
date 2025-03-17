@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class ClawServo{
@@ -34,7 +35,7 @@ public class ClawServo{
     {
         if (temp)
         {
-            clawPos = 0.99; //initially
+            clawPos = 1; //initially
         }
         else
         {
@@ -54,8 +55,8 @@ public class ClawServo{
         }
         else if (wristMode == 'B')
         {
-            wristPosL = 0.9; // 1
-            wristPosR = 0.46; // 0.555
+            wristPosL = 0.96; // 1
+            wristPosR = 0.4; // 0.555
         }
         else if (wristMode == 'S')
         {
@@ -72,6 +73,11 @@ public class ClawServo{
             wristPosL = 0.2;
             wristPosR = 0.2;
         }
+        else if (wristMode == 'P')
+        {
+            wristPosL = 0.44;
+            wristPosR = 0.99;
+        }
         else
         {
             wristPosL = 0;
@@ -84,9 +90,15 @@ public class ClawServo{
         {
             if (auton)
             {
-                SetDiffPos(wristPosL,wristPosR);
+                if (wristL != null && wristR != null)
+                {
+                    SetDiffPos(wristPosL,wristPosR);
+                }
             }
-            claw.setPosition(clawPos);
+            if (claw != null)
+            {
+                claw.setPosition(clawPos);
+            }
         }
     }
 
@@ -98,13 +110,16 @@ public class ClawServo{
 
     public void SetDiffPos(double positionL, double positionR)
     {
-        wristL.setPosition(positionL);
-        wristR.setPosition(positionR);
+        if (wristL != null && wristR != null)
+        {
+            wristL.setPosition(positionL);
+            wristR.setPosition(positionR);
+        }
     }
     
     public boolean GetClawClosed()
     {
-        return claw.getPosition() == 0.22;
+        return claw.getPosition() == 1;
     }
     
     public double GetClawPosition()
