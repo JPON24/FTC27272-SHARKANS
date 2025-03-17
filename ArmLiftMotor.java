@@ -15,7 +15,7 @@ public class ArmLiftMotor {
 
     boolean canUpdateLocalNeutral = true;
 
-    int topLimit = 1400; // old value 1650
+    int topLimit = 1800; // old value 1650
     int bottomLimit = -10;
 
     double previous = 0;
@@ -54,50 +54,66 @@ public class ArmLiftMotor {
     
     public void ResetEncoders()
     {
-        topLimit = 1400;
-        bottomLimit = -10;
-        armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        if (armLiftL != null && armLiftR != null)
+        {
+            topLimit = 1800;
+            bottomLimit = -10;
 
-        armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
     }
 
     public void ResetEncodersUp()
     {
-        topLimit = 10;
-        bottomLimit = -1400;
+        if (armLiftL != null && armLiftR != null)
+        {
+            topLimit = 10;
+            bottomLimit = -1800;
+
+            armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
     }
 
     public void Rotate(double targetPower, char mode)
-    {    
-        if (mode == 'T')
+    {
+        if (armLiftL != null && armLiftR != null)
         {
-            if (targetPower > 0.1)
+            if (mode == 'T')
             {
-                canUpdateLocalNeutral = true;
-                MoveToPosition(topLimit);
-            }
-            else if (targetPower < -0.1)
-            {
-                canUpdateLocalNeutral = true;
-                MoveToPosition(bottomLimit);
-            }
-            else
-            {
-                if (canUpdateLocalNeutral)
+                if (targetPower > 0.1)
                 {
-                    localNeutral = armLiftL.getCurrentPosition();
-                    canUpdateLocalNeutral = false;
+                    canUpdateLocalNeutral = true;
+                    MoveToPosition(topLimit);
                 }
-                MoveToPosition(localNeutral);
+                else if (targetPower < -0.1)
+                {
+                    canUpdateLocalNeutral = true;
+                    MoveToPosition(bottomLimit);
+                }
+                else
+                {
+                    if (canUpdateLocalNeutral)
+                    {
+                        localNeutral = armLiftL.getCurrentPosition();
+                        canUpdateLocalNeutral = false;
+                    }
+                    MoveToPosition(localNeutral);
+                }
             }
-        }
-        else if (mode == 'A')
-        {
+            else if (mode == 'A')
+            {
 //            speed = 1;
-            localNeutral = (int)targetPower;
-            MoveToPosition((int)targetPower);
+                localNeutral = (int)targetPower;
+                MoveToPosition((int)targetPower);
+            }
         }
     }
     
@@ -107,11 +123,14 @@ public class ArmLiftMotor {
 //        double minValue = Math.min(armLiftL.getCurrentPosition(),position);
 //        double positionDifference = 1 - minValue/maxValue;
 //        double positionDifference = 1;
-        armLiftL.setPower(speed);
-        armLiftR.setPower(speed);
+        if (armLiftL != null && armLiftR != null)
+        {
+            armLiftL.setPower(speed);
+            armLiftR.setPower(speed);
 //
-        armLiftL.setTargetPosition(position);
-        armLiftR.setTargetPosition(position);
+            armLiftL.setTargetPosition(position);
+            armLiftR.setTargetPosition(position);
+        }
 //        SetTargetPosition(position);
         setpoint = position;
     }
@@ -202,6 +221,13 @@ public class ArmLiftMotor {
     {
         // increased due to high range
         int lenience = 30;
-        return Math.abs(tgt - armLiftL.getCurrentPosition()) < lenience;
+        int lError = Math.abs(tgt - armLiftL.getCurrentPosition());
+        int rError = Math.abs(tgt - armLiftR.getCurrentPosition());
+        return (lError + rError) / 2 < lenience;
+    }
+
+    public int GetTargetPosition()
+    {
+        return armLiftL.getTargetPosition();
     }
 }
