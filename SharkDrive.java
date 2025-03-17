@@ -41,8 +41,11 @@ public class SharkDrive {
     double maximumOutputY = 1;
 
     double diagonalScalar = 0;
-
     double angleLenience = 60;
+
+    double runtimeXSumScalar = 0.0002;
+//    double runtimeYSumScalar = 0.01223;
+    double runtimeYSumScalar = -0.006;
 
     public void init(HardwareMap hwMap, boolean isAuton) {
 //        kpx = 0.38; //0.38
@@ -55,6 +58,7 @@ public class SharkDrive {
 //        kdy = 0.15; // 0.21
 //        kdh = 0.25; // 0.15
 
+        TuningOne();
         TuningDown();
 
         last_time = 0;
@@ -69,14 +73,19 @@ public class SharkDrive {
         odometry.calibrateImu();
         odometry.setLinearScalar(1);
         odometry.setAngularScalar(1);
-//        odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0B));
-        // remeasure
+//        odometry.setSignalProcesW
         odometry.setOffset(new SparkFunOTOS.Pose2D(0.4375, 3.625, 0));
         dt.init(hwMap);
     }
 
     // gear ratio moving from 1.25 to 1.4
     // scalar of 1.123
+
+    public void TuningOne()
+    {
+        runtimeXSumScalar = 0.0002;
+        runtimeYSumScalar = -0.005; // 0.063
+    }
 
     public void TuningDown() {
         kpx = 0.38; //0.38 1.14
@@ -92,13 +101,13 @@ public class SharkDrive {
 
     public void TuningUp() {
         kpx = 0.38; //0.38
-        kpy = 0.24; //0.24
+        kpy = 0.4; //0.24
         kph = 0.34; // 0.34
         kix = 0; // 0.01
         kiy = 0; //  0
         kih = 0.01; // 0.43
-        kdx = 0.25; // 0.25
-        kdy = 0.15; // 0.15
+        kdx = 0.29; // 0.25
+        kdy = 0.1; // 0.15
         kdh = 0.25; // 0.25
     }
 
@@ -199,8 +208,8 @@ public class SharkDrive {
 
         Integrals();
         if (auton) {
-            tgtX += runtimeXSum * 0.0002;
-            tgtY -= runtimeYSum * 0.0063;
+            tgtX += runtimeXSum * runtimeXSumScalar;
+            tgtY += runtimeYSum * runtimeYSumScalar;
         }
 
         errors[0] = tgtX - pos.x;
