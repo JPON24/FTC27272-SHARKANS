@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 //@Config
 @TeleOp
 public class StarterBot extends LinearOpMode{
-    
+
     Drivetrain dt = new Drivetrain();
     ClawServo cs = new ClawServo();
     ArmLiftMotor am = new ArmLiftMotor();
@@ -16,6 +16,8 @@ public class StarterBot extends LinearOpMode{
     ElapsedTime runtime = new ElapsedTime();
 
     ElapsedTime ascentDelay = new ElapsedTime();
+
+    opencv cv = new opencv();
 
     boolean fieldOriented = false;
     boolean canShift = true;
@@ -83,6 +85,7 @@ public class StarterBot extends LinearOpMode{
         am.init(hardwareMap);
         shark.init(hardwareMap, false);
         moveCmd.init(hardwareMap, false);
+        cv.init(hardwareMap);
         waitForStart();
         // 0.275
         // 0.99
@@ -91,6 +94,8 @@ public class StarterBot extends LinearOpMode{
         am.Rotate(0,'T');
         am.SetLocalNeutral(50);
         am.Rotate(0,'T');
+
+        cv.StartStream(telemetry);
         while(opModeIsActive())
         {
             // triggers should be extension
@@ -128,7 +133,6 @@ public class StarterBot extends LinearOpMode{
             boolean yButtonPressed2 = gamepad2.y;
 
             boolean middleGrabMacro = gamepad2.right_bumper;
-
             if (normalControl)
             {
                 targetPowerX *= currentSpeed;
@@ -136,7 +140,7 @@ public class StarterBot extends LinearOpMode{
                 targetRotation *= currentSpeed;
 
                 ResetLocalOffset(dpadUpPressed);
-                FieldOrientedToggle(aButtonPressed, xButtonPressed);
+//                FieldOrientedToggle(aButtonPressed, xButtonPressed);
                 SpeedShift(leftBumperPressed,rightBumperPressed);
                 if (fieldOriented)
                 {
@@ -168,6 +172,7 @@ public class StarterBot extends LinearOpMode{
             runtime.reset();
             HookMacro(yButtonPressed);
             GrabMacro(bButtonPressed);
+            SampleAuto(aButtonPressed);
 //            AscentMacro(rightTriggerPressed);
             Integrals();
 
@@ -175,6 +180,7 @@ public class StarterBot extends LinearOpMode{
 
             TelemetryPrint();
         }
+        cv.StopStream();
     }
 
     private void Rehoming(boolean pressed)
@@ -277,6 +283,10 @@ public class StarterBot extends LinearOpMode{
         telemetry.addData("INTEGRAL X", shark.GetIntegralSumX());
         telemetry.addData("INTEGRAL Y", shark.GetIntegralSumY());
         telemetry.addData("DiagonalScalar", shark.GetDiagonalScalar());
+        telemetry.addData("cv dist", cv.GetDistance());
+        telemetry.addData("cv cx", cv.GetCX());
+//        telemetry.addData("Largest Contour", cv.GetBigContour());
+        telemetry.addData("theta", cv.GetTheta());
         telemetry.update();
     }
 
@@ -322,8 +332,34 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
+    private void SampleAuto(boolean a)
+    {
+        if (a && canStartHookMacro)
+        {
+//            TeleopMoveCommandA(0.3,340,10.5,0,1,0, 0.4,1625,false,'N');
+            TeleopMoveCommandA(0.3,340,12,0,1,2, 0.4,1625,false);
+            TeleopMoveCommandA(0,340,13,0,1000,2,0.4,1675,false);
+            TeleopMoveCommandA(0,340,13,0,1000,2,0.4,1675,true);
+            sleep(500);
+            TeleopMoveCommandA(0,340,1,0,1000,2,0.4,1500,true);
+        }
+        else if (!a)
+        {
+            am.SetLocalNeutral(am.GetTargetPosition());
+            canStartGrabMacro = true;
+        }
+    }
+
     private void GrabMacro(boolean b)
     {
+//        if (gamepad1.b)
+//        {
+//            TeleopMoveCommandB(0.2,340,getDistance(width),0,0.5,2,0.4,1625,false,'T');
+//            TeleopMoveCommandB(0.2,340,getDistance(width),0,0.5,2,0.4,1725,false,'T');
+//            TeleopMoveCommandB(0.2,340,getDistance(width),0,0.5,2,0.4,1725,true,'T');
+//        }
+
+
         if (b && canStartGrabMacro)
         {
 //            TeleopMoveCommandB(1, 40, grabDistance + 4, 0,preciseLenience,1,0.5, 190, false, 'G');\
@@ -355,6 +391,24 @@ public class StarterBot extends LinearOpMode{
             am.SetLocalNeutral(am.GetTargetPosition());
             canStartGrabMacro = true;
         }
+    }
+
+    private void TeleopMoveCommandA(double speed, double x, double y, double h, double d, int axis, double speedA, int a, boolean claw)
+    {
+        do
+        {
+            Integrals();
+            TelemetryPrint();
+            cs.SetClawOpen(claw);
+            double wristL = cv.GetTheta() / 250 + 0.12;
+            double wristR = cv.GetTheta() / 250 + 0.61;
+            moveCmd.MoveToPositionCV(speed,x,y,h,d,axis,speedA,a,claw,wristL,wristR, cv.GetCX(), cv.GetDistance());
+            if (!gamepad1.a) {
+                normalControl = true;
+                am.SetLocalNeutral(a);
+                return;
+            }
+        } while (!moveCmd.GetCommandState());
     }
 
     private void TeleopMoveCommandB(double speed, double x, double y, double h, double d, int axis, double speedA, int a, boolean claw, char wrist)
