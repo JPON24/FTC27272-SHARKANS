@@ -57,7 +57,6 @@ public class SharkDrive {
 //        kdx = 0.25; // 0.28
 //        kdy = 0.15; // 0.21
 //        kdh = 0.25; // 0.15
-
         TuningOne();
         TuningDown();
 
@@ -186,12 +185,97 @@ public class SharkDrive {
         return output;
     }
 
+    public double basicpid(double error, int index) {
+        double output = 0;
+        if (index == 0) {
+            integralX += error * dxTime.seconds();
+
+            if (previous[0] * error < 0) {
+                integralX = 0;
+            }
+
+            double derivative = (error - previous[0]) / dxTime.seconds();
+            derivative = LowPass(xAverage, derivative);
+
+            output = kpx * error + kix * integralX + kdx * derivative;
+            dxTime.reset();
+            previous[0] = error;
+        } else if (index == 1) {
+            integralY += error * dyTime.seconds();
+
+            if (previous[1] * error < 0) {
+                integralY = 0;
+            }
+
+            double derivative = (error - previous[1]) / dyTime.seconds();
+            derivative = LowPass(yAverage, derivative);
+
+            output = kpy * error + kiy * integralY + kdy * derivative;
+            dyTime.reset();
+
+            previous[1] = error;
+        } else {
+            integralH += error * dhTime.seconds();
+
+            if (previous[2] * error < 0) {
+                integralH = 0;
+            }
+
+            double derivative = (error - previous[2]) / dhTime.seconds();
+            derivative = LowPass(hAverage, derivative);
+
+            output = kph * error + kih * integralH + kdh * derivative;
+            dhTime.reset();
+
+            previous[2] = error;
+        }
+        output = Range.clip(output, -1, 1); // old coef 2*
+        return output;
+    }
+
     private void Integrals() {
         runtimeXSum += Math.abs(GetPositionX() - lastX);
         lastX = GetPositionX();
 
         runtimeYSum += Math.abs(GetPositionY() - lastY);
         lastY = GetPositionY();
+    }
+
+    public void CVControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis, int cx, double dist)
+    {
+        double now = runtime.milliseconds();
+        deltaTime = now - last_time;
+        last_time = now;
+
+        pos = odometry.getPosition();
+
+        errors[0] = (tgtX - cx) / 10;
+        errors[1] = tgtY - dist;
+        errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
+
+        output[0] = basicpid(errors[0], 0) * -1;
+        output[1] = basicpid(errors[1], 1) * -1;
+        output[2] = basicpid(errors[2], 2);
+
+        if (tgtRot == 1) {
+            completedBools[2] = true;
+            output[2] = 0;
+        } else {
+            completedBools[2] = Math.abs(errors[2]) < angleLenience;
+        }
+
+        completedBools[0] = Math.abs(errors[0]) < distanceLenience;
+        completedBools[1] = Math.abs(errors[1]) < distanceLenience;
+
+        if (axis == 0) {
+            output[1] = output[1] / Math.abs(output[1]) * 0.05;
+            completedBools[1] = true;
+        } else if (axis == 1) {
+            output[0] = output[0] / Math.abs(output[0]) * 0.05;
+            completedBools[0] = true;
+        }
+
+        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], pos.h);
     }
 
     public void OdometryControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis) {
@@ -205,7 +289,6 @@ public class SharkDrive {
         last_time = now;
 
         pos = odometry.getPosition();
-
         Integrals();
         if (auton) {
             tgtX += runtimeXSum * runtimeXSumScalar;
@@ -214,6 +297,8 @@ public class SharkDrive {
 
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
+
+        tgtRot += (-tgtX/Math.abs(tgtX) * 45);
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
         if (new ArmLiftMotor().GetLocalNeutral() == 1250) {
@@ -368,7 +453,6 @@ public class SharkDrive {
     {
         return iH;
     }
-
 
     public boolean GetBoolsCompleted()
     {
