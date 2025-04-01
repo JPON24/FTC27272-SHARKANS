@@ -140,6 +140,58 @@ public class MoveCommand  {
         }
         cs.Update();
     }
+    public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, boolean tgtClaw, double wristL, double wristR, int cx, double dist)
+    {
+        // reset for next command
+        command.ResetMap();
+        HashMap<Character, Boolean> localCopy = new HashMap<Character,Boolean>();
+
+        command.SetElementFalse('m');
+        command.SetElementFalse('a');
+
+        localCopy = command.GetMap();
+
+        cs.SpecifyDiffPos(wristL,wristR);
+        cs.SetClawOpen(tgtClaw);
+        am.SetArmSpeed(speedA);
+        am.Rotate(tgtA,'A');
+
+        // for every key (m, e, a, c, w)
+        for (Character key : localCopy.keySet())
+        {
+            // like an if else but more efficient
+            // if a subsystem has reached it's position, set it to complete
+            // otherwise, set it to false and stop moving it
+            switch (key)
+            {
+                case 'm':
+                    shark.CVControl(speed,x,y,h,d,axis,cx,dist);
+                    if (shark.GetBoolsCompleted())
+                    {
+                        command.SetElementTrue('m');
+                        // dt.FieldOrientedTranslate(0,0,0,0);
+                        break;
+                    }
+                    else
+                    {
+                        command.SetElementFalse('m');
+                        break;
+                    }
+                case 'a':
+                    if (am.GetCompleted(tgtA))
+                    {
+                        command.SetElementTrue('a');
+                        break;
+                    }
+                    else
+                    {
+                        command.SetElementFalse('a');
+                        break;
+                    }
+            }
+        }
+        cs.Update();
+    }
 
     public boolean GetCommandState()
     {
