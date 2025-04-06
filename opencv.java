@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -16,7 +18,9 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 
@@ -28,12 +32,8 @@ public class opencv{
     double width = 0;
     double height = 0 ;
 
-    int widthAvg = 0;
-    int heightAvg = 0;
-
     double theta = 0;
-
-    MatOfPoint bigcontour;
+    double wrappedTheta = 0;
 
     private OpenCvCamera controlHubCam;  // Use OpenCvCamera class from FTC SDK
     private static final int CAMERA_WIDTH = 640; // width  of wanted camera resolution
@@ -51,6 +51,29 @@ public class opencv{
     private final double k = 2146;
 
     private Mat emptyMat = new Mat();
+    List<Point> points;
+
+    double xMin = 640;
+    double xMax = 0;
+
+    double yMin = 480;
+    int yMinIndex = 0;
+    double yMax = 0;
+    int yMaxIndex = 0;
+
+    double yMaxX = 0;
+
+    double minDiff = 0;
+    double maxDiff = 0;
+
+
+    double focalLength = 4; // mm
+    double realHeight = 88.9; //mm
+    double realWidth = 38.1; //mm
+    double sensorWidth = 3.58; //mm
+    double sensorHeight = 2.02; //mm
+    double imageWidth = 640; // px
+    double imageHeight = 480; // px
 
     public void init(HardwareMap hwMap)
     {
@@ -117,7 +140,7 @@ public class opencv{
                  distance = 12
                  distance = 12
                  boxW = 240
-                 boxH = 166
+                 boxH = 166`
                  boxA = 200 * 160
 
                  focalLengthW = 823
@@ -146,7 +169,7 @@ public class opencv{
                 // turn angle
                 // offsetPixels * (cameraFOV / imgWidth)
 
-                // ( distW + distH + distA ) / 3
+                // ( distW + distH + distA ) /
 
 
                 String widthLabel = "Width: " + (int) width + " pixels";
@@ -154,27 +177,37 @@ public class opencv{
 
                 String heightLabel = "Height: " + (int) height + " pixels";
                 Imgproc.putText(input, heightLabel, new Point(cX + 10, cY + 60), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-
 //                Display the Distance
                 String distanceLabel = "Distance: " + GetDistance() + " inches";
                 Imgproc.putText(input, distanceLabel, new Point(cX + 10, cY + 100), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
                 // Calculate the centroid of the largest contour
                 Moments moments = Imgproc.moments(largestContour);
 
-//                double denominator = moments.get_m20() - moments.get_m02();
-//                double numerator = 2 * moments.get_m11();
-//                double radToDeg = 180/Math.PI;
-//                double atanVal = Math.atan2(numerator,denominator);
-//                atanVal /= 2;
-//                theta = atanVal * radToDeg;
                 cX = moments.get_m10() / moments.get_m00();
                 cY = moments.get_m01() / moments.get_m00();
 
-                double initTheta = Math.atan2(height,width) * 180/Math.PI;
-                initTheta -= 30;
-                theta = initTheta * 3.85;
+//                points = largestContour.toList();
+//                computeMinMax();
+//
+//                theta = computeTheta();
+//                wrapTheta();
+                double numerator = 2 * moments.get_mu11();
+                double denominator = moments.get_mu20() - moments.get_mu02();
 
-                        // Draw a dot at the centroid
+                theta = Math.atan2(numerator,denominator) / 2;
+                theta *= 180/Math.PI;
+
+                if (theta > 0)
+                {
+                    theta = 90 - theta + 90;
+                }
+                theta = Math.abs(theta);
+
+//                theta = (2 * moments.get_mu11()) / (moments.get_mu20() - moments.get_mu02());
+//                theta = Math.atan(theta) / 2;
+//                theta *= 180/Math.PI;
+
+                // Draw a dot at the centroid
                 String label = "(" + (int) cX + ", " + (int) cY + ")";
                 Imgproc.putText(input, label, new Point(cX + 10, cY), Imgproc.FONT_HERSHEY_COMPLEX, 0.5, new Scalar(0, 255, 0), 2);
                 Imgproc.circle(input, new Point(cX, cY), 5, new Scalar(0, 255, 0), -1);
@@ -189,10 +222,10 @@ public class opencv{
             Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_BGR2HSV);
 
             // tuned values
-            Scalar lowerYellow = new Scalar(91, 52, 0);
-            Scalar upperYellow = new Scalar(114, 255, 255);
+            Scalar lowerYellow = new Scalar(81, 100, 0); // 91, 150, 0
+            Scalar upperYellow = new Scalar(134, 255, 255); // 114, 255, 255
 
-            Scalar lowerBlue = new Scalar(0,0,0);
+            Scalar lowerBlue = new Scalar(0,150,0);
             Scalar upperBlue = new Scalar(20,255,255);
 
             Scalar lowerRed = new Scalar(112,70,0);
@@ -208,7 +241,7 @@ public class opencv{
             return mask;
         }
 
-        private MatOfPoint findLargestContour(List<MatOfPoint> contours) {
+        private MatOfPoint findLargestContour(@NonNull List<MatOfPoint> contours) {
             double maxArea = 0;
             MatOfPoint largestContour = null;
 
@@ -219,7 +252,6 @@ public class opencv{
                     largestContour = contour;
                 }
             }
-            bigcontour = largestContour;
             return largestContour;
         }
         private double calculateWidth(MatOfPoint contour) {
@@ -232,6 +264,76 @@ public class opencv{
             return boundingRect.height;
         }
 
+        private void computeMinMax()
+        {
+            int index = 0;
+            for (Point point : points)
+            {
+                double x = point.x;
+                double y = point.y;
+
+                if (x < xMin)
+                {
+                    xMin = x;
+                }
+                else if (x > xMax)
+                {
+                    xMax = x;
+                }
+
+                if (y < yMin)
+                {
+                    yMin = y;
+                    yMinIndex = index;
+                }
+                else if (y > yMax)
+                {
+                    yMax = y;
+                    yMaxIndex = index;
+                }
+
+                index += 1;
+            }
+        }
+
+        private double computeTheta()
+        {
+            if (yMinIndex > points.size()) { return 0; }
+            yMaxX = points.get(yMaxIndex).x;
+
+            // angle right
+            minDiff = Math.abs(yMaxX - xMin);
+
+            // angle left
+            maxDiff = Math.abs(yMaxX - xMax);
+
+            double theta = 0;
+            // if angled right
+            if (minDiff < maxDiff)
+            {
+                theta = Math.atan2(height,width);
+                theta *= 180/Math.PI;
+                theta -= 30;
+            }
+            else // angled left
+            {
+                theta = -Math.atan2(height,width);
+                theta *= 180/Math.PI;
+                theta += 30;
+            }
+
+            theta *= 3.85;
+
+            return theta;
+        }
+
+        private void wrapTheta()
+        {
+            if (theta < 0)
+            {
+                wrappedTheta = 90 - Math.abs(theta) + 90;
+            }
+        }
     }
 
     public void StartStream(Telemetry tel)
@@ -251,17 +353,69 @@ public class opencv{
         return (int)cX;
     }
 
-    public MatOfPoint GetBigContour()
+    public List<Point> GetPoints()
     {
-        return bigcontour;
+        return points;
+    }
+
+    public double GetWrappedTheta()
+    {
+        return wrappedTheta;
+    }
+
+    public double GetMinDiff()
+    {
+        return minDiff;
+    }
+
+    public double GetMaxDiff()
+    {
+        return maxDiff;
+    }
+
+    public double GetYMin()
+    {
+        return yMin;
+    }
+
+    public double GetYMinX()
+    {
+        return yMaxX;
+    }
+
+    public double GetXMin()
+    {
+        return xMin;
+    }
+
+    public double GetXMax()
+    {
+        return xMax;
     }
 
     public double GetDistance()
     {
-        double distW = objW * focalLengthW / width;
-        double distH = objW * focalLengthH / height;
-        double distA = k/Math.sqrt(width * height);
-        return ( distW + distH + distA ) / 3;
+//        double distW = objW * focalLengthW / width;
+//        double distH = objW * focalLengthH / height;
+//        double distA = k/Math.sqrt(width * height);
+//        return ( distW + distH + distA ) / 3;
+
+        double distanceH = focalLength * realHeight * imageHeight / (height * sensorHeight);
+        double distanceW = focalLength * realWidth * imageWidth / (width * sensorWidth);
+        double average = (distanceH + distanceW) / 2;
+
+        average /= 25.4;
+
+//        double normTheta = 90 - (Math.abs(GetTheta()) % 90);
+//
+//        double angleDist = Math.abs(45 - normTheta);
+//
+//        double coef = 1 + 0.1538 * (1 - angleDist/45);
+
+        double coef = 1;
+        return average * coef;
+
+
 //        double tempWidth = objectWidthInRealWorldUnits - (scalarConst * (GetTheta()/90));
 //        return (objectWidthInRealWorldUnits * focalLength) / (width + theta);
 //        return (objectWidthInRealWorldUnits * focalLength) / width;
