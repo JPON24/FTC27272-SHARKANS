@@ -79,26 +79,6 @@ public class opencv{
     {
         initOpenCV(hwMap);
     }
-//    @Override
-//    public void runOpMode() {
-//
-//        initOpenCV();
-//
-//
-//        waitForStart();
-//
-//        while (opModeIsActive()) {
-//            telemetry.addData("Coordinate", "(" + (int) cX + ", " + (int) cY + ")");
-//            telemetry.addData("Distance in Inch", (getDistance(width)));
-//            telemetry.update();
-//
-//
-//            // The OpenCV pipeline automatically processes frames and handles detection
-//        }
-//
-//        // Release resources
-//        controlHubCam.stopStreaming();
-//    }
 
     private void initOpenCV(HardwareMap hwMap) {
         // Create an instance of the camera
@@ -186,11 +166,6 @@ public class opencv{
                 cX = moments.get_m10() / moments.get_m00();
                 cY = moments.get_m01() / moments.get_m00();
 
-//                points = largestContour.toList();
-//                computeMinMax();
-//
-//                theta = computeTheta();
-//                wrapTheta();
                 double numerator = 2 * moments.get_mu11();
                 double denominator = moments.get_mu20() - moments.get_mu02();
 
@@ -202,10 +177,6 @@ public class opencv{
                     theta = 90 - theta + 90;
                 }
                 theta = Math.abs(theta);
-
-//                theta = (2 * moments.get_mu11()) / (moments.get_mu20() - moments.get_mu02());
-//                theta = Math.atan(theta) / 2;
-//                theta *= 180/Math.PI;
 
                 // Draw a dot at the centroid
                 String label = "(" + (int) cX + ", " + (int) cY + ")";
@@ -262,77 +233,6 @@ public class opencv{
         private double calculateHeight(MatOfPoint contour) {
             Rect boundingRect = Imgproc.boundingRect(contour);
             return boundingRect.height;
-        }
-
-        private void computeMinMax()
-        {
-            int index = 0;
-            for (Point point : points)
-            {
-                double x = point.x;
-                double y = point.y;
-
-                if (x < xMin)
-                {
-                    xMin = x;
-                }
-                else if (x > xMax)
-                {
-                    xMax = x;
-                }
-
-                if (y < yMin)
-                {
-                    yMin = y;
-                    yMinIndex = index;
-                }
-                else if (y > yMax)
-                {
-                    yMax = y;
-                    yMaxIndex = index;
-                }
-
-                index += 1;
-            }
-        }
-
-        private double computeTheta()
-        {
-            if (yMinIndex > points.size()) { return 0; }
-            yMaxX = points.get(yMaxIndex).x;
-
-            // angle right
-            minDiff = Math.abs(yMaxX - xMin);
-
-            // angle left
-            maxDiff = Math.abs(yMaxX - xMax);
-
-            double theta = 0;
-            // if angled right
-            if (minDiff < maxDiff)
-            {
-                theta = Math.atan2(height,width);
-                theta *= 180/Math.PI;
-                theta -= 30;
-            }
-            else // angled left
-            {
-                theta = -Math.atan2(height,width);
-                theta *= 180/Math.PI;
-                theta += 30;
-            }
-
-            theta *= 3.85;
-
-            return theta;
-        }
-
-        private void wrapTheta()
-        {
-            if (theta < 0)
-            {
-                wrappedTheta = 90 - Math.abs(theta) + 90;
-            }
         }
     }
 
