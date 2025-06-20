@@ -10,6 +10,7 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 public class SharkDrive {
     Drivetrain dt = new Drivetrain();
+    Limelight limelight = new Limelight();
     ElapsedTime runtime = new ElapsedTime();
     ElapsedTime dxTime = new ElapsedTime();
     ElapsedTime dyTime = new ElapsedTime();
@@ -29,35 +30,13 @@ public class SharkDrive {
     double[] errors = new double[3];
     double[] previous = new double[3];
 
-    boolean auton = false;
-
-    double runtimeXSum = 0;
-    double lastX = 0;
-
-    double runtimeYSum = 0;
-    double lastY = 0;
-
     double maximumOutputX = 1;
     double maximumOutputY = 1;
 
     double diagonalScalar = 0;
     double angleLenience = 60;
 
-    double runtimeXSumScalar = 0.0002;
-//    double runtimeYSumScalar = 0.01223;
-    double runtimeYSumScalar = -0.006;
-
     public void init(HardwareMap hwMap, boolean isAuton) {
-//        kpx = 0.38; //0.38
-//        kpy = 0.24; //0.24
-//        kph = 0.34; // 0.21
-//        kix = 0.01; // 0.01
-//        kiy = 0; //  0
-//        kih = 0.01; // 0.43
-//        kdx = 0.25; // 0.28
-//        kdy = 0.15; // 0.21
-//        kdh = 0.25; // 0.15
-        TuningOne();
         TuningDown();
 
         last_time = 0;
@@ -66,24 +45,14 @@ public class SharkDrive {
             odometry.resetTracking();
             odometry.begin();
         }
-        auton = isAuton;
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
         odometry.calibrateImu();
-        odometry.setLinearScalar(1);
         odometry.setAngularScalar(1);
-//        odometry.setSignalProcesW
+        odometry.setLinearScalar(1);
         odometry.setOffset(new SparkFunOTOS.Pose2D(0.4375, 3.625, 0));
         dt.init(hwMap);
-    }
-
-    // gear ratio moving from 1.25 to 1.4
-    // scalar of 1.123
-
-    public void TuningOne()
-    {
-        runtimeXSumScalar = 0.0002;
-        runtimeYSumScalar = -0.005; // 0.063
+        limelight.init(hwMap);
     }
 
     public void TuningDown() {
@@ -181,7 +150,6 @@ public class SharkDrive {
 
             output = Range.clip(output, -1, 1); // old coef 2*
         }
-//        output = Range.clip(output, -1, 1); // old coef 2*
         return output;
     }
 
@@ -233,14 +201,6 @@ public class SharkDrive {
         return output;
     }
 
-    private void Integrals() {
-        runtimeXSum += Math.abs(GetPositionX() - lastX);
-        lastX = GetPositionX();
-
-        runtimeYSum += Math.abs(GetPositionY() - lastY);
-        lastY = GetPositionY();
-    }
-
     public void CVControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis, int cx, double dist)
     {
         double now = runtime.milliseconds();
@@ -288,17 +248,11 @@ public class SharkDrive {
         deltaTime = now - last_time;
         last_time = now;
 
-        pos = odometry.getPosition();
-        Integrals();
-        if (auton) {
-            tgtX += runtimeXSum * runtimeXSumScalar;
-            tgtY += runtimeYSum * runtimeYSumScalar;
-        }
+//        pos = GetOdometryLocalization();
+        pos = limelight.GetLimelightData(false, GetOdometryLocalization().h);
 
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
-
-        tgtRot += (-tgtX/Math.abs(tgtX) * 45);
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
         if (new ArmLiftMotor().GetLocalNeutral() == 1250) {
@@ -334,6 +288,11 @@ public class SharkDrive {
         }
 
         dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], pos.h);
+    }
+
+    private SparkFunOTOS.Pose2D GetOdometryLocalization()
+    {
+        return odometry.getPosition();
     }
 
     private void NewHighestOutputX(double x) {
@@ -376,19 +335,10 @@ public class SharkDrive {
         return -rad;
     }
 
-    public void SetRuntimeXSum(double temp)
-    {
-        runtimeXSum = temp;
-    }
-
     public void SetAngleLenience(double temp)
     {
         angleLenience = temp;
     }
-
-    public double GetIntegralSumX() {return runtimeXSum;}
-
-    public double GetIntegralSumY() {return runtimeYSum;}
 
     public double GetImuReading()
     {
