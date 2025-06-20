@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-// import com.qualcomm.robotcore.hardware.CRServo;
+ import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -17,35 +17,39 @@ public class MotorTester extends LinearOpMode {
     private DcMotor frontRight = null;
     private DcMotor backLeft = null;
     private DcMotor backRight = null;
-    private DcMotor amL = null;
-    private DcMotor amR = null;
+
+    private DcMotor extend = null;
+
     private Servo claw = null;
     private Servo wristR = null;
     private Servo wristL = null;
     private SparkFunOTOS odometry;
 
+    private Limelight limelight = new Limelight();
+
     @Override
     public void runOpMode() {
-//        frontLeft = hardwareMap.get(DcMotor.class, "FrontLeft");
-//        frontRight = hardwareMap.get(DcMotor.class, "FrontRight");
-//        backLeft = hardwareMap.get(DcMotor.class, "BackLeft");
-//        backRight = hardwareMap.get(DcMotor.class, "BackRight");
-//        amL = hardwareMap.get(DcMotor.class, "armLiftL");
-//        amR = hardwareMap.get(DcMotor.class, "armLiftR");
-//        claw = hardwareMap.get(Servo.class, "claw");
-//        wrist = hardwareMap.get(Servo.class, "wrist");
+        frontLeft = hardwareMap.get(DcMotor.class, "FrontLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "FrontRight");
+        backLeft = hardwareMap.get(DcMotor.class, "BackLeft");
+        backRight = hardwareMap.get(DcMotor.class, "BackRight");
         
         odometry = hardwareMap.get(SparkFunOTOS.class,"otos");
         wristR = hardwareMap.get(Servo.class, "wristR");
         wristL = hardwareMap.get(Servo.class, "wristL");
-        odometry.resetTracking();
-        odometry.begin();
+        claw = hardwareMap.get(Servo.class, "claw");
+        extend = hardwareMap.get(DcMotor.class, "extend");
+
+        limelight.init(hardwareMap);
+
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
-        odometry.setLinearScalar(40/41);
-        odometry.setAngularScalar(239/240);
-        odometry.setSignalProcessConfig(new SparkFunOTOS.SignalProcessConfig((byte)0x0D));
+        odometry.calibrateImu();
+        odometry.setLinearScalar(1);
+        odometry.setAngularScalar(1);
+        odometry.setOffset(new SparkFunOTOS.Pose2D(0.4375,3.625,0));
         odometry.resetTracking();
+        odometry.begin();
         
 //        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -60,6 +64,7 @@ public class MotorTester extends LinearOpMode {
 //        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        amL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        amR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        extend.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //
 //        frontLeft.setDirection(DcMotor.Direction.REVERSE);
 //        frontRight.setDirection(DcMotor.Direction.FORWARD);
@@ -71,6 +76,7 @@ public class MotorTester extends LinearOpMode {
         while (opModeIsActive()) {
             wristR.setPosition(0);
             wristL.setPosition(0);
+            claw.setPosition(1);
 //            if(gamepad1.x)
 //            {
 //                frontLeft.setPower(1); //frontright
@@ -96,6 +102,18 @@ public class MotorTester extends LinearOpMode {
 //                claw.setPosition(0.3);
 //            }
 //
+            if (gamepad2.x)
+            {
+                extend.setPower(-0.6);
+            }
+            else if (gamepad2.a)
+            {
+                extend.setPower(0.6);
+            }
+            else
+            {
+                extend.setPower(0);
+            }
 //            if (gamepad2.x)
 //            {
 //                amL.setPower(-0.1);
@@ -135,10 +153,15 @@ public class MotorTester extends LinearOpMode {
 //            backLeft.setPower(0);
 //            backRight.setPower(0);
 //
+            SparkFunOTOS.Pose2D position = limelight.GetLimelightData(true, odometry.getPosition().h);
 //            telemetry.addData("frontLeftPosition", backLeft.getCurrentPosition());
             telemetry.addData("odometryx", odometry.getPosition().x);
             telemetry.addData("odometryy", odometry.getPosition().y);
             telemetry.addData("odometryh", odometry.getPosition().h);
+            telemetry.addData("extension", extend.getCurrentPosition());
+            telemetry.addData("x limelight localization", position.x);
+            telemetry.addData("y limelight localization", position.y);
+
 //            telemetry.addData("armLPosition", amL.getCurrentPosition());
 //            telemetry.addData("armRPosition", amR.getCurrentPosition());
 //            telemetry.addData("wrist position", wrist.getPosition());
