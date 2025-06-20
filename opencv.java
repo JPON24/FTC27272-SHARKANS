@@ -222,14 +222,14 @@ public class opencv{
             Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_BGR2HSV);
 
             // tuned values
-            Scalar lowerYellow = new Scalar(81, 100, 0); // 91, 150, 0
-            Scalar upperYellow = new Scalar(134, 255, 255); // 114, 255, 255
+            Scalar lowerYellow = new Scalar(78, 75, 95); // 91, 150, 0
+            Scalar upperYellow = new Scalar(110, 255, 255); // 114, 255, 255
 
-            Scalar lowerBlue = new Scalar(0,150,0);
+            Scalar lowerBlue = new Scalar(0,67,0);
             Scalar upperBlue = new Scalar(20,255,255);
 
-            Scalar lowerRed = new Scalar(112,70,0);
-            Scalar upperRed = new Scalar(154,254,255);
+            Scalar lowerRed = new Scalar(109,63,0);
+            Scalar upperRed = new Scalar(143,254,255);
 
             Mat mask = new Mat();
             Core.inRange(hsvFrame, lowerYellow, upperYellow, mask);
