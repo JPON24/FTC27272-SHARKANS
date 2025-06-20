@@ -78,11 +78,27 @@ public class ClawServo{
             wristPosL = 0.44;
             wristPosR = 0.99;
         }
+        else if (wristMode == 'T')
+        {
+            wristPosL = 0.5;
+            wristPosR = 0.97;
+        }
+        else if (wristMode == 'N')
+        {
+            wristPosL = 0.12;
+            wristPosR = 0.61;
+        }
         else
         {
             wristPosL = 0;
             wristPosR = 0;
         }
+    }
+
+    public void SpecifyDiffPos(double wristL, double wristR)
+    {
+        wristPosL = wristL;
+        wristPosR = wristR;
     }
 
     public void Update() {
