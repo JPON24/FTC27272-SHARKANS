@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 public class Drivetrain{
-    private double speedScalar = 0.9; // used to control speed with bumpers
+    private double speedScalar = 1; // used to control speed with bumpers
     
     //motor references
     private DcMotor frontLeft = null;
@@ -28,6 +28,11 @@ public class Drivetrain{
         frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
         frontRight.setDirection(DcMotor.Direction.FORWARD);
@@ -116,10 +121,13 @@ public class Drivetrain{
         //set speed to calculated values * the speedScalar(determined by bumpers)
         if(moving)
         {
-            frontLeft.setPower(flPower * speedScalar);
-            frontRight.setPower(frPower * speedScalar);
-            backLeft.setPower(blPower * speedScalar);
-            backRight.setPower(brPower * speedScalar);
+            if (frontLeft != null && frontRight != null && backLeft != null && backRight != null)
+            {
+                frontLeft.setPower(flPower * speedScalar);
+                frontRight.setPower(frPower * speedScalar);
+                backLeft.setPower(blPower * speedScalar);
+                backRight.setPower(brPower * speedScalar);
+            }
         }
     }
     
@@ -148,10 +156,13 @@ public class Drivetrain{
         }
         
         //sets power of each motor
-        frontLeft.setPower(flPower * speedScalar);
-        frontRight.setPower(frPower * speedScalar);
-        backLeft.setPower(blPower * speedScalar);
-        backRight.setPower(brPower * speedScalar);
+        if (frontLeft != null && frontRight != null && backLeft != null && backRight != null)
+        {
+            frontLeft.setPower(flPower * speedScalar);
+            frontRight.setPower(frPower * speedScalar);
+            backLeft.setPower(blPower * speedScalar);
+            backRight.setPower(brPower * speedScalar);
+        }
     }
     
     public void SetSpeedScalar(double change)
