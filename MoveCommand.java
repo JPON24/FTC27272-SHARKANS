@@ -11,20 +11,22 @@ public class MoveCommand  {
     ArmLiftMotor am = new ArmLiftMotor();
     SharkDrive shark = new SharkDrive();
     CommandSystem command = new CommandSystem();
-
     ElapsedTime timeout = new ElapsedTime();
+    Extension extend = new Extension();
 
     int lastA = 0;
+    int lastE = 0;
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
         dt.init(hwMap);
         cs.init(hwMap, true);
         am.init(hwMap);
+        extend.init(hwMap);
         shark.init(hwMap, isAuton);
     }
 
-    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, double d, int axis, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPosition(double speed, double tgtX, double tgtY, double rot, double d, int axis, double speedA, int tgtA, int tgtE, double roll, double pitch, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
@@ -37,8 +39,13 @@ public class MoveCommand  {
         {
             command.SetElementFalse('a');
         }
+        if (tgtE != lastE)
+        {
+            command.SetElementFalse('e');
+        }
 
         lastA = tgtA;
+        lastE = tgtE;
         
         shark.OdometryControl(speed,tgtX,tgtY,rot,d,axis);
 
@@ -47,6 +54,7 @@ public class MoveCommand  {
         cs.SetWristMode(tgtWrist);
         cs.SetClawOpen(tgtClaw);
         am.SetArmSpeed(speedA);
+        extend.SetLocalManipulatorState(roll, pitch);
 
         timeout.reset();
 
@@ -58,12 +66,15 @@ public class MoveCommand  {
                 // otherwise, set it to false and stop moving it 
                 switch (key) {
                     case 'm':
-                        shark.OdometryControl(speed, tgtX, tgtY, rot, d, axis);
                         if (shark.GetBoolsCompleted()) {
+                            shark.OdometryControl(0, tgtX, tgtY, rot, d, axis);
                             command.SetElementTrue('m');
                             // dt.FieldOrientedTranslate(0,0,0,0);
                             break;
-                        } else {
+                        }
+                        else
+                        {
+                            shark.OdometryControl(speed, tgtX, tgtY, rot, d, axis);
                             command.SetElementFalse('m');
                             break;
                         }
@@ -72,8 +83,22 @@ public class MoveCommand  {
                         if (am.GetCompleted(tgtA)) {
                             command.SetElementTrue('a');
                             break;
-                        } else {
+                        }
+                        else
+                        {
                             command.SetElementFalse('a');
+                            break;
+                        }
+                    case 'e':
+                        extend.MoveExtend(tgtE,'a');
+                        if (extend.GetCompleted(tgtE))
+                        {
+                            command.SetElementTrue('e');
+                            break;
+                        }
+                        else
+                        {
+                            command.SetElementFalse('e');
                             break;
                         }
                 }
@@ -88,7 +113,7 @@ public class MoveCommand  {
         }
     }
 
-    public void MoveToPositionCancellable(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, boolean tgtClaw, char tgtWrist)
+    public void MoveToPositionCancellable(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, double roll, double pitch, boolean tgtClaw, char tgtWrist)
     {
         // reset for next command
         command.ResetMap();
@@ -96,6 +121,7 @@ public class MoveCommand  {
 
         command.SetElementFalse('m');
         command.SetElementFalse('a');
+        command.SetElementFalse('e');
 
         localCopy = command.GetMap();
 
@@ -103,6 +129,8 @@ public class MoveCommand  {
         cs.SetClawOpen(tgtClaw);
         am.SetArmSpeed(speedA);
         am.Rotate(tgtA,'A');
+        extend.MoveExtend(tgtE, 'a');
+        extend.SetLocalManipulatorState(roll, pitch);
 
         // for every key (m, e, a, c, w)
         for (Character key : localCopy.keySet())
@@ -113,15 +141,16 @@ public class MoveCommand  {
             switch (key)
             {
                 case 'm':
-                    shark.OdometryControl(speed,x,y,h,d,axis);
                     if (shark.GetBoolsCompleted())
                     {
+                        shark.OdometryControl(0,x,y,h,d,axis);
                         command.SetElementTrue('m');
                         // dt.FieldOrientedTranslate(0,0,0,0);
                         break;
                     }
                     else
                     {
+                        shark.OdometryControl(speed,x,y,h,d,axis);
                         command.SetElementFalse('m');
                         break;
                     }
@@ -136,11 +165,23 @@ public class MoveCommand  {
                         command.SetElementFalse('a');
                         break;
                     }
+                case 'e':
+                    extend.MoveExtend(tgtE,'a');
+                    if (extend.GetCompleted(tgtE))
+                    {
+                        command.SetElementTrue('e');
+                        break;
+                    }
+                    else
+                    {
+                        command.SetElementFalse('e');
+                        break;
+                    }
             }
         }
         cs.Update();
     }
-    public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, boolean tgtClaw, double wristL, double wristR, int cx, double dist)
+    public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, boolean tgtClaw, double roll, double pitch, int cx, double dist)
     {
         // reset for next command
         command.ResetMap();
@@ -148,13 +189,16 @@ public class MoveCommand  {
 
         command.SetElementFalse('m');
         command.SetElementFalse('a');
+        command.SetElementFalse('e');
 
         localCopy = command.GetMap();
 
-        cs.SpecifyDiffPos(wristL,wristR);
+//        cs.SpecifyDiffPos(wristL,wristR);
         cs.SetClawOpen(tgtClaw);
         am.SetArmSpeed(speedA);
         am.Rotate(tgtA,'A');
+        extend.MoveExtend(tgtE, 'a');
+        extend.SetLocalManipulatorState(roll, pitch);
 
         // for every key (m, e, a, c, w)
         for (Character key : localCopy.keySet())
@@ -165,15 +209,16 @@ public class MoveCommand  {
             switch (key)
             {
                 case 'm':
-                    shark.CVControl(speed,x,y,h,d,axis,cx,dist);
                     if (shark.GetBoolsCompleted())
                     {
+                        shark.CVControl(0,x,y,h,d,axis,cx,dist);
                         command.SetElementTrue('m');
                         // dt.FieldOrientedTranslate(0,0,0,0);
                         break;
                     }
                     else
                     {
+                        shark.CVControl(speed,x,y,h,d,axis,cx,dist);
                         command.SetElementFalse('m');
                         break;
                     }
@@ -186,6 +231,18 @@ public class MoveCommand  {
                     else
                     {
                         command.SetElementFalse('a');
+                        break;
+                    }
+                case 'e':
+                    extend.MoveExtend(tgtE,'a');
+                    if (extend.GetCompleted(tgtE))
+                    {
+                        command.SetElementTrue('e');
+                        break;
+                    }
+                    else
+                    {
+                        command.SetElementFalse('e');
                         break;
                     }
             }
