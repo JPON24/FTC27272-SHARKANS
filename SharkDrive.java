@@ -207,7 +207,8 @@ public class SharkDrive {
         deltaTime = now - last_time;
         last_time = now;
 
-        pos = odometry.getPosition();
+//        pos = odometry.getPosition();
+        pos = GetLocalization();
 
         errors[0] = (tgtX - cx) / 10;
         errors[1] = dist; // handling distance calc other file
@@ -248,8 +249,9 @@ public class SharkDrive {
         deltaTime = now - last_time;
         last_time = now;
 
-//        pos = GetOdometryLocalization();
-        pos = limelight.GetLimelightData(false, GetOdometryLocalization().h);
+////        pos = GetOdometryLocalization();
+//        pos = limelight.GetLimelightData(false, GetOdometryLocalization().h);
+        pos = GetLocalization();
 
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
@@ -288,6 +290,19 @@ public class SharkDrive {
         }
 
         dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], pos.h);
+    }
+
+    // creates odometry fallback if the limelight stops working
+    private SparkFunOTOS.Pose2D GetLocalization()
+    {
+        if (limelight.GetIsValid())
+        {
+            return limelight.GetLimelightData(false,pos.h);
+        }
+        else
+        {
+            return GetOdometryLocalization();
+        }
     }
 
     private SparkFunOTOS.Pose2D GetOdometryLocalization()
