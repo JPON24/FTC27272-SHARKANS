@@ -5,8 +5,8 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.onbotjava.OnBotJavaWebInterfaceManager;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.*;
@@ -18,10 +18,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-
 
 
 //@TeleOp(name = "OpenCV Testing")
@@ -74,6 +71,13 @@ public class opencv{
     double sensorHeight = 2.02; //mm
     double imageWidth = 640; // px
     double imageHeight = 480; // px
+
+    // outlier checker
+    ElapsedTime derivRuntime = new ElapsedTime();
+    double lastDistance = 0;
+    double distanceDerivMax = 100;
+    boolean firstDetection = true;
+    int cameraAngle = 45;
 
     public void init(HardwareMap hwMap)
     {
@@ -304,6 +308,7 @@ public class opencv{
         double distanceW = focalLength * realWidth * imageWidth / (width * sensorWidth);
         double average = (distanceH + distanceW) / 2;
 
+        // hypotenuse
         average /= 25.4;
 
 //        double normTheta = 90 - (Math.abs(GetTheta()) % 90);
@@ -312,13 +317,31 @@ public class opencv{
 //
 //        double coef = 1 + 0.1538 * (1 - angleDist/45);
 
+
+
         double coef = 1;
-        return average * coef;
 
+        boolean outlierFound = false;
+        lastDistance = average;
 
-//        double tempWidth = objectWidthInRealWorldUnits - (scalarConst * (GetTheta()/90));
-//        return (objectWidthInRealWorldUnits * focalLength) / (width + theta);
-//        return (objectWidthInRealWorldUnits * focalLength) / width;
+        if (!firstDetection)
+        {
+            outlierFound = IsOutlierDetected(average, lastDistance);
+        }
+
+        firstDetection = false;
+
+        // assuming an angle of 45 degrees
+        double finalDist = Math.cos(cameraAngle * Math.PI/180) * average;
+
+        return outlierFound ? lastDistance : finalDist * coef;
+    }
+
+    private boolean IsOutlierDetected(double distanceValue, double lastDistance)
+    {
+        double derivative = (distanceValue - lastDistance) / derivRuntime.milliseconds();
+
+        return derivative > distanceDerivMax;
     }
 
     private double LowPass(double average, double newValue) {
@@ -330,5 +353,10 @@ public class opencv{
     public double GetTheta()
     {
         return theta;
+    }
+
+    public void SetFirstDetection(boolean input)
+    {
+        firstDetection = input;
     }
 }
