@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -10,6 +9,7 @@ public class Extension {
     private DcMotor extension = null;
     private Servo extendRoll = null;
     private Servo extendPitch = null;
+    private Servo extendClaw = null;
 
     ElapsedTime runtime = new ElapsedTime();
 //    private Servo extendYaw = null;
@@ -24,6 +24,9 @@ public class Extension {
     double localPitchPos = 0;
     double localRollPos = 0;
 
+    double localClawPosition = 0;
+    double closeCLawPosition = 0.4;
+
 
     public void init(HardwareMap hwMap) {
         extension = hwMap.get(DcMotor.class, "extension");
@@ -35,6 +38,7 @@ public class Extension {
 
         extendRoll = hwMap.get(Servo.class, "extendRoll");
         extendPitch = hwMap.get(Servo.class, "extendPitch");
+        extendClaw = hwMap.get(Servo.class, "extendClaw");
 //        extendYaw = hwMap.get(Servo.class, "extendYaw");
     }
 
@@ -84,7 +88,18 @@ public class Extension {
         {
             runtime.reset();
             SetManipulatorState();
+            extendClaw.setPosition(localClawPosition);
         }
+    }
+
+    public void OpenExtendClaw()
+    {
+        localClawPosition = 0;
+    }
+
+    public void CloseExtendClaw()
+    {
+        localClawPosition = closeCLawPosition;
     }
 
     public void SetManipulatorState()
@@ -98,7 +113,7 @@ public class Extension {
     {
         extension.setTargetPosition(position);
     }
-    
+
     public int GetCurrentPosition()
     {
         return extension.getCurrentPosition();
@@ -110,5 +125,25 @@ public class Extension {
         int lenience = 30;
         int error = Math.abs(tgt - extension.getCurrentPosition());
         return error < lenience;
+    }
+
+    public boolean GetRollAtPosition()
+    {
+        return Math.abs(extendRoll.getPosition() - localRollPos) < 0.03;
+    }
+
+    public boolean GetPitchAtPosition()
+    {
+        return Math.abs(extendPitch.getPosition() - localPitchPos) < 0.03;
+    }
+
+    public double GetRollPosition()
+    {
+        return extendRoll.getPosition();
+    }
+
+    public double GetPitchPosition()
+    {
+        return extendPitch.getPosition();
     }
 }
