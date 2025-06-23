@@ -23,24 +23,31 @@ public class MotorTester extends LinearOpMode {
     private Servo claw = null;
     private Servo wristR = null;
     private Servo wristL = null;
+    private Servo extendPitch = null;
+    private Servo extendRoll = null;
+    private Servo extendClaw = null;
+
     private SparkFunOTOS odometry;
 
-    private Limelight limelight = new Limelight();
+//    private Limelight limelight = new Limelight();
 
     @Override
     public void runOpMode() {
-        frontLeft = hardwareMap.get(DcMotor.class, "FrontLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "FrontRight");
-        backLeft = hardwareMap.get(DcMotor.class, "BackLeft");
-        backRight = hardwareMap.get(DcMotor.class, "BackRight");
-        
+//        frontLeft = hardwareMap.get(DcMotor.class, "FrontLeft");
+//        frontRight = hardwareMap.get(DcMotor.class, "FrontRight");
+//        backLeft = hardwareMap.get(DcMotor.class, "BackLeft");
+//        backRight = hardwareMap.get(DcMotor.class, "BackRight");
+//
         odometry = hardwareMap.get(SparkFunOTOS.class,"otos");
-        wristR = hardwareMap.get(Servo.class, "wristR");
-        wristL = hardwareMap.get(Servo.class, "wristL");
-        claw = hardwareMap.get(Servo.class, "claw");
+//        wristR = hardwareMap.get(Servo.class, "wristR");
+//        wristL = hardwareMap.get(Servo.class, "wristL");
+//        claw = hardwareMap.get(Servo.class, "claw");
         extend = hardwareMap.get(DcMotor.class, "extend");
+        extendPitch = hardwareMap.get(Servo.class, "extendPitch");
+        extendRoll = hardwareMap.get(Servo.class, "extendRoll");
+        extendClaw = hardwareMap.get(Servo.class, "extendClaw");
 
-        limelight.init(hardwareMap);
+//        limelight.init(hardwareMap);
 
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
@@ -57,6 +64,7 @@ public class MotorTester extends LinearOpMode {
 //        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        amL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        amR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //
 //        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -74,9 +82,10 @@ public class MotorTester extends LinearOpMode {
         
         waitForStart();
         while (opModeIsActive()) {
-            wristR.setPosition(0);
-            wristL.setPosition(0);
-            claw.setPosition(1);
+//            extendPitch.setPosition(0);
+//            wristR.setPosition(0);
+//            wristL.setPosition(0);
+//            claw.setPosition(1);
 //            if(gamepad1.x)
 //            {
 //                frontLeft.setPower(1); //frontright
@@ -114,6 +123,20 @@ public class MotorTester extends LinearOpMode {
             {
                 extend.setPower(0);
             }
+
+            if (gamepad2.y)
+            {
+//                extendRoll.setPosition(0);
+//                extendPitch.setPosition(0);
+                extendClaw.setPosition(0);
+            }
+            else if (gamepad2.b)
+            {
+//                extendRoll.setPosition(1);
+//                extendPitch.setPosition(1);
+                extendClaw.setPosition(0.4);
+            }
+
 //            if (gamepad2.x)
 //            {
 //                amL.setPower(-0.1);
@@ -153,14 +176,14 @@ public class MotorTester extends LinearOpMode {
 //            backLeft.setPower(0);
 //            backRight.setPower(0);
 //
-            SparkFunOTOS.Pose2D position = limelight.GetLimelightData(true, odometry.getPosition().h);
+//            SparkFunOTOS.Pose2D position = limelight.GetLimelightData(true, odometry.getPosition().h);
 //            telemetry.addData("frontLeftPosition", backLeft.getCurrentPosition());
-            telemetry.addData("odometryx", odometry.getPosition().x);
-            telemetry.addData("odometryy", odometry.getPosition().y);
-            telemetry.addData("odometryh", odometry.getPosition().h);
+//            telemetry.addData("odometryx", odometry.getPosition().x);
+//            telemetry.addData("odometryy", odometry.getPosition().y);
+//            telemetry.addData("odometryh", odometry.getPosition().h);
             telemetry.addData("extension", extend.getCurrentPosition());
-            telemetry.addData("x limelight localization", position.x);
-            telemetry.addData("y limelight localization", position.y);
+//            telemetry.addData("x limelight localization", 'position.x);
+//            telemetry.addData("y limelight localization", position.y);
 
 //            telemetry.addData("armLPosition", amL.getCurrentPosition());
 //            telemetry.addData("armRPosition", amR.getCurrentPosition());
