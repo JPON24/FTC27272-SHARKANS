@@ -113,7 +113,7 @@ public class MoveCommand  {
         }
     }
 
-    public void MoveToPositionCancellable(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, double roll, double pitch, boolean tgtClaw, char tgtWrist)
+    public void MoveToPositionCancellable(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, double roll, double pitch, boolean tgtClaw, char tgtWrist, boolean extendClaw)
     {
         // reset for next command
         command.ResetMap();
@@ -131,6 +131,12 @@ public class MoveCommand  {
         am.Rotate(tgtA,'A');
         extend.MoveExtend(tgtE, 'a');
         extend.SetLocalManipulatorState(roll, pitch);
+        if (extendClaw){
+            extend.OpenExtendClaw();
+        }
+        else{
+            extend.CloseExtendClaw();
+        }
 
         // for every key (m, e, a, c, w)
         for (Character key : localCopy.keySet())
@@ -181,7 +187,7 @@ public class MoveCommand  {
         }
         cs.Update();
     }
-    public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, boolean tgtClaw, double roll, double pitch, int cx, double dist)
+    public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, boolean tgtClaw, double roll, double pitch, int cx, double dist, boolean extendClaw)
     {
         // reset for next command
         command.ResetMap();
@@ -198,7 +204,6 @@ public class MoveCommand  {
         am.SetArmSpeed(speedA);
         am.Rotate(tgtA,'A');
         extend.MoveExtend(tgtE, 'a');
-        extend.SetLocalManipulatorState(roll, pitch);
 
         // for every key (m, e, a, c, w)
         for (Character key : localCopy.keySet())
@@ -245,8 +250,31 @@ public class MoveCommand  {
                         command.SetElementFalse('e');
                         break;
                     }
+                case 'w':
+                    if (!extend.GetRollAtPosition())
+                    {
+                        extend.SetLocalManipulatorState(roll, extend.GetPitchPosition());
+                        extend.Update();
+                    }
+                    else
+                    {
+                        extend.SetLocalManipulatorState(roll, pitch);
+                        extend.Update();
+
+                        if (extend.GetPitchAtPosition())
+                        {
+                            command.SetElementTrue('w');
+                            break;
+                        }
+                    }
             }
         }
+
+        if (GetCommandState())
+        {
+            command.SetElementFalse('w');
+        }
+
         cs.Update();
     }
 
