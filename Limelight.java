@@ -12,6 +12,7 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 public class Limelight {
     Limelight3A limelight;
+    boolean isValid;
 
     public void init(HardwareMap hardwareMap) {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -30,17 +31,49 @@ public class Limelight {
         SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D(0,0,0);
 
         if (!result.isValid() || pose == null) {
+            isValid = false;
             return output;
+        }
+        else
+        {
+            isValid = true;
         }
 
         output.x = pose.getPosition().x;
         output.y = pose.getPosition().y;
 
-        if (redAlliance)
-        {
-
-        }
+        output = ProcessCoordinates(redAlliance, output);
 
         return output;
+    }
+
+    private SparkFunOTOS.Pose2D ProcessCoordinates(boolean redAlliance, SparkFunOTOS.Pose2D pos)
+    {
+        SparkFunOTOS.Pose2D processedPosition = new SparkFunOTOS.Pose2D();
+        processedPosition.x = MtoIn(pos.x);
+        processedPosition.y = 2 - (pos.y/Math.abs(pos.y));
+
+        processedPosition.y = MtoIn(processedPosition.y);
+
+        if (redAlliance)
+        {
+            processedPosition.y *= -1;
+        }
+        else
+        {
+            processedPosition.x *= -1;
+        }
+
+        return processedPosition;
+    }
+
+    private double MtoIn(double input)
+    {
+        return input / 0.0254;
+    }
+
+    public boolean GetIsValid()
+    {
+        return isValid;
     }
 }
