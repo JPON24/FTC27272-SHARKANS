@@ -13,6 +13,7 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 @TeleOp
 
 public class MotorTester extends LinearOpMode {
+    Extension extension = new Extension();
     private DcMotor frontLeft = null;
     private DcMotor frontRight = null;
     private DcMotor backLeft = null;
@@ -37,15 +38,16 @@ public class MotorTester extends LinearOpMode {
 //        frontRight = hardwareMap.get(DcMotor.class, "FrontRight");
 //        backLeft = hardwareMap.get(DcMotor.class, "BackLeft");
 //        backRight = hardwareMap.get(DcMotor.class, "BackRight");
-//
         odometry = hardwareMap.get(SparkFunOTOS.class,"otos");
 //        wristR = hardwareMap.get(Servo.class, "wristR");
 //        wristL = hardwareMap.get(Servo.class, "wristL");
 //        claw = hardwareMap.get(Servo.class, "claw");
-        extend = hardwareMap.get(DcMotor.class, "extend");
+//        extend = hardwareMap.get(DcMotor.class, "extension");
         extendPitch = hardwareMap.get(Servo.class, "extendPitch");
         extendRoll = hardwareMap.get(Servo.class, "extendRoll");
         extendClaw = hardwareMap.get(Servo.class, "extendClaw");
+
+        extension.init(hardwareMap);
 
 //        limelight.init(hardwareMap);
 
@@ -64,7 +66,7 @@ public class MotorTester extends LinearOpMode {
 //        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        amL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        amR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        extend.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //
 //        frontLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        frontRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -72,7 +74,7 @@ public class MotorTester extends LinearOpMode {
 //        backRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        amL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        amR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        extend.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        extend.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 //
 //        frontLeft.setDirection(DcMotor.Direction.REVERSE);
 //        frontRight.setDirection(DcMotor.Direction.FORWARD);
@@ -111,31 +113,51 @@ public class MotorTester extends LinearOpMode {
 //                claw.setPosition(0.3);
 //            }
 //
-            if (gamepad2.x)
-            {
-                extend.setPower(-0.6);
-            }
-            else if (gamepad2.a)
-            {
-                extend.setPower(0.6);
-            }
-            else
-            {
-                extend.setPower(0);
-            }
+//            if (gamepad2.x)
+//            {
+//                extend.setPower(-0.6);
+//            }
+//            else if (gamepad2.a)
+//            {
+//                extend.setPower(0.6);
+//            }
 
             if (gamepad2.y)
             {
 //                extendRoll.setPosition(0);
-//                extendPitch.setPosition(0);
-                extendClaw.setPosition(0);
+                extendPitch.setPosition(0);
+//                extendClaw.setPosition(0);
             }
             else if (gamepad2.b)
             {
 //                extendRoll.setPosition(1);
-//                extendPitch.setPosition(1);
-                extendClaw.setPosition(0.4);
+                extendPitch.setPosition(0.33);
+//                extendClaw.setPosition(0.4);
             }
+
+            if (gamepad1.a)
+            {
+                extension.MoveToPosition(-1200);
+            }
+            else if (gamepad1.b)
+            {
+                extension.MoveToPosition(-100);
+            }
+            else
+            {
+                extension.MoveToPosition(extension.GetExtensionPosition());
+            }
+
+//            if (gamepad1.y)
+//            {
+//                extend.setTargetPosition(-1500);
+//                extend.setPower(0.6);
+//            }
+//            else if (gamepad1.x)
+//            {
+//                extend.setTargetPosition(-100);
+//                extend.setPower(0.6);
+//            }
 
 //            if (gamepad2.x)
 //            {
@@ -181,7 +203,8 @@ public class MotorTester extends LinearOpMode {
 //            telemetry.addData("odometryx", odometry.getPosition().x);
 //            telemetry.addData("odometryy", odometry.getPosition().y);
 //            telemetry.addData("odometryh", odometry.getPosition().h);
-            telemetry.addData("extension", extend.getCurrentPosition());
+            telemetry.addData("extension", extension.GetExtensionPosition());
+            telemetry.addData("extension output", extension.GetOutput());
 //            telemetry.addData("x limelight localization", 'position.x);
 //            telemetry.addData("y limelight localization", position.y);
 
