@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 public class Extension {
     private DcMotor extension = null;
@@ -12,14 +13,15 @@ public class Extension {
     private Servo extendClaw = null;
 
     ElapsedTime runtime = new ElapsedTime();
+    ElapsedTime pidDT = new ElapsedTime();
 //    private Servo extendYaw = null;
 
 
     int localNeutral = 0;
     boolean canUpdateLocalNeutral = true;
 
-    int topLimit = 1500; // old value 1650
-    int bottomLimit = 15;
+    int topLimit = -1500; // old value 1650
+    int bottomLimit = -15;
 
     double localPitchPos = 0;
     double localRollPos = 0;
@@ -27,26 +29,38 @@ public class Extension {
     double localClawPosition = 0;
     double closeCLawPosition = 0.4;
 
+    double kp,ki,kd, integral;
+    double lastError = 0;
+    double output = 0;
+
+    double errorCrunchConstant = 25.0;
+
 
     public void init(HardwareMap hwMap) {
         extension = hwMap.get(DcMotor.class, "extension");
-        extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         extension.setTargetPosition(0);
-        extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        extension.setDirection(DcMotor.Direction.REVERSE);
+        extension.setDirection(DcMotor.Direction.FORWARD);
 
         extendRoll = hwMap.get(Servo.class, "extendRoll");
         extendPitch = hwMap.get(Servo.class, "extendPitch");
         extendClaw = hwMap.get(Servo.class, "extendClaw");
 //        extendYaw = hwMap.get(Servo.class, "extendYaw");
+
+        kp = 0.1; // 0.1
+        ki = 0; // 0
+        kd = 0.02; // 0.01
     }
 
     public void ResetEncoders() {
         topLimit = 1500;
         bottomLimit = 15;
         extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void ResetEncodersUp() {
@@ -92,6 +106,20 @@ public class Extension {
         }
     }
 
+    private double PID(double error)
+    {
+        double proportional = kp * error;
+        integral += error * pidDT.milliseconds();
+        double derivative = (error - lastError) / pidDT.milliseconds();
+
+        double output = (proportional) + (integral * ki) + (derivative * kd);
+
+        lastError = error;
+        pidDT.reset();
+
+        return Range.clip(output, -1, 1);
+    }
+
     public void OpenExtendClaw()
     {
         localClawPosition = 0;
@@ -111,7 +139,12 @@ public class Extension {
 
     public void MoveToPosition(int position)
     {
-        extension.setTargetPosition(position);
+        double error = (position/errorCrunchConstant) - (GetExtensionPosition()/errorCrunchConstant);
+
+        output = PID(error);
+
+        extension.setPower(output);
+//        extension.setTargetPosition(position);
     }
 
     public int GetCurrentPosition()
@@ -124,6 +157,7 @@ public class Extension {
         // increased due to high range
         int lenience = 30;
         int error = Math.abs(tgt - extension.getCurrentPosition());
+
         return error < lenience;
     }
 
@@ -145,5 +179,12 @@ public class Extension {
     public double GetPitchPosition()
     {
         return extendPitch.getPosition();
+    }
+
+    public int GetExtensionPosition() {return extension.getCurrentPosition();}
+
+    public double GetOutput()
+    {
+        return output;
     }
 }
