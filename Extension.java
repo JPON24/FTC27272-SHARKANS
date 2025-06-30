@@ -21,19 +21,21 @@ public class Extension {
     boolean canUpdateLocalNeutral = true;
 
     int topLimit = -1500; // old value 1650
-    int bottomLimit = -15;
+    int bottomLimit = -50;
 
     double localPitchPos = 0;
     double localRollPos = 0;
 
     double localClawPosition = 0;
-    double closeCLawPosition = 0.4;
+    double closeClawPosition = 0.4;
 
     double kp,ki,kd, integral;
     double lastError = 0;
     double output = 0;
 
     double errorCrunchConstant = 25.0;
+
+    double servoLenience = 0.01;
 
 
     public void init(HardwareMap hwMap) {
@@ -43,7 +45,7 @@ public class Extension {
         extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        extension.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         extension.setDirection(DcMotor.Direction.FORWARD);
 
         extendRoll = hwMap.get(Servo.class, "extendRoll");
@@ -58,13 +60,13 @@ public class Extension {
 
     public void ResetEncoders() {
         topLimit = 1500;
-        bottomLimit = 15;
+        bottomLimit = 50;
         extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void ResetEncodersUp() {
-        topLimit = -15;
+        topLimit = -50;
         bottomLimit = -1500;
     }
 
@@ -80,11 +82,12 @@ public class Extension {
                 canUpdateLocalNeutral = true;
                 MoveToPosition(bottomLimit);
             } else {
+                extension.setPower(0); // brake mode :)
                 if (canUpdateLocalNeutral) {
                     localNeutral = extension.getCurrentPosition();
                     canUpdateLocalNeutral = false;
                 }
-                MoveToPosition(localNeutral);
+//                MoveToPosition(localNeutral);
             }
         } else if (mode == 'A') {
             MoveToPosition((int) targetPower);
@@ -104,6 +107,12 @@ public class Extension {
             SetManipulatorState();
             extendClaw.setPosition(localClawPosition);
         }
+    }
+
+    public void UpdateOverride()
+    {
+        SetManipulatorState();
+        extendClaw.setPosition(localClawPosition);
     }
 
     private double PID(double error)
@@ -127,7 +136,7 @@ public class Extension {
 
     public void CloseExtendClaw()
     {
-        localClawPosition = closeCLawPosition;
+        localClawPosition = closeClawPosition;
     }
 
     public void SetManipulatorState()
@@ -144,7 +153,6 @@ public class Extension {
         output = PID(error);
 
         extension.setPower(output);
-//        extension.setTargetPosition(position);
     }
 
     public int GetCurrentPosition()
@@ -155,7 +163,7 @@ public class Extension {
     public boolean GetCompleted(int tgt)
     {
         // increased due to high range
-        int lenience = 30;
+        int lenience = 50;
         int error = Math.abs(tgt - extension.getCurrentPosition());
 
         return error < lenience;
@@ -163,12 +171,12 @@ public class Extension {
 
     public boolean GetRollAtPosition()
     {
-        return Math.abs(extendRoll.getPosition() - localRollPos) < 0.03;
+        return Math.abs(extendRoll.getPosition() - localRollPos) < servoLenience;
     }
 
     public boolean GetPitchAtPosition()
     {
-        return Math.abs(extendPitch.getPosition() - localPitchPos) < 0.03;
+        return Math.abs(extendPitch.getPosition() - localPitchPos) < servoLenience;
     }
 
     public double GetRollPosition()
@@ -181,7 +189,27 @@ public class Extension {
         return extendPitch.getPosition();
     }
 
+    public double GetRollLocalPosition() { return localRollPos; }
+
+    public double GetPitchLocalPosition() { return localPitchPos; }
+
+    public double GetLocalClawPosition() { return localClawPosition; }
+
     public int GetExtensionPosition() {return extension.getCurrentPosition();}
+
+    public boolean GetExtendClawAtPosition(boolean tgt)
+    {
+        double error = 0;
+        if (tgt)
+        {
+            error = Math.abs(closeClawPosition - extendClaw.getPosition());
+        }
+        else
+        {
+            error = Math.abs(0 - extendClaw.getPosition());
+        }
+        return error < servoLenience;
+    }
 
     public double GetOutput()
     {
