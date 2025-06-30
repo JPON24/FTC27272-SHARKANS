@@ -16,6 +16,8 @@ public class MoveCommand  {
 
     int lastA = 0;
     int lastE = 0;
+
+    boolean usingWrist = false;
     
     public void init(HardwareMap hwMap, boolean isAuton)
     {
@@ -187,15 +189,36 @@ public class MoveCommand  {
         }
         cs.Update();
     }
-    public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, boolean tgtClaw, double roll, double pitch, int cx, double dist, boolean extendClaw)
+    public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, boolean tgtClaw, double roll, double pitch, int cx, double dist, boolean extendClaw, char type)
     {
         // reset for next command
         command.ResetMap();
         HashMap<Character, Boolean> localCopy = new HashMap<Character,Boolean>();
-
-        command.SetElementFalse('m');
-        command.SetElementFalse('a');
-        command.SetElementFalse('e');
+        if (type == 'm')
+        {
+            command.SetElementFalse('m');
+            command.SetElementFalse('a');
+            extend.SetLocalManipulatorState(0,0);
+            extend.OpenExtendClaw();
+            extend.UpdateOverride();
+        }
+        if (type == 'e')
+        {
+            command.SetElementFalse('e');
+            extend.MoveToPosition(tgtE);
+            extend.SetLocalManipulatorState(0,0);
+            extend.OpenExtendClaw();
+            extend.UpdateOverride();
+        }
+        if (type == 'w')
+        {
+            command.SetElementFalse('w');
+        }
+        if (type == 'c')
+        {
+            command.SetElementFalse('w');
+            command.SetElementFalse('c');
+        }
 
         localCopy = command.GetMap();
 
@@ -203,7 +226,7 @@ public class MoveCommand  {
         cs.SetClawOpen(tgtClaw);
         am.SetArmSpeed(speedA);
         am.Rotate(tgtA,'A');
-        extend.MoveExtend(tgtE, 'a');
+//        extend.MoveExtend(tgtE, 'a');
 
         // for every key (m, e, a, c, w)
         for (Character key : localCopy.keySet())
@@ -239,9 +262,9 @@ public class MoveCommand  {
                         break;
                     }
                 case 'e':
-                    extend.MoveExtend(tgtE,'a');
                     if (extend.GetCompleted(tgtE))
                     {
+                        extend.MoveExtend(0,'T');
                         command.SetElementTrue('e');
                         break;
                     }
@@ -251,28 +274,36 @@ public class MoveCommand  {
                         break;
                     }
                 case 'w':
-                    if (!extend.GetRollAtPosition())
+                    extend.OpenExtendClaw();
+                    extend.SetLocalManipulatorState(roll, pitch);
+                    extend.UpdateOverride();
+
+                    if (extend.GetPitchAtPosition() && extend.GetRollAtPosition())
                     {
-                        extend.SetLocalManipulatorState(roll, extend.GetPitchPosition());
-                        extend.Update();
+                        command.SetElementTrue('w');
+                    }
+                    break;
+                case 'c':
+                    if (extend.GetExtendClawAtPosition(extendClaw))
+                    {
+                        command.SetElementTrue('c');
                     }
                     else
                     {
-                        extend.SetLocalManipulatorState(roll, pitch);
-                        extend.Update();
-
-                        if (extend.GetPitchAtPosition())
+                        if (extendClaw)
                         {
-                            command.SetElementTrue('w');
-                            break;
+                            extend.CloseExtendClaw();
+                            extend.UpdateOverride();
                         }
+                        else
+                        {
+                            extend.OpenExtendClaw();
+                            extend.UpdateOverride();
+                        }
+                        command.SetElementFalse('c');
                     }
+                    break;
             }
-        }
-
-        if (GetCommandState())
-        {
-            command.SetElementFalse('w');
         }
 
         cs.Update();
@@ -281,5 +312,10 @@ public class MoveCommand  {
     public boolean GetCommandState()
     {
         return command.GetBoolsCompleted();
+    }
+
+    public boolean UsingWrist()
+    {
+        return usingWrist;
     }
 }
