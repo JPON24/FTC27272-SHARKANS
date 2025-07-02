@@ -249,13 +249,29 @@ public class StarterBot extends LinearOpMode{
             normalControl = false;
             canStartSubMacro = false;
             cv.SetDetecting(true);
+            boolean shouldReturn = false;
 
 //            TeleopMoveCommandA(1, 0, 32, 0,preciseLenience,2,1,grabHeight,0,0,0, true,'G', false);
-            TeleopMoveCommandCV(1, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'm');
+            shouldReturn = TeleopMoveCommandCV(0.8, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'm');
             cv.SetDetecting(false);
-            TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'e');
-            TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'w');
-            TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, 'c');
+            if (shouldReturn) {return;}
+
+            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'e');
+            if (shouldReturn) {return;}
+
+            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'r');
+            if (shouldReturn) {return;}
+            sleep(400);
+
+            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'p');
+            if (shouldReturn) {return;}
+            sleep(400);
+
+            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, 'c');
+            if (shouldReturn) {return;}
+
+            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, '/');
+            if (shouldReturn) {return;}
 
             am.SetLocalNeutral(am.GetTargetPosition());
             normalControl = true;
@@ -307,13 +323,23 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-    private void TeleopMoveCommandCV(double speed, double x, double y, double h, double d, int axis, double speedA, int a, boolean claw, boolean extendClaw, char type)
+    private boolean TeleopMoveCommandCV(double speed, double x, double y, double h, double d, int axis, double speedA, int a, boolean claw, boolean extendClaw, char type)
     {
         do
         {
 //            TelemetryPrint();
             cs.SetClawOpen(claw);
             TelemetryPrint();
+
+
+//            if (theta > 90)
+//            {
+//                rollWrist = (theta-90) / 250 + 0;
+//            }
+//            else
+//            {
+//                rollWrist = 0.35 + (theta) / 255;
+//            }
 
             // set extension to max
             int e = -1500;
@@ -340,25 +366,19 @@ public class StarterBot extends LinearOpMode{
             double rollWrist = 1;
             double pitchWrist = 0.33; // 0.15 offset
 
-//            if (theta > 90)
-//            {
-//                rollWrist = (theta-90) / 250 + 0;
-//            }
-//            else
-//            {
-//                rollWrist = 0.35 + (theta) / 255;
-//            }
+            double correctXOffset = cv.GetXOffset();
 
-            moveCmd.MoveToPositionCV(speed,x,y,h,d,axis,speedA,a,e,claw,rollWrist,pitchWrist, cv.GetCX(), correctDist, extendClaw, type);
+            moveCmd.MoveToPositionCV(speed,x,y,h,d,axis,speedA,a,e,claw,rollWrist,pitchWrist, correctXOffset, correctDist, extendClaw, type, cv.GetFirstDetection());
             if (!gamepad1.a) {
                 normalControl = true;
                 cv.SetDetecting(false);
                 am.SetLocalNeutral(a);
                 cv.SetFirstDetection(true);
-                return;
+                return true;
             }
         } while (!moveCmd.GetCommandState());
         cv.SetFirstDetection(true);
+        return false;
     }
 
     private void TeleopMoveCommandA(double speed, double x, double y, double h, double d, int axis, double speedA, int a, int e, double roll, double pitch, boolean claw, char wrist, boolean extendClaw)
@@ -556,15 +576,12 @@ public class StarterBot extends LinearOpMode{
 
     private void TelemetryPrint()
     {
-        telemetry.addData("x position", shark.GetPositionX());
         telemetry.addData("y position", shark.GetPositionY());
         telemetry.addData("h position", shark.GetImuReading());
-        telemetry.addData("leftWrist", cs.GetWristLPosition());
-        telemetry.addData("rightWrist",cs.GetWristRPosition());
+//        telemetry.addData("leftWrist", cs.GetWristLPosition());
+//        telemetry.addData("rightWrist",cs.GetWristRPosition());
         telemetry.addData("target extension", extendPos);
 //        telemetry.addData("arm position", am.GetCurrentPosition());
-//        telemetry.addData("errorX", shark.GetErrorX());
-//        telemetry.addData("errorY", shark.GetErrorY());
 //        telemetry.addData("ERROR", am.GetError());
 //        telemetry.addData("PROPORTIONAL", am.GetProportional());
 //        telemetry.addData("INTEGRAL", am.GetIntegral());
@@ -577,11 +594,18 @@ public class StarterBot extends LinearOpMode{
 //        telemetry.addData("DiagonalScalar", shark.GetDiagonalScalar());
         telemetry.addData("cv dist", cv.GetDistance());
         telemetry.addData("cv cx", cv.GetCX());
+        telemetry.addData("cv xOffset", cv.GetXOffset());
+        telemetry.addData("x position", shark.GetPositionX());
+
+        telemetry.addData("errorX", shark.GetErrorX());
+        telemetry.addData("errorY", shark.GetErrorY());
+        telemetry.addData("autograb zerox", shark.GetAutograbZeroX());
+        telemetry.addData("autograb zeroy", shark.GetAutograbZeroY());
 //        telemetry.addData("cv points", cv.GetPoints());
 //        telemetry.addData("xMin", cv.GetXMin());
 //        telemetry.addData("xMax", cv.GetXMax());
-        telemetry.addData("minDiff", cv.GetMinDiff());
-        telemetry.addData("maxDiff", cv.GetMaxDiff());
+//        telemetry.addData("minDiff", cv.GetMinDiff());
+//        telemetry.addData("maxDiff", cv.GetMaxDiff());
 //        telemetry.addData("yMin", cv.GetYMin());
 //        telemetry.addData("yMinX", cv.GetYMinX());
         telemetry.addData("theta", cv.GetTheta());
