@@ -210,7 +210,7 @@ public class SharkDrive {
 //        pos = odometry.getPosition();
         pos = GetLocalization();
 
-        errors[0] = (320 - cx) / 12.5; // 330-cx / 12.5
+        errors[0] = (500 - cx) / 12.5; // 330-cx / 12.5
         errors[1] = dist; // handling distance calc other file
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
