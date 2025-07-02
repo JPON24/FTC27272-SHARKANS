@@ -72,7 +72,6 @@ public class opencv{
     Mat persistentHsvMatrix = new Mat();
 
     boolean detecting = false;
-    boolean firstIter = true;
 
     double horizontalFOV = 90; // degrees
 
@@ -103,12 +102,13 @@ public class opencv{
             // Preprocess the frame to detect yellow regions
 //            Mat mask = preprocessFrame(input);
 
-            if (!firstIter)
+            if (!firstDetection)
             {
-                if (detectionRuntime.milliseconds() < 1/hz || !detecting)
-                {
-                    return persistentDetectionMatrix;
-                }
+                return persistentDetectionMatrix;
+//                if (detectionRuntime.milliseconds() < 1/hz || !detecting)
+//                {
+//                    return persistentDetectionMatrix;
+//                }
             }
 
             // Find contours of the detected yellow regions
@@ -156,29 +156,30 @@ public class opencv{
 //                String label = "(" + (int) cX + ", " + (int) cY + ")";
 //                Imgproc.putText(input, label, new Point(cX + 10, cY), Imgproc.FONT_HERSHEY_COMPLEX, 0.5, new Scalar(0, 255, 0), 2);
 //                Imgproc.circle(input, new Point(cX, cY), 5, new Scalar(0, 255, 0), -1);
-                if (!firstIter)
-                {
-                    if (detectionRuntime.milliseconds() > 1/hz)
-                    {
-                        persistentDetectionMatrix = input;
-                    }
-                }
-                else
-                {
-                    persistentDetectionMatrix = input;
-                }
+//                if (!firstIter)
+//                {
+//                    if (detectionRuntime.milliseconds() > 1/hz)
+//                    {
+//                        persistentDetectionMatrix = input;
+//                    }
+//                }
+//                else
+//                {
+                persistentDetectionMatrix = input;
+//                }
             }
 
             return persistentDetectionMatrix;
         }
 
         private Mat preprocessFrame(Mat frame) {
-            if (!firstIter)
+            if (!firstDetection)
             {
-                if (detectionRuntime.milliseconds() < 1/hz || !detecting)
-                {
-                    return persistentHsvMatrix;
-                }
+                return persistentHsvMatrix;
+//                if (detectionRuntime.milliseconds() < 1/hz || !detecting)
+//                {
+//                    return persistentHsvMatrix;
+//                }
             }
 
             Mat hsvFrame = new Mat();
@@ -200,19 +201,19 @@ public class opencv{
             Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
             Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_OPEN, kernel);
             Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_CLOSE, kernel);
-            if (!firstIter)
-            {
-                if (detectionRuntime.milliseconds() > 1 / hz)
-                {
-                    persistentHsvMatrix = mask;
-                    detectionRuntime.reset();
-                }
-            }
-            else
-            {
-                persistentHsvMatrix = mask;
-                firstIter = false;
-            }
+//            if (!firstIter)
+//            {
+//                if (detectionRuntime.milliseconds() > 1 / hz)
+//                {
+//                    persistentHsvMatrix = mask;
+//                    detectionRuntime.reset();
+//                }
+//            }
+//            else
+//            {
+            persistentHsvMatrix = mask;
+            firstDetection = false;
+//            }
 
             return persistentHsvMatrix;
         }
@@ -378,4 +379,5 @@ public class opencv{
     {
         firstDetection = input;
     }
+    public boolean GetFirstDetection() {return firstDetection;}
 }
