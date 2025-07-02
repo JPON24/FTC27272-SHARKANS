@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+//import com.acmerobotics.dashboard.FtcDashboard;
+//import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -41,22 +41,10 @@ public class opencv{
 //    public static final double focalLength = 720;  // Replace with the focal length of the camera in pixels
 
     private final double objW = 3.5;
-//    private final double objH = 1.5;
-
-    private final double focalLengthW = 823;
-    private final double focalLengthH = 500;
-    private final double k = 2146;
+    private final double objH = 1.5;
 
     private Mat emptyMat = new Mat();
     List<Point> points;
-
-    double xMin = 640;
-    double xMax = 0;
-
-    double yMin = 480;
-    int yMinIndex = 0;
-    double yMax = 0;
-    int yMaxIndex = 0;
 
     double yMaxX = 0;
 
@@ -64,20 +52,31 @@ public class opencv{
     double maxDiff = 0;
 
 
-    double focalLength = 4; // mm
+    double focalLength = 3.67; // mm
     double realHeight = 88.9; //mm
     double realWidth = 38.1; //mm
-    double sensorWidth = 3.58; //mm
-    double sensorHeight = 2.02; //mm
+    double sensorWidth = 8.4664; //mm
+    double sensorHeight = 8.466; //mm
     double imageWidth = 640; // px
-    double imageHeight = 480; // px
+    double imageHeight = 360; // px
 
     // outlier checker
     ElapsedTime derivRuntime = new ElapsedTime();
-    double lastDistance = 0;
+    ElapsedTime detectionRuntime = new ElapsedTime();
+
+    double hz = 8; //5
     double distanceDerivMax = 100;
     boolean firstDetection = true;
-    int cameraAngle = 45;
+
+    Mat persistentDetectionMatrix = new Mat();
+    Mat persistentHsvMatrix = new Mat();
+
+    boolean detecting = false;
+    boolean firstIter = true;
+
+    double horizontalFOV = 90; // degrees
+
+    double camCenterOffset = 4.625;
 
     public void init(HardwareMap hwMap)
     {
@@ -104,6 +103,14 @@ public class opencv{
             // Preprocess the frame to detect yellow regions
 //            Mat mask = preprocessFrame(input);
 
+            if (!firstIter)
+            {
+                if (detectionRuntime.milliseconds() < 1/hz || !detecting)
+                {
+                    return persistentDetectionMatrix;
+                }
+            }
+
             // Find contours of the detected yellow regions
             List<MatOfPoint> contours = new ArrayList<>();
 //            Mat hierarchy = new Mat();
@@ -119,52 +126,15 @@ public class opencv{
                 width = calculateWidth(largestContour);
                 height = calculateHeight(largestContour);
 
-                /* realW = 3.5
-                 realH = 1.5
-                 distance = 12
-                 distance = 12
-                 boxW = 240
-                 boxH = 166`
-                 boxA = 200 * 160
-
-                 focalLengthW = 823
-                 focalLengthH = 1328
-                 k = 2146
-                 */
-
-                // focalLengthPxW
-                // distance * boxWidth / realW
-
-                // focalLengthPxH
-                // distance * boxHeight / realH
-
-                // distInchesW
-                // realWidth * focalLengthPxW / BoxW
-
-                // distInchesH
-                // realHeight * focalLengthPxH / boxHeight
-
-                // k (area const)
-                // dist * sqrt(boxW * boxH)
-
-                // distA
-                // k / sqrt(boxW * boxH)
-
-                // turn angle
-                // offsetPixels * (cameraFOV / imgWidth)
-
-                // ( distW + distH + distA ) /
-
-
-                String widthLabel = "Width: " + (int) width + " pixels";
-                Imgproc.putText(input, widthLabel, new Point(cX + 10, cY + 20), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-
-                String heightLabel = "Height: " + (int) height + " pixels";
-                Imgproc.putText(input, heightLabel, new Point(cX + 10, cY + 60), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-//                Display the Distance
-                String distanceLabel = "Distance: " + GetDistance() + " inches";
-                Imgproc.putText(input, distanceLabel, new Point(cX + 10, cY + 100), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-                // Calculate the centroid of the largest contour
+//                String widthLabel = "Width: " + (int) width + " pixels";
+//                Imgproc.putText(input, widthLabel, new Point(cX + 10, cY + 20), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+//
+//                String heightLabel = "Height: " + (int) height + " pixels";
+//                Imgproc.putText(input, heightLabel, new Point(cX + 10, cY + 60), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+////                Display the Distance
+//                String distanceLabel = "Distance: " + GetDistance() + " inches";
+//                Imgproc.putText(input, distanceLabel, new Point(cX + 10, cY + 100), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+//                 Calculate the centroid of the largest contour
                 Moments moments = Imgproc.moments(largestContour);
 
                 cX = moments.get_m10() / moments.get_m00();
@@ -183,16 +153,34 @@ public class opencv{
                 theta = Math.abs(theta);
 
                 // Draw a dot at the centroid
-                String label = "(" + (int) cX + ", " + (int) cY + ")";
-                Imgproc.putText(input, label, new Point(cX + 10, cY), Imgproc.FONT_HERSHEY_COMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-                Imgproc.circle(input, new Point(cX, cY), 5, new Scalar(0, 255, 0), -1);
-
+//                String label = "(" + (int) cX + ", " + (int) cY + ")";
+//                Imgproc.putText(input, label, new Point(cX + 10, cY), Imgproc.FONT_HERSHEY_COMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+//                Imgproc.circle(input, new Point(cX, cY), 5, new Scalar(0, 255, 0), -1);
+                if (!firstIter)
+                {
+                    if (detectionRuntime.milliseconds() > 1/hz)
+                    {
+                        persistentDetectionMatrix = input;
+                    }
+                }
+                else
+                {
+                    persistentDetectionMatrix = input;
+                }
             }
 
-            return input;
+            return persistentDetectionMatrix;
         }
 
         private Mat preprocessFrame(Mat frame) {
+            if (!firstIter)
+            {
+                if (detectionRuntime.milliseconds() < 1/hz || !detecting)
+                {
+                    return persistentHsvMatrix;
+                }
+            }
+
             Mat hsvFrame = new Mat();
             Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_BGR2HSV);
 
@@ -212,8 +200,21 @@ public class opencv{
             Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
             Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_OPEN, kernel);
             Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_CLOSE, kernel);
+            if (!firstIter)
+            {
+                if (detectionRuntime.milliseconds() > 1 / hz)
+                {
+                    persistentHsvMatrix = mask;
+                    detectionRuntime.reset();
+                }
+            }
+            else
+            {
+                persistentHsvMatrix = mask;
+                firstIter = false;
+            }
 
-            return mask;
+            return persistentHsvMatrix;
         }
 
         private MatOfPoint findLargestContour(@NonNull List<MatOfPoint> contours) {
@@ -242,14 +243,14 @@ public class opencv{
 
     public void StartStream(Telemetry tel)
     {
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        tel = new MultipleTelemetry(tel, dashboard.getTelemetry());
-        FtcDashboard.getInstance().startCameraStream(controlHubCam, 30);
+//        FtcDashboard dashboard = FtcDashboard.getInstance();
+//        tel = new MultipleTelemetry(tel, dashboard.getTelemetry());
+//        FtcDashboard.getInstance().startCameraStream(controlHubCam, 30);
     }
 
     public void StopStream()
     {
-        controlHubCam.stopStreaming();
+//        controlHubCam.stopStreaming();
     }
 
     public int GetCX()
@@ -277,24 +278,24 @@ public class opencv{
         return maxDiff;
     }
 
-    public double GetYMin()
+    public void SetDetecting(boolean input)
     {
-        return yMin;
+        detecting = input;
     }
 
-    public double GetYMinX()
+    public boolean GetDetecting()
     {
-        return yMaxX;
+        return detecting;
     }
 
-    public double GetXMin()
+    public int GetCameraWidth()
     {
-        return xMin;
+        return CAMERA_WIDTH;
     }
 
-    public double GetXMax()
+    public int GetCameraHeight()
     {
-        return xMax;
+        return CAMERA_HEIGHT;
     }
 
     public double GetDistance()
@@ -308,8 +309,8 @@ public class opencv{
         double distanceW = focalLength * realWidth * imageWidth / (width * sensorWidth);
         double average = (distanceH + distanceW) / 2;
 
-        // hypotenuse
-        average /= 25.4;
+        // convert mm to inches
+        average *= 0.0394;
 
 //        double normTheta = 90 - (Math.abs(GetTheta()) % 90);
 //
@@ -317,24 +318,42 @@ public class opencv{
 //
 //        double coef = 1 + 0.1538 * (1 - angleDist/45);
 
-
-
         double coef = 1;
 
-        boolean outlierFound = false;
-        lastDistance = average;
+        return coef * average;
 
-        if (!firstDetection)
-        {
-            outlierFound = IsOutlierDetected(average, lastDistance);
-        }
+//        boolean outlierFound = false;
+//        lastDistance = average;
+//
+//        if (!firstDetection)
+//        {
+//            outlierFound = IsOutlierDetected(average, lastDistance);
+//        }
+//
+//        firstDetection = false;
+//
+//        // assuming an angle of 45 degrees
+//        double finalDist = Math.cos(cameraAngle * Math.PI/180) * average;
+//
+//        return outlierFound ? lastDistance * coef : finalDist * coef;
+    }
 
-        firstDetection = false;
+    public double GetXOffset()
+    {
+        // y tan theta = x
 
-        // assuming an angle of 45 degrees
-        double finalDist = Math.cos(cameraAngle * Math.PI/180) * average;
+        // gets the direction and magnitude on a normalized scale of the angle
+        double theta = (cX - imageWidth/2) / (imageWidth / 2);
 
-        return outlierFound ? lastDistance : finalDist * coef;
+        // converts normalized scale to degrees
+        theta *= (horizontalFOV/2);
+
+        double xOffset = GetDistance() * Math.tan(theta * Math.PI/180);
+
+        // move from cam center to real center
+        xOffset -= camCenterOffset;
+
+        return xOffset;
     }
 
     private boolean IsOutlierDetected(double distanceValue, double lastDistance)
