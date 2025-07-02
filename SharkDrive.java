@@ -36,6 +36,9 @@ public class SharkDrive {
     double diagonalScalar = 0;
     double angleLenience = 60;
 
+    double autograbZeroX = 10;
+    double autograbZeroY = 0;
+
     public void init(HardwareMap hwMap, boolean isAuton) {
         TuningDown();
 
@@ -201,21 +204,24 @@ public class SharkDrive {
         return output;
     }
 
-    public void CVControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis, int cx, double dist)
+    public void CVControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis, double cx, double dist)
     {
+        if (!odometry.isConnected()) {
+            return;
+        }
         double now = runtime.milliseconds();
         deltaTime = now - last_time;
         last_time = now;
 
-//        pos = odometry.getPosition();
-        pos = GetLocalization();
+        pos = GetOdometryLocalization();
+//        pos = GetLocalization();
 
-        errors[0] = (500 - cx) / 12.5; // 330-cx / 12.5
+        errors[0] = cx - (pos.x - autograbZeroX);
         errors[1] = dist; // handling distance calc other file
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
-        output[0] = basicpid(errors[0], 0) * -1;
-        output[1] = basicpid(errors[1], 1) * -1;
+        output[0] = basicpid(errors[0], 0);
+        output[1] = basicpid(errors[1], 1);
         output[2] = basicpid(errors[2], 2);
 
         if (tgtRot == 1) {
@@ -384,6 +390,11 @@ public class SharkDrive {
     {
         return errors[2];
     }
+
+    public double GetAutograbZeroX() {return autograbZeroX;}
+    public double GetAutograbZeroY() {return autograbZeroY;}
+
+    public void SetAutograbZeroX(double temp) {autograbZeroX = temp;}
 
     public double GetOutputX()
     {
