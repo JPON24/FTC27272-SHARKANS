@@ -189,7 +189,7 @@ public class MoveCommand  {
         }
         cs.Update();
     }
-    public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, boolean tgtClaw, double roll, double pitch, int cx, double dist, boolean extendClaw, char type)
+    public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, boolean tgtClaw, double roll, double pitch, double cx, double dist, boolean extendClaw, char type, boolean firstDetection)
     {
         // reset for next command
         command.ResetMap();
@@ -202,7 +202,7 @@ public class MoveCommand  {
             extend.OpenExtendClaw();
             extend.UpdateOverride();
         }
-        if (type == 'e')
+        else if (type == 'e')
         {
             command.SetElementFalse('e');
             extend.MoveToPosition(tgtE);
@@ -210,14 +210,23 @@ public class MoveCommand  {
             extend.OpenExtendClaw();
             extend.UpdateOverride();
         }
-        if (type == 'w')
+        else if (type == 'r')
         {
-            command.SetElementFalse('w');
+            command.SetElementFalse('r');
         }
-        if (type == 'c')
+        else if (type == 'p')
+        {
+            command.SetElementFalse('p');
+        }
+        else if (type == 'c')
         {
             command.SetElementFalse('w');
             command.SetElementFalse('c');
+        }
+        else if (type == '/')
+        {
+            extend.MoveToPosition(extend.GetBottomLimit());
+            command.SetElementFalse('/');
         }
 
         localCopy = command.GetMap();
@@ -227,6 +236,11 @@ public class MoveCommand  {
         am.SetArmSpeed(speedA);
         am.Rotate(tgtA,'A');
 //        extend.MoveExtend(tgtE, 'a');
+
+        if (firstDetection)
+        {
+            shark.SetAutograbZeroX(shark.GetPositionX());
+        }
 
         // for every key (m, e, a, c, w)
         for (Character key : localCopy.keySet())
@@ -273,14 +287,24 @@ public class MoveCommand  {
                         command.SetElementFalse('e');
                         break;
                     }
-                case 'w':
+                case 'r':
                     extend.OpenExtendClaw();
-                    extend.SetLocalManipulatorState(roll, pitch);
+                    extend.SetLocalManipulatorState(roll, extend.GetPitchLocalPosition());
                     extend.UpdateOverride();
 
-                    if (extend.GetPitchAtPosition() && extend.GetRollAtPosition())
+                    if (extend.GetRollAtPosition())
                     {
-                        command.SetElementTrue('w');
+                        command.SetElementTrue('r');
+                    }
+                    break;
+                case 'p':
+                    extend.OpenExtendClaw();
+                    extend.SetLocalManipulatorState(extend.GetRollLocalPosition(), pitch);
+                    extend.UpdateOverride();
+
+                    if (extend.GetPitchAtPosition())
+                    {
+                        command.SetElementTrue('p');
                     }
                     break;
                 case 'c':
@@ -303,6 +327,21 @@ public class MoveCommand  {
                         command.SetElementFalse('c');
                     }
                     break;
+                case '/':
+                    extend.CloseExtendClaw();
+                    extend.SetLocalManipulatorState(0, 0);
+                    extend.UpdateOverride();
+                    if (extend.GetCompleted(tgtE))
+                    {
+                        extend.MoveExtend(0,'T');
+                        command.SetElementTrue('/');
+                        break;
+                    }
+                    else
+                    {
+                        command.SetElementFalse('/');
+                        break;
+                    }
             }
         }
 
