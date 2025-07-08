@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode;
 
 import androidx.annotation.NonNull;
 
-//import com.acmerobotics.dashboard.FtcDashboard;
-//import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -55,7 +55,7 @@ public class opencv{
     double focalLength = 3.67; // mm
     double realHeight = 88.9; //mm
     double realWidth = 38.1; //mm
-    double sensorWidth = 8.4664; //mm
+    double sensorWidth = 8.466; //mm
     double sensorHeight = 8.466; //mm
     double imageWidth = 640; // px
     double imageHeight = 360; // px
@@ -75,12 +75,18 @@ public class opencv{
 
     double horizontalFOV = 90; // degrees
 
-    double camCenterOffset = 4.625;
+    double camCenterOffset = 4.625; //inches
 
     public void init(HardwareMap hwMap)
     {
         initOpenCV(hwMap);
     }
+
+    /*
+    Real -> Projected
+    20 -> 10 = 2
+    10 -> 5 = 2
+     */
 
     private void initOpenCV(HardwareMap hwMap) {
         // Create an instance of the camera
@@ -244,14 +250,14 @@ public class opencv{
 
     public void StartStream(Telemetry tel)
     {
-//        FtcDashboard dashboard = FtcDashboard.getInstance();
-//        tel = new MultipleTelemetry(tel, dashboard.getTelemetry());
-//        FtcDashboard.getInstance().startCameraStream(controlHubCam, 30);
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        tel = new MultipleTelemetry(tel, dashboard.getTelemetry());
+        FtcDashboard.getInstance().startCameraStream(controlHubCam, 30);
     }
 
     public void StopStream()
     {
-//        controlHubCam.stopStreaming();
+        controlHubCam.stopStreaming();
     }
 
     public int GetCX()
@@ -319,7 +325,7 @@ public class opencv{
 //
 //        double coef = 1 + 0.1538 * (1 - angleDist/45);
 
-        double coef = 1;
+        double coef = 2;
 
         return coef * average;
 
