@@ -217,7 +217,7 @@ public class SharkDrive {
 //        pos = GetLocalization();
 
         errors[0] = cx - (pos.x - autograbZeroX);
-        errors[1] = dist; // handling distance calc other file
+        errors[1] = dist - (pos.y - autograbZeroY); // handling distance calc other file
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
         output[0] = basicpid(errors[0], 0);
@@ -395,6 +395,7 @@ public class SharkDrive {
     public double GetAutograbZeroY() {return autograbZeroY;}
 
     public void SetAutograbZeroX(double temp) {autograbZeroX = temp;}
+    public void SetAutograbZeroY(double temp) {autograbZeroY = temp;}
 
     public double GetOutputX()
     {
