@@ -270,9 +270,6 @@ public class StarterBot extends LinearOpMode{
             shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, 'c');
             if (shouldReturn) {return;}
 
-            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, '/');
-            if (shouldReturn) {return;}
-
             am.SetLocalNeutral(am.GetTargetPosition());
             normalControl = true;
         }
@@ -354,13 +351,12 @@ public class StarterBot extends LinearOpMode{
             extendPos = e;
 
             // checks if the object is within reach, if it is do not move
-            double correctDist = extendLength - cv.GetDistance();
-            if (correctDist > 3)
+            double correctDist = cv.GetDistance() - extendLength;
+            if (correctDist < -3)
             {
                 correctDist = 0;
             }
 
-            // 180 deg = 0.7 L 0.8 R
             double theta = cv.GetTheta();
 
             double rollWrist = 1;
@@ -507,14 +503,14 @@ public class StarterBot extends LinearOpMode{
         // roll
         if (positiveRoll)
         {
-            roll += extensionRollSpeed * runtime.milliseconds();
+            roll += extensionRollSpeed * runtime.seconds();
         }
         else if (negativeRoll)
         {
-            roll -= extensionRollSpeed * runtime.milliseconds();
+            roll -= extensionRollSpeed * runtime.seconds();
         }
 
-        roll = Range.clip(roll,0,1);
+        roll = Range.clip(roll, 0, 1);
 
         // pitch
         if (downPitch)
