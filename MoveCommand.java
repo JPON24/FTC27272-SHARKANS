@@ -223,11 +223,6 @@ public class MoveCommand  {
             command.SetElementFalse('w');
             command.SetElementFalse('c');
         }
-        else if (type == '/')
-        {
-            extend.MoveToPosition(extend.GetBottomLimit());
-            command.SetElementFalse('/');
-        }
 
         localCopy = command.GetMap();
 
@@ -240,6 +235,7 @@ public class MoveCommand  {
         if (firstDetection)
         {
             shark.SetAutograbZeroX(shark.GetPositionX());
+            shark.SetAutograbZeroY(shark.GetPositionY());
         }
 
         // for every key (m, e, a, c, w)
@@ -327,21 +323,6 @@ public class MoveCommand  {
                         command.SetElementFalse('c');
                     }
                     break;
-                case '/':
-                    extend.CloseExtendClaw();
-                    extend.SetLocalManipulatorState(0, 0);
-                    extend.UpdateOverride();
-                    if (extend.GetCompleted(tgtE))
-                    {
-                        extend.MoveExtend(0,'T');
-                        command.SetElementTrue('/');
-                        break;
-                    }
-                    else
-                    {
-                        command.SetElementFalse('/');
-                        break;
-                    }
             }
         }
 
