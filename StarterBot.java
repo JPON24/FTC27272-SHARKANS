@@ -63,6 +63,8 @@ public class StarterBot extends LinearOpMode{
 
     int extendPos = 0;
 
+    double clawLength = 3.5; // inches
+
     /*
        ANGLED APPROACH
         arm: 1300
@@ -341,8 +343,16 @@ public class StarterBot extends LinearOpMode{
             // set extension to max
             int e = -1500;
 
+            // fix < 0 problem
+            double offsetDist = cv.GetDistance() - clawLength;
+
+            if (offsetDist < 0)
+            {
+                offsetDist = 0;
+            }
+
             //  convert extension into 0-1 scale
-            double multiplier = cv.GetDistance() / extendLength;
+            double multiplier = offsetDist / extendLength;
 
             if (multiplier > 1) { multiplier = 1; }
 
