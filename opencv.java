@@ -171,9 +171,10 @@ public class opencv{
 //                }
 //                else
 //                {
-                persistentDetectionMatrix = input;
 //                }
             }
+
+            persistentDetectionMatrix = input;
 
             return persistentDetectionMatrix;
         }
@@ -192,8 +193,8 @@ public class opencv{
             Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_BGR2HSV);
 
             // tuned values
-            Scalar lowerYellow = new Scalar(78, 75, 95); // 91, 150, 0
-            Scalar upperYellow = new Scalar(110, 255, 255); // 114, 255, 255
+            Scalar lowerYellow = new Scalar(91, 150, 0); // 91, 150, 0 | 78, 75, 95
+            Scalar upperYellow = new Scalar(114, 255, 255); // 114, 255, 255 | 110, 255, 255
 
             Scalar lowerBlue = new Scalar(0,67,0);
             Scalar upperBlue = new Scalar(20,255,255);
@@ -250,14 +251,14 @@ public class opencv{
 
     public void StartStream(Telemetry tel)
     {
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        tel = new MultipleTelemetry(tel, dashboard.getTelemetry());
-        FtcDashboard.getInstance().startCameraStream(controlHubCam, 30);
+//        FtcDashboard dashboard = FtcDashboard.getInstance();
+//        tel = new MultipleTelemetry(tel, dashboard.getTelemetry());
+//        FtcDashboard.getInstance().startCameraStream(controlHubCam, 30);
     }
 
     public void StopStream()
     {
-        controlHubCam.stopStreaming();
+//        controlHubCam.stopStreaming();
     }
 
     public int GetCX()
