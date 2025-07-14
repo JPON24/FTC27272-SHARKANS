@@ -23,10 +23,10 @@ public class StarterBot extends LinearOpMode{
 
     double diffSpeed = 1;
 
-    double localOffset = 4;
+    double localOffset = -8;
     double localOffsetIncrement = 4;
-    double grabDistance = -8; // 4 with proper wall
-    double hookDistance = 37;
+    double grabDistance = 0; // 4 with proper wall
+    double hookDistance = 34;
 
     boolean canShiftArm = true;
 
@@ -36,8 +36,7 @@ public class StarterBot extends LinearOpMode{
     boolean canStartSubMacro = true;
     boolean canStartGrabMacro = true;
     boolean canStartHookMacro = true;
-    double localDiffL = 0.44;
-    double localDiffR = 0.99;
+    double localWristPos = 0;
 
     double preciseLenience = 0.6;
     double arcLenience = 10;
@@ -54,7 +53,7 @@ public class StarterBot extends LinearOpMode{
 
     double extensionRollSpeed = 1;
 
-    int hookHeight = 1150;
+    int hookHeight = 1000;
     int grabHeight = 50;
     int extensionSafetyThreshold = -200;
 
@@ -64,17 +63,6 @@ public class StarterBot extends LinearOpMode{
     int extendPos = 0;
 
     double clawLength = 3.5; // inches
-
-    /*
-       ANGLED APPROACH
-        arm: 1300
-        L: 0.854
-        R: 0.656
-     */
-
-    /*
-    for every specimen, 1 inch offset on the x axis and a 0.3 inch on y
-     */
 
     @Override
     public void runOpMode()
@@ -92,7 +80,7 @@ public class StarterBot extends LinearOpMode{
 
         waitForStart();
         am.SetArmSpeed(0.45);
-        cs.SetDiffPos(0,0);
+        cs.SetDiffPos(0);
         am.Rotate(0,'T');
         am.SetLocalNeutral(50);
         am.Rotate(0,'T');
@@ -169,14 +157,10 @@ public class StarterBot extends LinearOpMode{
                 {
                     ArmControl(-armInput);
                 }
-                DiffControl(wristInputX, wristInputY);
+                DiffControl(wristInputX);
 
                 extend.Update();
             }
-
-            /*
-            hold button that make it go arm down and then when release go down
-             */
 
             runtime.reset();
             SubmersibleGrab(aButtonPressed);
@@ -293,10 +277,10 @@ public class StarterBot extends LinearOpMode{
             normalControl = false;
             canStartHookMacro = false;
 
-            TeleopMoveCommandY(1, 40, 30, 0,preciseLenience,2,0.7,hookHeight,0, 0,0,true, 'B', false);
-            TeleopMoveCommandY(1, 40, 37, 0,preciseLenience,2,1,hookHeight,0, 0,0,true, 'B', false);
-            TeleopMoveCommandY(0, 40, 37, 0,arcLenience,2,1,hookHeight,0, 0,0,false, 'B', false);
-
+            TeleopMoveCommandY(1,localOffset, hookDistance-5, 0,preciseLenience,2,0.7,hookHeight,0, 0,0,true, 'C', false);
+            TeleopMoveCommandY(1,localOffset, hookDistance-5, 0,preciseLenience,2,1,hookHeight,0, 0,0,true, 'C', false);
+            TeleopMoveCommandY(0,localOffset, hookDistance-5, 0,arcLenience,2,1,hookHeight,0, 0,0,false, 'C', false);
+            TeleopMoveCommandY(1,localOffset,hookDistance-5,0,preciseLenience,2,1,hookHeight,0,0,0,false,'C',false);
 
             am.SetLocalNeutral(am.GetTargetPosition());
             normalControl = true;
@@ -314,12 +298,21 @@ public class StarterBot extends LinearOpMode{
         {
             normalControl = false;
             canStartGrabMacro = false;
+            localOffset += localOffsetIncrement;
+            boolean shouldReturn = false;
 
-//            TeleopMoveCommandB(1, 40, grabDistance + 4, 0,1,2,1, grabHeight, 0,0,0, false, '/', false);
-//            TeleopMoveCommandB(1, 40, grabDistance, 0,1,2,1, grabHeight, 0,0,0, true, '/', false);
-            TeleopMoveCommandB(1, -1, 0, 0,preciseLenience,2,1, grabHeight, 0,0,0, false, '/', false);
-            TeleopMoveCommandB(1, -1, grabDistance, 0,preciseLenience,2,1, grabHeight, 0,0,0, false, '/', false);
-            TeleopMoveCommandB(1, -1, grabDistance, 0,preciseLenience,2,1, grabHeight, 0,0,0, true, '/', false);
+            shouldReturn = TeleopMoveCommandB(1, 40, grabDistance+8, 0,preciseLenience,2,1, grabHeight, 0,0,0, false, 'G', false);
+            if (shouldReturn) {return;}
+
+            shouldReturn = TeleopMoveCommandB(1, 40, grabDistance, 0,preciseLenience,2,1, grabHeight, 0,0,0, false, 'G', false);
+            if (shouldReturn) {return;}
+
+            shouldReturn = TeleopMoveCommandB(1, 40, grabDistance, 0,preciseLenience,2,1, grabHeight, 0,0,0, true, 'G', false);
+            if (shouldReturn) {return;}
+            sleep(400);
+
+            shouldReturn = TeleopMoveCommandB(1, 40, grabDistance, 0,preciseLenience,2,1, grabHeight + 200, 0,0,0, true, 'G', false);
+            if (shouldReturn) {return;}
 
             am.SetLocalNeutral(am.GetTargetPosition());
             normalControl = true;
@@ -338,16 +331,6 @@ public class StarterBot extends LinearOpMode{
 //            TelemetryPrint();
             cs.SetClawOpen(claw);
             TelemetryPrint();
-
-
-//            if (theta > 90)
-//            {
-//                rollWrist = (theta-90) / 250 + 0;
-//            }
-//            else
-//            {
-//                rollWrist = 0.35 + (theta) / 255;
-//            }
 
             // set extension to max
             int e = -1500;
@@ -406,6 +389,7 @@ public class StarterBot extends LinearOpMode{
             {
                 moveCmd.MoveToPositionCV(speed,x,y,h,d,axis,speedA,a,e,claw,rollWrist,pitchWrist, correctXOffset, correctDist, extendClaw, type, cv.GetFirstDetection());
             }
+
             if (!gamepad1.a) {
                 normalControl = true;
                 cv.SetDetecting(false);
@@ -433,7 +417,7 @@ public class StarterBot extends LinearOpMode{
         } while (!moveCmd.GetCommandState());
     }
 
-    private void TeleopMoveCommandB(double speed, double x, double y, double h, double d, int axis, double speedA, int a, int e, double roll, double pitch, boolean claw, char wrist, boolean extendClaw)
+    private boolean TeleopMoveCommandB(double speed, double x, double y, double h, double d, int axis, double speedA, int a, int e, double roll, double pitch, boolean claw, char wrist, boolean extendClaw)
     {
         do
         {
@@ -443,9 +427,10 @@ public class StarterBot extends LinearOpMode{
             if (!gamepad1.b) {
                 normalControl = true;
                 am.SetLocalNeutral(a);
-                return;
+                return true;
             }
         } while (!moveCmd.GetCommandState());
+        return false;
     }
 
     private void TeleopMoveCommandY(double speed, double x, double y, double h, double d, int axis, double speedA, int a, int e, double roll, double pitch, boolean claw, char wrist, boolean extendClaw)
@@ -581,34 +566,26 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-    private void DiffControl(double wristInputX, double wristInputY)
+    private void DiffControl(double wristInputX)
     {
         if (wristInputX > 0.1)
         {
-            UpdateDiffPos(-diffSpeed*runtime.seconds(),-diffSpeed*runtime.seconds());
+            UpdateDiffPos(diffSpeed*runtime.seconds());
         }
         else if (wristInputX < -0.1)
         {
-            UpdateDiffPos(diffSpeed*runtime.seconds(),diffSpeed*runtime.seconds());
-        }
-
-        if (wristInputY > 0.1)
-        {
-            UpdateDiffPos(-diffSpeed*runtime.seconds(),diffSpeed*runtime.seconds());
-        }
-        else if (wristInputY < -0.1)
-        {
-            UpdateDiffPos(diffSpeed*runtime.seconds(),-diffSpeed*runtime.seconds());
+            UpdateDiffPos(-diffSpeed*runtime.seconds());
         }
     }
 
-    private void UpdateDiffPos(double lDelta, double rDelta)
+    private void UpdateDiffPos(double delta)
     {
-        if ((localDiffL + lDelta >= 0 && localDiffL + lDelta <= 1) && (localDiffR + rDelta >= 0 && localDiffR + rDelta <= 1)) {
-            localDiffL += lDelta;
-            localDiffR += rDelta;
+        if ((localWristPos + delta >= 0 && localWristPos + delta <= 1))
+        {
+            localWristPos += delta;
         }
-        cs.SetDiffPos(localDiffL,localDiffR);
+        cs.SpecifyDiffPos(localWristPos);
+        cs.SetDiffPos(localWristPos);
     }
 
     private void TelemetryPrint()
@@ -641,6 +618,7 @@ public class StarterBot extends LinearOpMode{
         telemetry.addData("errorY", shark.GetErrorY());
         telemetry.addData("autograb zerox", shark.GetAutograbZeroX());
         telemetry.addData("autograb zeroy", shark.GetAutograbZeroY());
+        telemetry.addData("localWristPos", localWristPos);
 //        telemetry.addData("cv points", cv.GetPoints());
 //        telemetry.addData("xMin", cv.GetXMin());
 //        telemetry.addData("xMax", cv.GetXMax());
