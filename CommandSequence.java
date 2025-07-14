@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
+//import com.acmerobotics.dashboard.FtcDashboard;
+//import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -19,10 +19,10 @@ public class CommandSequence extends LinearOpMode
     boolean moving = true;
     double speed = 1; // 1.1
 
-    double grabDistance = 8; // old 4.5
-    double hookDistance = 25; // 22.5
-    int grabHeight = 120;
-    int hookHeight = 1275;
+    double grabDistance = 0; // old 4.5
+    double hookDistance = 34; // 22.5
+    int grabHeight = 50;
+    int hookHeight = 1000;
 
     double preciseLenience = 0.6;
     double arcLenience = 10;
@@ -40,7 +40,12 @@ public class CommandSequence extends LinearOpMode
 
     private void SpecimenSequence()
     {
-        moveCmd.MoveToPosition(speed,32,19,0,arcLenience,2,0.5,grabHeight, 0,0,0,false,'G'); //5
+        moveCmd.MoveToPosition(speed,0,hookDistance,0,arcLenience,2,0.5,grabHeight, 0,0,0,true,'C'); //5
+        moveCmd.MoveToPosition(0,0,hookDistance,0,arcLenience,2,0.5,hookHeight, 0,0,0,true,'C'); //5
+        sleep(200);
+        moveCmd.MoveToPosition(0,0,hookDistance,0,arcLenience,2,0.5,hookHeight, 0,0,0,false,'C'); //5
+        sleep(200);
+
         Push(0);
         Push(10);
         moveCmd.MoveToPosition(speed,52,47,0,arcLenience,1,0.5,grabHeight, 0,0,0,false,'G'); //5
@@ -55,20 +60,6 @@ public class CommandSequence extends LinearOpMode
 
         Grab(0);
         Hook(4);
-
-//        Grab(0);
-//        Hook(2);
-
-//        Grab(0);
-//        Hook(4);
-        moveCmd.MoveToPosition(speed,45,10,0,2 ,2,0.5,0,0,0,0,false,'P');
-
-        while (true)
-        {
-            dt.FieldOrientedTranslate(0.3,-0.1,0,shark.GetImuReading());
-        }
-
-//        Stop();
     }
 
     private void Hook(int offset) // add offset constant
@@ -136,23 +127,8 @@ public class CommandSequence extends LinearOpMode
         telemetry.addData("ey", shark.GetErrorY());
         telemetry.addData("PROPORTIONAL", shark.GetPorportionalX());
         telemetry.addData("DERIVATIVE", shark.GetDerivativeX());
-//        telemetry.addData("INTEGRAL X", odo.GetIntegralSumX());
-//        telemetry.addData("INTEGRAL Y", odo.GetIntegralSumY());
         telemetry.update();
     }
-
-//    private void TestSequenceUp()
-//    {
-////        moveCmd.MoveToPosition(speed,-24,0,-90,0,false,'/');
-////        UpdateTelemetry();
-////        moveCmd.MoveToPosition(speed,-12,0,-90,0,false,'/');
-//        shark.TuningUp();
-//        moveCmd.MoveToPosition(speed,12,0,0,0.5,2,0.5,1275,false,'/');
-//        moveCmd.MoveToPosition(speed,12,12,0,0.5,2,0.5,1275,false,'/');
-//        moveCmd.MoveToPosition(speed,0,0,0,0.5,2,0.5,1275,false,'/');
-////        odo.OdometryControl(speed, 12, 6, 0, 0.5);
-//        UpdateTelemetry();
-//    }
 
     private void TestSequenceUpX()
     {
