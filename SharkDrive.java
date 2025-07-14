@@ -18,6 +18,9 @@ public class SharkDrive {
 
     SparkFunOTOS odometry;
     SparkFunOTOS.Pose2D pos;
+    SparkFunOTOS.Pose2D lastLimelightPosition = new SparkFunOTOS.Pose2D();
+
+    double lastValidIMUReading = 0;
 
     boolean[] completedBools = new boolean[3];
 
@@ -38,6 +41,7 @@ public class SharkDrive {
 
     double autograbZeroX = 10;
     double autograbZeroY = 0;
+    boolean lostSight = false;
 
     public void init(HardwareMap hwMap, boolean isAuton) {
         TuningDown();
@@ -204,7 +208,7 @@ public class SharkDrive {
         return output;
     }
 
-    public void CVControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis, double cx, double dist)
+    public void CVControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis, double xOffset, double dist)
     {
         if (!odometry.isConnected()) {
             return;
@@ -216,7 +220,7 @@ public class SharkDrive {
         pos = GetOdometryLocalization();
 //        pos = GetLocalization();
 
-        errors[0] = cx - (pos.x - autograbZeroX);
+        errors[0] = xOffset - (pos.x - autograbZeroX);
         errors[1] = dist - (pos.y - autograbZeroY); // handling distance calc other file
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
@@ -303,17 +307,31 @@ public class SharkDrive {
     {
         if (limelight.GetIsValid())
         {
+            lostSight = false;
             return limelight.GetLimelightData(false,pos.h);
         }
         else
         {
+            if (!lostSight)
+            {
+                lastValidIMUReading = GetImuReading();
+                Rehome();
+                lastLimelightPosition = limelight.GetLastPosition();
+                lostSight = true;
+            }
             return GetOdometryLocalization();
         }
     }
 
     private SparkFunOTOS.Pose2D GetOdometryLocalization()
     {
-        return odometry.getPosition();
+        SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D();
+
+        output.x = odometry.getPosition().x + lastLimelightPosition.x;
+        output.y = odometry.getPosition().y + lastLimelightPosition.y;
+        output.h = odometry.getPosition().h + lastValidIMUReading;
+
+        return output;
     }
 
     private void NewHighestOutputX(double x) {
@@ -375,6 +393,9 @@ public class SharkDrive {
     {
         return odometry.getPosition().y;
     }
+
+    public double GetLocalizationX() { return GetLocalization().x; }
+    public double GetLocalizationY() { return GetLocalization().y; }
 
     public double GetErrorX()
     {
