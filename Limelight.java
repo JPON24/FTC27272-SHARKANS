@@ -18,7 +18,7 @@ public class Limelight {
 
     public void init(HardwareMap hardwareMap) {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.setPollRateHz(15); // This sets how often we ask Limelight for data (100 times per second)
+        limelight.setPollRateHz(15); // This sets how often we ask Limelight for data (15 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0);
     }
@@ -55,7 +55,6 @@ public class Limelight {
     {
         SparkFunOTOS.Pose2D processedPosition = new SparkFunOTOS.Pose2D();
         processedPosition.x = MtoIn(pos.x);
-//        processedPosition.y = 2 - (pos.y/Math.abs(pos.y));
         processedPosition.y = 2 - Math.abs(pos.y);
 
         processedPosition.y = MtoIn(processedPosition.y);
@@ -63,6 +62,9 @@ public class Limelight {
         if (!redAlliance)
         {
             processedPosition.y *= -1;
+        }
+        else
+        {
             processedPosition.x *= -1;
         }
 
