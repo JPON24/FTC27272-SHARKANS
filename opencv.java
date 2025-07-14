@@ -105,16 +105,9 @@ public class opencv{
     class BlobDetectionPipeline extends OpenCvPipeline {
         @Override
         public Mat processFrame(Mat input) {
-            // Preprocess the frame to detect yellow regions
-//            Mat mask = preprocessFrame(input);
-
             if (!firstDetection)
             {
                 return persistentDetectionMatrix;
-//                if (detectionRuntime.milliseconds() < 1/hz || !detecting)
-//                {
-//                    return persistentDetectionMatrix;
-//                }
             }
 
             // Find contours of the detected yellow regions
@@ -132,14 +125,14 @@ public class opencv{
                 width = calculateWidth(largestContour);
                 height = calculateHeight(largestContour);
 
-//                String widthLabel = "Width: " + (int) width + " pixels";
-//                Imgproc.putText(input, widthLabel, new Point(cX + 10, cY + 20), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-//
-//                String heightLabel = "Height: " + (int) height + " pixels";
-//                Imgproc.putText(input, heightLabel, new Point(cX + 10, cY + 60), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-////                Display the Distance
-//                String distanceLabel = "Distance: " + GetDistance() + " inches";
-//                Imgproc.putText(input, distanceLabel, new Point(cX + 10, cY + 100), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+                String widthLabel = "Width: " + (int) width + " pixels";
+                Imgproc.putText(input, widthLabel, new Point(cX + 10, cY + 20), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+
+                String heightLabel = "Height: " + (int) height + " pixels";
+                Imgproc.putText(input, heightLabel, new Point(cX + 10, cY + 60), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
+//                Display the Distance
+                String distanceLabel = "Distance: " + GetDistance() + " inches";
+                Imgproc.putText(input, distanceLabel, new Point(cX + 10, cY + 100), Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 2);
 //                 Calculate the centroid of the largest contour
                 Moments moments = Imgproc.moments(largestContour);
 
@@ -157,21 +150,6 @@ public class opencv{
                     theta = 90 - theta + 90;
                 }
                 theta = Math.abs(theta);
-
-                // Draw a dot at the centroid
-//                String label = "(" + (int) cX + ", " + (int) cY + ")";
-//                Imgproc.putText(input, label, new Point(cX + 10, cY), Imgproc.FONT_HERSHEY_COMPLEX, 0.5, new Scalar(0, 255, 0), 2);
-//                Imgproc.circle(input, new Point(cX, cY), 5, new Scalar(0, 255, 0), -1);
-//                if (!firstIter)
-//                {
-//                    if (detectionRuntime.milliseconds() > 1/hz)
-//                    {
-//                        persistentDetectionMatrix = input;
-//                    }
-//                }
-//                else
-//                {
-//                }
             }
 
             persistentDetectionMatrix = input;
@@ -183,18 +161,14 @@ public class opencv{
             if (!firstDetection)
             {
                 return persistentHsvMatrix;
-//                if (detectionRuntime.milliseconds() < 1/hz || !detecting)
-//                {
-//                    return persistentHsvMatrix;
-//                }
             }
 
             Mat hsvFrame = new Mat();
             Imgproc.cvtColor(frame, hsvFrame, Imgproc.COLOR_BGR2HSV);
 
             // tuned values
-            Scalar lowerYellow = new Scalar(91, 150, 0); // 91, 150, 0 | 78, 75, 95
-            Scalar upperYellow = new Scalar(114, 255, 255); // 114, 255, 255 | 110, 255, 255
+            Scalar lowerYellow = new Scalar(78, 75, 95); // 91, 150, 0 | 78, 75, 95
+            Scalar upperYellow = new Scalar(110, 255, 255); // 114, 255, 255 | 110, 255, 255
 
             Scalar lowerBlue = new Scalar(0,67,0);
             Scalar upperBlue = new Scalar(20,255,255);
@@ -208,19 +182,9 @@ public class opencv{
             Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
             Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_OPEN, kernel);
             Imgproc.morphologyEx(mask, mask, Imgproc.MORPH_CLOSE, kernel);
-//            if (!firstIter)
-//            {
-//                if (detectionRuntime.milliseconds() > 1 / hz)
-//                {
-//                    persistentHsvMatrix = mask;
-//                    detectionRuntime.reset();
-//                }
-//            }
-//            else
-//            {
+
             persistentHsvMatrix = mask;
             firstDetection = false;
-//            }
 
             return persistentHsvMatrix;
         }
@@ -308,11 +272,6 @@ public class opencv{
 
     public double GetDistance()
     {
-//        double distW = objW * focalLengthW / width;
-//        double distH = objW * focalLengthH / height;
-//        double distA = k/Math.sqrt(width * height);
-//        return ( distW + distH + distA ) / 3;
-
         double distanceH = focalLength * realHeight * imageHeight / (height * sensorHeight);
         double distanceW = focalLength * realWidth * imageWidth / (width * sensorWidth);
         double average = (distanceH + distanceW) / 2;
@@ -320,30 +279,9 @@ public class opencv{
         // convert mm to inches
         average *= 0.0394;
 
-//        double normTheta = 90 - (Math.abs(GetTheta()) % 90);
-//
-//        double angleDist = Math.abs(45 - normTheta);
-//
-//        double coef = 1 + 0.1538 * (1 - angleDist/45);
-
         double coef = 2;
 
         return coef * average;
-
-//        boolean outlierFound = false;
-//        lastDistance = average;
-//
-//        if (!firstDetection)
-//        {
-//            outlierFound = IsOutlierDetected(average, lastDistance);
-//        }
-//
-//        firstDetection = false;
-//
-//        // assuming an angle of 45 degrees
-//        double finalDist = Math.cos(cameraAngle * Math.PI/180) * average;
-//
-//        return outlierFound ? lastDistance * coef : finalDist * coef;
     }
 
     public double GetXOffset()
@@ -366,7 +304,7 @@ public class opencv{
 
     private boolean IsOutlierDetected(double distanceValue, double lastDistance)
     {
-        double derivative = (distanceValue - lastDistance) / derivRuntime.milliseconds();
+        double derivative = (distanceValue - lastDistance) / derivRuntime.seconds();
 
         return derivative > distanceDerivMax;
     }
