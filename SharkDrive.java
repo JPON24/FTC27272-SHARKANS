@@ -44,6 +44,8 @@ public class SharkDrive {
     boolean lostSight = false;
     public int countingTelemetry = 0;
 
+    double odometryInputMixPercentage = 0.7;
+
     public void init(HardwareMap hwMap, boolean isAuton) {
         TuningDown();
 
@@ -262,15 +264,20 @@ public class SharkDrive {
 //        pos = limelight.GetLimelightData(false, GetOdometryLocalization().h);
 //        pos = GetLocalization();
 
+//        pos = PoseEstimator();
+
+        pos = GetOdometryLocalization();
+
         if (axis == 3) {
             angleLenience = 5;
         } else {
             angleLenience = 60;
         }
 
-        errors[0] = tgtX - GetOdometryLocalization().x;
-        errors[1] = tgtY - GetOdometryLocalization().y;
-        errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - GetOdometryLocalization().h)))) / 10;
+
+        errors[0] = tgtX - pos.x;
+        errors[1] = tgtY - pos.y;
+        errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
         if (new ArmLiftMotor().GetLocalNeutral() == 1250) {
             TuningUp();
@@ -323,6 +330,28 @@ public class SharkDrive {
 //            return GetOdometryLocalization();
 //        }
 //    }
+
+
+    private SparkFunOTOS.Pose2D PoseEstimator()
+    {
+        SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D();
+        SparkFunOTOS.Pose2D limelightPosition = limelight.GetLimelightData(false, GetOrientation());
+
+        if (limelightPosition.x == 0 && limelightPosition.y == 0)
+        {
+            odometryInputMixPercentage = 1;
+        }
+        else
+        {
+            odometryInputMixPercentage = 0.9;
+        }
+
+        output.x = (odometry.getPosition().x * odometryInputMixPercentage) + (limelightPosition.x * 1-odometryInputMixPercentage);
+        output.y = ((odometry.getPosition().y+15) * odometryInputMixPercentage) + (limelightPosition.y * 1-odometryInputMixPercentage);
+        output.h = odometry.getPosition().h;
+
+        return output;
+    }
 
     private SparkFunOTOS.Pose2D GetOdometryLocalization() {
         SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D();
@@ -466,6 +495,14 @@ public class SharkDrive {
         maximumOutputX = 1;
         maximumOutputY = 1;
         return true;
+    }
+
+    public void DeactivateBoolsCompleted()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            completedBools[i] = false;
+        }
     }
 } 
 
