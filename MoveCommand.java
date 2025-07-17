@@ -105,13 +105,12 @@ public class MoveCommand  {
                         }
                 }
             }
-
-            if (timeout.seconds() > 3.5)
-            {
-                break;
-            }
-
+//            if (timeout.seconds() > 3.5)
+//            {
+//                break;
+//            }
             cs.Update();
+            extend.Update();
         }
     }
 
@@ -207,7 +206,16 @@ public class MoveCommand  {
             command.SetElementFalse('e');
             extend.MoveToPosition(tgtE);
             extend.SetLocalManipulatorState(0,0);
-            extend.OpenExtendClaw();
+
+            if (extendClaw)
+            {
+                extend.CloseExtendClaw();
+            }
+            else
+            {
+                extend.OpenExtendClaw();
+            }
+
             extend.UpdateOverride();
         }
         else if (type == 'r')
@@ -220,7 +228,6 @@ public class MoveCommand  {
         }
         else if (type == 'c')
         {
-            command.SetElementFalse('w');
             command.SetElementFalse('c');
         }
 
