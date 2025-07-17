@@ -22,7 +22,7 @@ public class Limelight {
 
     public void init(HardwareMap hardwareMap) {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.setPollRateHz(10); // This sets how often we ask Limelight for data (15 times per second)
+        limelight.setPollRateHz(30); // This sets how often we ask Limelight for data (15 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0);
     }
@@ -54,6 +54,9 @@ public class Limelight {
         output.y = pose.getPosition().y;
 
         output = ProcessCoordinates(redAlliance, output);
+
+//        output.x = LowPass(averageX, output.x);
+//        output.y = LowPass(averageY, output.y);
 
         if (output.x != 0 && output.y != 0)
         {
@@ -91,7 +94,7 @@ public class Limelight {
 
     private double LowPass(double average, double value)
     {
-        average = (average * 0.85) + (value * 0.15);
+        average = (average * 0.5) + (value * 0.5);
         return average;
     }
 
