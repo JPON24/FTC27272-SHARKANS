@@ -9,16 +9,20 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
+import java.util.List;
 
 public class Limelight {
     Limelight3A limelight;
 
     SparkFunOTOS.Pose2D lastPosition = new SparkFunOTOS.Pose2D();
-    boolean isValid;
+    boolean isValid = true;
+
+    double averageX = 0;
+    double averageY = 0;
 
     public void init(HardwareMap hardwareMap) {
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.setPollRateHz(15); // This sets how often we ask Limelight for data (15 times per second)
+        limelight.setPollRateHz(10); // This sets how often we ask Limelight for data (15 times per second)
         limelight.start(); // This tells Limelight to start looking!
         limelight.pipelineSwitch(0);
     }
@@ -27,12 +31,15 @@ public class Limelight {
     {
         limelight.updateRobotOrientation(orientation);
 
-        LLResult result = limelight.getLatestResult();
-        Pose3D pose = result.getBotpose();
+//        LLResult result = limelight.getLatestResult();
+//        LLResultTypes.FiducialResult fiducialResult = limelight.getLatestResult();
+//        Pose3D pose = result.getBotpose();
+
+        List<LLResultTypes.FiducialResult> fiducialResult = limelight.getLatestResult().getFiducialResults();
 
         SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D(0,0,0);
 
-        if (!result.isValid() || pose == null) {
+        if (fiducialResult.isEmpty()) {
             isValid = false;
             return output;
         }
@@ -41,12 +48,17 @@ public class Limelight {
             isValid = true;
         }
 
+        Pose3D pose = fiducialResult.get(0).getRobotPoseFieldSpace();
+
         output.x = pose.getPosition().x;
         output.y = pose.getPosition().y;
 
         output = ProcessCoordinates(redAlliance, output);
 
-        lastPosition = output;
+        if (output.x != 0 && output.y != 0)
+        {
+            lastPosition = output;
+        }
 
         return output;
     }
@@ -61,14 +73,26 @@ public class Limelight {
 
         if (!redAlliance)
         {
-            processedPosition.y *= -1;
+            processedPosition.x *= -1;
         }
         else
         {
-            processedPosition.x *= -1;
+            processedPosition.y *= -1;
         }
 
+        processedPosition.x -= 3;
+        processedPosition.y -= 10;
+
+//        processedPosition.x = LowPass(averageX, processedPosition.x);
+//        processedPosition.y = LowPass(averageY, processedPosition.y);
+
         return processedPosition;
+    }
+
+    private double LowPass(double average, double value)
+    {
+        average = (average * 0.85) + (value * 0.15);
+        return average;
     }
 
     private double MtoIn(double input)
