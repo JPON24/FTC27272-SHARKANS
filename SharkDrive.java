@@ -270,7 +270,7 @@ public class SharkDrive {
 
         errors[0] = tgtX - GetOdometryLocalization().x;
         errors[1] = tgtY - GetOdometryLocalization().y;
-        errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - GetOrientation())))) / 10;
+        errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - GetOdometryLocalization().h)))) / 10;
 
         if (new ArmLiftMotor().GetLocalNeutral() == 1250) {
             TuningUp();
@@ -327,9 +327,9 @@ public class SharkDrive {
     private SparkFunOTOS.Pose2D GetOdometryLocalization() {
         SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D();
 
-        output.x = odometry.getPosition().x + lastLimelightPosition.x;
-        output.y = odometry.getPosition().y + lastLimelightPosition.y;
-        output.h = odometry.getPosition().h + lastValidIMUReading;
+        output.x = odometry.getPosition().x;
+        output.y = odometry.getPosition().y;
+        output.h = odometry.getPosition().h;
 
         return output;
     }
@@ -387,6 +387,11 @@ public class SharkDrive {
             rad += 2 * Math.PI;
         }
         return -rad;
+    }
+
+    public double GetLastValidIMUReading()
+    {
+        return lastValidIMUReading;
     }
 
     public void SetAngleLenience(double temp)
