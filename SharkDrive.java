@@ -42,6 +42,7 @@ public class SharkDrive {
     double autograbZeroX = 10;
     double autograbZeroY = 0;
     boolean lostSight = false;
+    public int countingTelemetry = 0;
 
     public void init(HardwareMap hwMap, boolean isAuton) {
         TuningDown();
@@ -68,7 +69,7 @@ public class SharkDrive {
         kph = 0.34; // 0.34 1.12
         kix = 0.0; // 0.01
         kiy = 0.0; // 0.01
-        kih = 0.01 ; // 0.01
+        kih = 0.01; // 0.01
         kdx = 0.32; // 0.32 0.16
         kdy = 0.13; // 0.13 0.065
         kdh = 0.25; // 0.25 0.25
@@ -208,8 +209,7 @@ public class SharkDrive {
         return output;
     }
 
-    public void CVControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis, double xOffset, double dist)
-    {
+    public void CVControl(double speed, double tgtX, double tgtY, double tgtRot, double distanceLenience, int axis, double xOffset, double dist) {
         if (!odometry.isConnected()) {
             return;
         }
@@ -259,13 +259,18 @@ public class SharkDrive {
         deltaTime = now - last_time;
         last_time = now;
 
-////        pos = GetOdometryLocalization();
 //        pos = limelight.GetLimelightData(false, GetOdometryLocalization().h);
-        pos = GetLocalization();
+//        pos = GetLocalization();
 
-        errors[0] = tgtX - pos.x;
-        errors[1] = tgtY - pos.y;
-        errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
+        if (axis == 3) {
+            angleLenience = 5;
+        } else {
+            angleLenience = 60;
+        }
+
+        errors[0] = tgtX - GetOdometryLocalization().x;
+        errors[1] = tgtY - GetOdometryLocalization().y;
+        errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - GetOrientation())))) / 10;
 
         if (new ArmLiftMotor().GetLocalNeutral() == 1250) {
             TuningUp();
@@ -278,7 +283,7 @@ public class SharkDrive {
         // might have to add increased magnitude to error, currently between -1 and 1
         output[0] = pid(errors[0], 0, distanceLenience);
         output[1] = pid(errors[1], 1, distanceLenience);
-        output[2] = pid(errors[2], 2, distanceLenience);
+        output[2] = pid(errors[2], 2, angleLenience);
 
         if (tgtRot == 1) {
             completedBools[2] = true;
@@ -299,32 +304,27 @@ public class SharkDrive {
             completedBools[0] = true;
         }
 
-        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], pos.h);
+        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], GetOrientation());
     }
 
     // creates odometry fallback if the limelight stops working
-    private SparkFunOTOS.Pose2D GetLocalization()
-    {
-        if (limelight.GetIsValid())
-        {
-            lostSight = false;
-            return limelight.GetLimelightData(false,pos.h);
-        }
-        else
-        {
-            if (!lostSight)
-            {
-                lastValidIMUReading = GetImuReading();
-                Rehome();
-                lastLimelightPosition = limelight.GetLastPosition();
-                lostSight = true;
-            }
-            return GetOdometryLocalization();
-        }
-    }
+//    private SparkFunOTOS.Pose2D GetLocalization() {
+//        SparkFunOTOS.Pose2D limelightPos = limelight.GetLimelightData(false, GetImuReading());
+//        if (limelight.GetIsValid()) {
+//            lostSight = false;
+//            return limelightPos;
+//        } else {
+//            if (!lostSight) {
+//                lastValidIMUReading = GetImuReading() + lastValidIMUReading;
+//                Rehome();
+//                lastLimelightPosition = limelight.GetLastPosition();
+//                lostSight = true;
+//            }
+//            return GetOdometryLocalization();
+//        }
+//    }
 
-    private SparkFunOTOS.Pose2D GetOdometryLocalization()
-    {
+    private SparkFunOTOS.Pose2D GetOdometryLocalization() {
         SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D();
 
         output.x = odometry.getPosition().x + lastLimelightPosition.x;
@@ -332,6 +332,21 @@ public class SharkDrive {
         output.h = odometry.getPosition().h + lastValidIMUReading;
 
         return output;
+    }
+
+    public SparkFunOTOS.Pose2D PrintOdometryLocalization()
+    {
+        return GetOdometryLocalization();
+    }
+
+    public void SetLastLimelightPosition(SparkFunOTOS.Pose2D value)
+    {
+        lastLimelightPosition = value;
+    }
+
+    public void SetLastValidIMUReading()
+    {
+        lastValidIMUReading = GetImuReading() + lastValidIMUReading;
     }
 
     private void NewHighestOutputX(double x) {
@@ -383,6 +398,7 @@ public class SharkDrive {
     {
         return odometry.getPosition().h;
     }
+    public double GetOrientation() {return GetImuReading() + lastValidIMUReading;}
 
     public double GetPositionX()
     {
@@ -394,8 +410,8 @@ public class SharkDrive {
         return odometry.getPosition().y;
     }
 
-    public double GetLocalizationX() { return GetLocalization().x; }
-    public double GetLocalizationY() { return GetLocalization().y; }
+//    public double GetLocalizationX() { return GetLocalization().x; }
+//    public double GetLocalizationY() { return GetLocalization().y; }
 
     public double GetErrorX()
     {
@@ -412,44 +428,23 @@ public class SharkDrive {
         return errors[2];
     }
 
+    public double GetOutputX() {return output[0];}
+    public double GetOutputY() {return output[1];}
+
     public double GetAutograbZeroX() {return autograbZeroX;}
     public double GetAutograbZeroY() {return autograbZeroY;}
 
     public void SetAutograbZeroX(double temp) {autograbZeroX = temp;}
     public void SetAutograbZeroY(double temp) {autograbZeroY = temp;}
 
-    public double GetOutputX()
-    {
-        return output[0];
-    }
-
     public double GetDerivativeX() { return dX; }
 
     public double GetPorportionalX() {return pX;}
+    public boolean CamIsValid() {return limelight.GetIsValid();}
 
-    public double GetOutputY()
+    public SparkFunOTOS.Pose2D GetLastLimelightPosition()
     {
-        return output[1];
-    }
-
-    public double GetOutputH()
-    {
-        return output[2];
-    }
-
-    public double GetIntegralX()
-    {
-        return iX;
-    }
-
-    public double GetIntegralY()
-    {
-        return iY;
-    }
-
-    public double GetIntegralH()
-    {
-        return iH;
+        return lastLimelightPosition;
     }
 
     public boolean GetBoolsCompleted()
