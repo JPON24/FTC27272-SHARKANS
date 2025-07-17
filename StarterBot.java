@@ -282,11 +282,11 @@ public class StarterBot extends LinearOpMode{
         {
             normalControl = false;
             canStartHookMacro = false;
-
-            TeleopMoveCommandY(1,localOffset, hookDistance-5, 0,preciseLenience,2,0.7,hookHeight,0, 0,0,true, 'C', false);
-            TeleopMoveCommandY(1,localOffset, hookDistance, 0,preciseLenience,2,1,hookHeight,0, 0,0,true, 'C', false);
-            TeleopMoveCommandY(0,localOffset, hookDistance, 0,arcLenience,2,1,hookHeight,0, 0,0,false, 'C', false);
-            TeleopMoveCommandY(1,localOffset,hookDistance-5,0,preciseLenience,2,1,hookHeight,0,0,0,false,'C',false);
+            TeleopMoveCommandY(1,localOffset-lime.GetLastPosition().x, hookDistance-5-lime.GetLastPosition().y, 0-shark.GetLastValidIMUReading(),preciseLenience,2,0.7,hookHeight,0, 0,0,true, 'C', false);
+            TeleopMoveCommandY(0.5,localOffset-lime.GetLastPosition().x, hookDistance-lime.GetLastPosition().y, 0-shark.GetLastValidIMUReading(),preciseLenience,2,1,hookHeight,0, 0,0,true, 'C', false);
+            double lastLimeX = lime.GetLastPosition().x;
+            TeleopMoveCommandY(0,localOffset-lastLimeX, hookDistance-lime.GetLastPosition().y, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,0,false, 'C', false);
+            TeleopMoveCommandY(1,localOffset-lastLimeX,hookDistance-5-lime.GetLastPosition().y,0-shark.GetLastValidIMUReading(),preciseLenience,2,1,hookHeight,0,0,0,false,'C',false);
 
             localOffset += localOffsetIncrement;
             am.SetLocalNeutral(am.GetTargetPosition());
@@ -306,18 +306,18 @@ public class StarterBot extends LinearOpMode{
             normalControl = false;
             canStartGrabMacro = false;
             boolean shouldReturn = false;
-
-            shouldReturn = TeleopMoveCommandB(1, 40, grabDistance+8, 0,preciseLenience,2,1, grabHeight, 0,0,0, false, 'G', false);
+            shouldReturn = TeleopMoveCommandB(1, 40-lime.GetLastPosition().x, grabDistance+8-lime.GetLastPosition().y, 0-shark.GetLastValidIMUReading(),preciseLenience,2,1, grabHeight, 0,0,0, false, 'G', false);
             if (shouldReturn) {return;}
 
-            shouldReturn = TeleopMoveCommandB(0.5, 40, grabDistance, 0,preciseLenience,2,1, grabHeight, 0,0,0, false, 'G', false);
+            shouldReturn = TeleopMoveCommandB(0.5, 40-lime.GetLastPosition().x, grabDistance-lime.GetLastPosition().y, 0-shark.GetLastValidIMUReading(),preciseLenience,2,1, grabHeight, 0,0,0, false, 'G', false);
             if (shouldReturn) {return;}
 
-            shouldReturn = TeleopMoveCommandB(0, 40, grabDistance, 0,arcLenience,2,1, grabHeight, 0,0,0, true, 'G', false);
+            double lastLimeX = lime.GetLastPosition().x;
+            shouldReturn = TeleopMoveCommandB(0, 40-lastLimeX, grabDistance-lime.GetLastPosition().y, 0-shark.GetLastValidIMUReading(),arcLenience,2,1, grabHeight, 0,0,0, true, 'G', false);
             if (shouldReturn) {return;}
             sleep(400);
 
-            shouldReturn = TeleopMoveCommandB(0, 40, grabDistance, 0, arcLenience,2,1, grabHeight + 200, 0,0,0, true, 'G', false);
+            shouldReturn = TeleopMoveCommandB(0, 40-lastLimeX, grabDistance-lime.GetLastPosition().y, 0-shark.GetLastValidIMUReading(), arcLenience,2,1, grabHeight + 200, 0,0,0, true, 'G', false);
             if (shouldReturn) {return;}
 
             am.SetLocalNeutral(am.GetTargetPosition());
@@ -626,6 +626,7 @@ public class StarterBot extends LinearOpMode{
         telemetry.addData("h position", shark.GetImuReading());
         telemetry.addData("orientation", shark.GetOrientation());
         telemetry.addData("limelightLocalization", lime.GetLimelightData(false, shark.GetOrientation()));
+        telemetry.addData("last valid imu reading", shark.GetLastValidIMUReading());
         telemetry.addData("direct last limelight position", lime.GetLastPosition());
 
 //        telemetry.addData("raw localization x", shark.GetLocalizationX());
