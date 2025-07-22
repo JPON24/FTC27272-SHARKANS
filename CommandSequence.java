@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 //import com.acmerobotics.dashboard.FtcDashboard;
 //import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -17,12 +18,12 @@ public class CommandSequence extends LinearOpMode
     ArmLiftMotor am = new ArmLiftMotor();
 
     boolean moving = true;
-    double speed = 1; // 1.1
+    double speed = 0.65; // 1.1
 
     double grabDistance = 0; // old 4.5
-    double hookDistance = 34; // 22.5
+    double hookDistance = 27; // 22.5
     int grabHeight = 50;
-    int hookHeight = 1000;
+    int hookHeight = 1100;
 
     double preciseLenience = 0.6;
     double arcLenience = 10;
@@ -45,11 +46,15 @@ public class CommandSequence extends LinearOpMode
 
     private void SpecimenSequence()
     {
-        moveCmd.MoveToPosition(speed,-4,hookDistance,0,preciseLenience,2,0.5,grabHeight, 0,0,0,true,'C'); //5
-        moveCmd.MoveToPosition(0,-4,hookDistance,0,arcLenience,2,0.5,hookHeight, 0,0,0,true,'C'); //5
+        moveCmd.MoveToPosition(speed,-4,grabDistance+8,0,preciseLenience,0,0.7,grabHeight + 200, 0,0,0,true,'C'); //5
+        moveCmd.MoveToPosition(speed,-4,hookDistance,0,preciseLenience,1,1,grabHeight + 200, 0,0,0,true,'C'); //5
+
+        moveCmd.MoveToPosition(0,-4,hookDistance,0,arcLenience,2,1,hookHeight, 0,0,0,true,'C'); //5
         sleep(200);
         moveCmd.MoveToPosition(0,-4,hookDistance,0,arcLenience,2,0.5,hookHeight, 0,0,0,false,'C'); //5
         sleep(200);
+        dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
+        sleep(300);
 
         moveCmd.MoveToPosition(speed,36,24 + circleYOffset,0,preciseLenience,2,preciseLenience,grabHeight, 0,0.3,0.33,false,'G');
 
@@ -74,20 +79,31 @@ public class CommandSequence extends LinearOpMode
 
     private void Hook(int offset) // add offset constant
     {
-        moveCmd.MoveToPosition(1, 0 + offset, hookDistance, 0,preciseLenience,2,1,grabHeight,0, 0,0,true, 'C');
+        moveCmd.MoveToPosition(speed, 0 + offset, grabDistance+8, 0,preciseLenience,0,1,grabHeight + 200,0, 0,0,true, 'C');
+        moveCmd.MoveToPosition(speed, 0 + offset, hookDistance, 0,preciseLenience,1,1,grabHeight + 200,0, 0,0,true, 'C');
+
         moveCmd.MoveToPosition(0, 0 + offset, hookDistance, 0,arcLenience,2,1, hookHeight,0, 0,0,true, 'C');
         sleep(200);
         moveCmd.MoveToPosition(0, 0 + offset, hookDistance, 0, arcLenience,1,1,hookHeight,0, 0,0,false, 'C');
         sleep(200);
+        dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
+        sleep(300);
     }
 
     private void Grab(double offset)
     {
-        moveCmd.MoveToPosition(1, 40 + offset, grabDistance + 4, 0,1,2,1, grabHeight, 0, 0,0,false, 'G');
-        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,preciseLenience, 2,1,grabHeight, 0, 0,0,false, 'G');
+        moveCmd.MoveToPosition(speed, 40 + offset, grabDistance + 8, 0,0.6,2,1, grabHeight, 0, 0,0,false, 'G');
+//        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,preciseLenience, 2,1,grabHeight, 0, 0,0,false, 'G');
+
+        dt.FieldOrientedTranslate(0,-0.3,0,shark.GetImuReading());
+        sleep(1000);
+
+        SparkFunOTOS.Pose2D overridePos = new SparkFunOTOS.Pose2D(shark.GetPositionX(),0,shark.GetImuReading());
+        shark.OverrideOtosPos(overridePos);
+
         moveCmd.MoveToPosition(0, 40 + offset, grabDistance, 0,arcLenience, 2,1,grabHeight, 0, 0,0,true, 'G');
-        sleep(200);
-        moveCmd.MoveToPosition(0, 40 + offset, grabDistance,0,arcLenience,1,1,200,0, 0,0,true, 'G');
+        sleep(400);
+        moveCmd.MoveToPosition(0, 40 + offset, grabDistance,0,arcLenience,2,1,grabHeight + 200,0, 0,0,true, 'G');
 //        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,-850,true,'G'); //8
     }
 
