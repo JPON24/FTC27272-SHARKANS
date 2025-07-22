@@ -92,7 +92,7 @@ public class MoveCommand  {
                             break;
                         }
                     case 'e':
-                        extend.MoveExtend(tgtE,'a');
+                        extend.MoveToPosition(tgtE);
                         if (extend.GetCompleted(tgtE))
                         {
                             command.SetElementTrue('e');
