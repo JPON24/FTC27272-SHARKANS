@@ -313,9 +313,9 @@ public class StarterBot extends LinearOpMode{
             if (shouldReturn) {return;}
 
             dt.FieldOrientedTranslate(0,-macroSpeed/3,0,shark.GetImuReading());
-            sleep(1000);
+            sleep(700);
 
-            SparkFunOTOS.Pose2D overridePos = new SparkFunOTOS.Pose2D(40,0,shark.GetImuReading());
+            SparkFunOTOS.Pose2D overridePos = new SparkFunOTOS.Pose2D(shark.GetPositionX(),0,shark.GetImuReading());
             shark.OverrideOtosPos(overridePos);
 
             shouldReturn = TeleopMoveCommandB(0.5, 40, grabDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1, grabHeight, 0,0,0, false, 'G', false);
