@@ -26,7 +26,7 @@ public class SharkDrive {
 
     double deltaTime, last_time;
     double integralX, integralY, integralH = 0;
-    double kpx, kpy, kph, kix, kiy, kih, kdx, kdy, kdh;
+    double kpx, kpy, kph, kix, kiy, kih, kdx, kdy, kdh = 0;
     double iX, iY, iH, pX, dX;
     double xAverage, yAverage, hAverage = 0;
     double[] output = new double[3];
@@ -47,7 +47,9 @@ public class SharkDrive {
     double odometryInputMixPercentage = 0.7;
 
     public void init(HardwareMap hwMap, boolean isAuton) {
-        TuningDown();
+        kph = 0.34; // 0.34 1.12
+        kih = 0.01; // 0.01
+        kdh = 0.25; // 0.25 0.25
 
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
@@ -68,27 +70,27 @@ public class SharkDrive {
     }
 
     public void TuningDown() {
-        kpx = 0.38; //0.38 1.14
-        kpy = 0.2; //0.2 0.6
-        kph = 0.34; // 0.34 1.12
-        kix = 0.0; // 0.01
-        kiy = 0.0; // 0.01
-        kih = 0.01; // 0.01
-        kdx = 0.32; // 0.32 0.16
-        kdy = 0.13; // 0.13 0.065
-        kdh = 0.25; // 0.25 0.25
+//        kpx = 0.4; //0.38 1.14
+//        kpy = 0.22; //0.2 0.6
+//        kph = 0.34; // 0.34 1.12
+//        kix = 0.0; // 0.01
+//        kiy = 0.0; // 0.01
+//        kih = 0.01; // 0.01
+//        kdx = 0.32; // 0.32 0.16
+//        kdy = 0.13; // 0.13 0.065
+//        kdh = 0.25; // 0.25 0.25
     }
 
     public void TuningUp() {
-        kpx = 0.38; //0.38
-        kpy = 0.3; //0.24
-        kph = 0.34; // 0.34
-        kix = 0; // 0.01
-        kiy = 0; //  0
-        kih = 0.01; // 0.43
-        kdx = 0.29; // 0.29
-        kdy = 0.1; // 0.1
-        kdh = 0.25; // 0.25
+//        kpx = 0.4; //0.38
+//        kpy = 0.33; //0.24
+//        kph = 0.34; // 0.34
+//        kix = 0; // 0.01
+//        kiy = 0; //  0
+//        kih = 0.01; // 0.43
+//        kdx = 0.29; // 0.29
+//        kdy = 0.1; // 0.1
+//        kdh = 0.25; // 0.25
     }
 
     private double LowPass(double average, double newValue) {
@@ -111,7 +113,9 @@ public class SharkDrive {
             double derivative = (error - previous[0]) / dxTime.seconds();
             derivative = LowPass(xAverage, derivative);
 
-            output = kpx * error + kix * integralX + kdx * derivative;
+//            output = kpx * error + kix * integralX + kdx * derivative;
+            output = SampleConstants.KPX * error + kix * integralX + SampleConstants.KDX * derivative;
+
             dxTime.reset();
             previous[0] = error;
 
@@ -133,7 +137,9 @@ public class SharkDrive {
             pX = kph * error;
             dX = derivative;
 
-            output = kpy * error + kiy * integralY + kdy * derivative;
+//            output = kpy * error + kiy * integralY + kdy * derivative;
+            output = SampleConstants.KPY * error + kiy * integralY + SampleConstants.KDY * derivative;
+
             dyTime.reset();
 
             previous[1] = error;
@@ -271,7 +277,7 @@ public class SharkDrive {
         pos = GetOdometryLocalization();
 
         if (axis == 3) {
-            angleLenience = 5;
+            angleLenience = 30;
         } else {
             angleLenience = 60;
         }
@@ -280,11 +286,11 @@ public class SharkDrive {
         errors[1] = tgtY - pos.y;
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
 
-        if (new ArmLiftMotor().GetLocalNeutral() == 1250) {
-            TuningUp();
-        } else {
-            TuningDown();
-        }
+//        if (new ArmLiftMotor().GetLocalNeutral() == 1250) {
+//            TuningUp();
+//        } else {
+//            TuningDown();
+//        }
 
         // normalized against one another
         // should create weird diagonal movement
@@ -312,7 +318,9 @@ public class SharkDrive {
             completedBools[0] = true;
         }
 
-        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], GetOrientation());
+//        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], GetOrientation());
+        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], GetImuReading());
+
     }
 
     // creates odometry fallback if the limelight stops working
@@ -352,6 +360,46 @@ public class SharkDrive {
 //        output.h = odometry.getPosition().h;
 //
 //        return output;
+//    }
+
+//    public void SetKPX(double temp)
+//    {
+//        kpx = temp;
+//    }
+//
+//    public void SetKPY(double temp)
+//    {
+//        kpy = temp;
+//    }
+//
+//    public void SetKDX(double temp)
+//    {
+//        kdx = temp;
+//    }
+//
+//    public void SetKDY(double temp)
+//    {
+//        kdy = temp;
+//    }
+//
+//    public double GetKPX()
+//    {
+//        return kpx;
+//    }
+//
+//    public double GetKPY()
+//    {
+//        return kpy;
+//    }
+//
+//    public double GetKDX()
+//    {
+//        return kdx;
+//    }
+//
+//    public double GetKDY()
+//    {
+//        return kdy;
 //    }
 
     private SparkFunOTOS.Pose2D GetOdometryLocalization() {
