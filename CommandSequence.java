@@ -18,11 +18,12 @@ public class CommandSequence extends LinearOpMode
     ArmLiftMotor am = new ArmLiftMotor();
 
     boolean moving = true;
-    double speed = 0.65; // 1.1
+    double speed = 0.7; // 1.1
 
     double grabDistance = 0; // old 4.5
     double hookDistance = 27; // 22.5
     int grabHeight = 50;
+    int lowMoveHeight = grabHeight + 200;
     int hookHeight = 1100;
 
     double preciseLenience = 0.6;
@@ -46,9 +47,7 @@ public class CommandSequence extends LinearOpMode
 
     private void SpecimenSequence()
     {
-        moveCmd.MoveToPosition(speed,-4,grabDistance+8,0,preciseLenience,0,0.7,grabHeight + 200, 0,0,0,true,'C'); //5
-        moveCmd.MoveToPosition(speed,-4,hookDistance,0,preciseLenience,1,1,grabHeight + 200, 0,0,0,true,'C'); //5
-
+        moveCmd.MoveToPosition(speed,-4,hookDistance,0,preciseLenience,1,1,lowMoveHeight, 0,0,0,true,'C'); //5
         moveCmd.MoveToPosition(0,-4,hookDistance,0,arcLenience,2,1,hookHeight, 0,0,0,true,'C'); //5
         sleep(200);
         moveCmd.MoveToPosition(0,-4,hookDistance,0,arcLenience,2,0.5,hookHeight, 0,0,0,false,'C'); //5
@@ -56,14 +55,14 @@ public class CommandSequence extends LinearOpMode
         dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
         sleep(300);
 
-        moveCmd.MoveToPosition(speed,36,24 + circleYOffset,0,preciseLenience,2,preciseLenience,grabHeight, 0,0.3,0.33,false,'G');
+        moveCmd.MoveToPosition(speed,36,24 + circleYOffset,0,preciseLenience,2,1,lowMoveHeight, 0,0,0,false,'G');
 
-        Push(0);
-        Push(10);
+//        Push(0);
+//        Push(10);
 
-        moveCmd.MoveToPosition(speed,52,55,0,preciseLenience,2,0.5,grabHeight, 0,0,0,false,'G'); //5
-        moveCmd.MoveToPosition(speed,58,55,0,preciseLenience,2,0.5,grabHeight, 0,0,0,false,'G'); //6
-        moveCmd.MoveToPosition(speed,58,grabDistance+4,0,preciseLenience,1,0.5,grabHeight, 0,0,0,false,'G'); //6
+        moveCmd.MoveToPosition(speed,52,44,0,preciseLenience,2,0.5,lowMoveHeight, 0,0,0,false,'G'); //5
+        moveCmd.MoveToPosition(speed,58,44,0,preciseLenience,2,0.5,lowMoveHeight, 0,0,0,false,'G'); //6
+        moveCmd.MoveToPosition(speed,58,grabDistance+8,0,preciseLenience,1,0.5,grabHeight, 0,0,0,false,'G'); //6
 
         Grab(18);
         Hook(-2);
@@ -74,7 +73,8 @@ public class CommandSequence extends LinearOpMode
         Grab(0);
         Hook(2);
 
-        moveCmd.MoveToPosition(speed,48,grabDistance,0,preciseLenience,2,preciseLenience,grabHeight, 0,0,0,false,'G');
+        moveCmd.MoveToPosition(speed,48,grabDistance+8,0,preciseLenience,2,1,lowMoveHeight, 0,0,0,false,'G');
+        moving = false;
     }
 
     private void Hook(int offset) // add offset constant
@@ -92,7 +92,7 @@ public class CommandSequence extends LinearOpMode
 
     private void Grab(double offset)
     {
-        moveCmd.MoveToPosition(speed, 40 + offset, grabDistance + 8, 0,0.6,2,1, grabHeight, 0, 0,0,false, 'G');
+        moveCmd.MoveToPosition(speed, 40 + offset, grabDistance + 8, 0,preciseLenience,2,1, grabHeight, 0, 0,0,false, 'G');
 //        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,preciseLenience, 2,1,grabHeight, 0, 0,0,false, 'G');
 
         dt.FieldOrientedTranslate(0,-0.3,0,shark.GetImuReading());
@@ -110,8 +110,8 @@ public class CommandSequence extends LinearOpMode
     // could try rotational push for speed
     private void Push(double offset)
     {
-        moveCmd.MoveToPosition(speed,36 + offset,24 + circleYOffset,15,1,3,preciseLenience,grabHeight, pushExtendDist,0.3,0.33,false,'G');
-        moveCmd.MoveToPosition(speed,36 + offset,24 + circleYOffset,150,1,3,preciseLenience,grabHeight, pushExtendDist,0.3,0.33,false,'G'); //6
+        moveCmd.MoveToPosition(speed,36 + offset,24 + circleYOffset,15,preciseLenience,3,1,lowMoveHeight, pushExtendDist,0.3,0.33,false,'G');
+        moveCmd.MoveToPosition(speed,36 + offset,24 + circleYOffset,150,preciseLenience,3,1,lowMoveHeight, pushExtendDist,0.3,0.33,false,'G'); //6
     }
 
     private void BasicPark()
