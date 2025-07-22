@@ -81,13 +81,13 @@ public class SharkDrive {
 
     public void TuningUp() {
         kpx = 0.38; //0.38
-        kpy = 0.4; //0.24
+        kpy = 0.3; //0.24
         kph = 0.34; // 0.34
         kix = 0; // 0.01
         kiy = 0; //  0
         kih = 0.01; // 0.43
-        kdx = 0.29; // 0.25
-        kdy = 0.1; // 0.15
+        kdx = 0.29; // 0.29
+        kdy = 0.1; // 0.1
         kdh = 0.25; // 0.25
     }
 
