@@ -30,8 +30,8 @@ public class StarterBot extends LinearOpMode{
 
     double diffSpeed = 1;
 
-    double localOffset = -4;
-    double localOffsetIncrement = 3;
+    double localOffset = 4;
+    double localOffsetIncrement = 2;
     double grabDistance = 0; // 11
     double hookDistance = 27; // 43
 
@@ -313,13 +313,15 @@ public class StarterBot extends LinearOpMode{
             if (shouldReturn) {return;}
 
             dt.FieldOrientedTranslate(0,-macroSpeed/3,0,shark.GetImuReading());
-            sleep(700);
+            sleep(1000);
+
+            if (!gamepad1.b) {return;}
 
             SparkFunOTOS.Pose2D overridePos = new SparkFunOTOS.Pose2D(shark.GetPositionX(),0,shark.GetImuReading());
             shark.OverrideOtosPos(overridePos);
 
-            shouldReturn = TeleopMoveCommandB(0.5, 40, grabDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1, grabHeight, 0,0,0, false, 'G', false);
-            if (shouldReturn) {return;}
+//            shouldReturn = TeleopMoveCommandB(0.5, 40, grabDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1, grabHeight, 0,0,0, false, 'G', false);
+//            if (shouldReturn) {return;}
 
             shouldReturn = TeleopMoveCommandB(0, 40, grabDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1, grabHeight, 0,0,0, true, 'G', false);
             if (shouldReturn) {return;}
