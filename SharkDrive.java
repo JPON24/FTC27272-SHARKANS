@@ -10,7 +10,7 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 public class SharkDrive {
     Drivetrain dt = new Drivetrain();
-    Limelight limelight = new Limelight();
+//    Limelight limelight = new Limelight();
     ElapsedTime runtime = new ElapsedTime();
     ElapsedTime dxTime = new ElapsedTime();
     ElapsedTime dyTime = new ElapsedTime();
@@ -51,18 +51,20 @@ public class SharkDrive {
 
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
+        odometry.setLinearUnit(DistanceUnit.INCH);
+        odometry.setAngularUnit(AngleUnit.DEGREES);
+        odometry.calibrateImu();
+        odometry.setAngularScalar(0.987);
+        odometry.setLinearScalar(1.052);
+        odometry.setOffset(new SparkFunOTOS.Pose2D(0, 0, 0));
+
         if (isAuton) {
             odometry.resetTracking();
             odometry.begin();
         }
-        odometry.setLinearUnit(DistanceUnit.INCH);
-        odometry.setAngularUnit(AngleUnit.DEGREES);
-        odometry.calibrateImu();
-        odometry.setAngularScalar(1);
-        odometry.setLinearScalar(1);
-        odometry.setOffset(new SparkFunOTOS.Pose2D(0.4375, 3.625, 0));
+
         dt.init(hwMap);
-        limelight.init(hwMap);
+//        limelight.init(hwMap);
     }
 
     public void TuningDown() {
@@ -274,7 +276,6 @@ public class SharkDrive {
             angleLenience = 60;
         }
 
-
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
         errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
@@ -332,26 +333,26 @@ public class SharkDrive {
 //    }
 
 
-    private SparkFunOTOS.Pose2D PoseEstimator()
-    {
-        SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D();
-        SparkFunOTOS.Pose2D limelightPosition = limelight.GetLimelightData(false, GetOrientation());
-
-        if (limelightPosition.x == 0 && limelightPosition.y == 0)
-        {
-            odometryInputMixPercentage = 1;
-        }
-        else
-        {
-            odometryInputMixPercentage = 0.9;
-        }
-
-        output.x = (odometry.getPosition().x * odometryInputMixPercentage) + (limelightPosition.x * 1-odometryInputMixPercentage);
-        output.y = ((odometry.getPosition().y+15) * odometryInputMixPercentage) + (limelightPosition.y * 1-odometryInputMixPercentage);
-        output.h = odometry.getPosition().h;
-
-        return output;
-    }
+//    private SparkFunOTOS.Pose2D PoseEstimator()
+//    {
+//        SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D();
+//        SparkFunOTOS.Pose2D limelightPosition = limelight.GetLimelightData(false, GetOrientation());
+//
+//        if (limelightPosition.x == 0 && limelightPosition.y == 0)
+//        {
+//            odometryInputMixPercentage = 1;
+//        }
+//        else
+//        {
+//            odometryInputMixPercentage = 0.9;
+//        }
+//
+//        output.x = (odometry.getPosition().x * odometryInputMixPercentage) + (limelightPosition.x * 1-odometryInputMixPercentage);
+//        output.y = ((odometry.getPosition().y+15) * odometryInputMixPercentage) + (limelightPosition.y * 1-odometryInputMixPercentage);
+//        output.h = odometry.getPosition().h;
+//
+//        return output;
+//    }
 
     private SparkFunOTOS.Pose2D GetOdometryLocalization() {
         SparkFunOTOS.Pose2D output = new SparkFunOTOS.Pose2D();
@@ -368,10 +369,10 @@ public class SharkDrive {
         return GetOdometryLocalization();
     }
 
-    public void SetLastLimelightPosition(SparkFunOTOS.Pose2D value)
-    {
-        lastLimelightPosition = value;
-    }
+//    public void SetLastLimelightPosition(SparkFunOTOS.Pose2D value)
+//    {
+//        lastLimelightPosition = value;
+//    }
 
     public void SetLastValidIMUReading()
     {
@@ -416,6 +417,11 @@ public class SharkDrive {
             rad += 2 * Math.PI;
         }
         return -rad;
+    }
+
+    public void OverrideOtosPos(SparkFunOTOS.Pose2D position)
+    {
+        odometry.setPosition(position);
     }
 
     public double GetLastValidIMUReading()
@@ -474,12 +480,12 @@ public class SharkDrive {
     public double GetDerivativeX() { return dX; }
 
     public double GetPorportionalX() {return pX;}
-    public boolean CamIsValid() {return limelight.GetIsValid();}
+//    public boolean CamIsValid() {return limelight.GetIsValid();}
 
-    public SparkFunOTOS.Pose2D GetLastLimelightPosition()
-    {
-        return lastLimelightPosition;
-    }
+//    public SparkFunOTOS.Pose2D GetLastLimelightPosition()
+//    {
+//        return lastLimelightPosition;
+//    }
 
     public boolean GetBoolsCompleted()
     {
@@ -501,6 +507,8 @@ public class SharkDrive {
     {
         for (int i = 0; i < 3; i++)
         {
+            errors[i] = 0;
+            output[i] = 0;
             completedBools[i] = false;
         }
     }
