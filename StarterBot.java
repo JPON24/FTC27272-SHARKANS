@@ -1,15 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
-//import com.acmerobotics.dashboard.FtcDashboard;
-//import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.ftccommon.FtcWifiDirectChannelSelectorActivity;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-//@Config
+@Config
 @TeleOp
 public class StarterBot extends LinearOpMode{
     //hook offset currently off - five inches from sub
@@ -43,6 +42,7 @@ public class StarterBot extends LinearOpMode{
     boolean canStartSubMacro = true;
     boolean canStartGrabMacro = true;
     boolean canStartHookMacro = true;
+    boolean canStartTune = true;
     double localWristPos = 0;
 
     double preciseLenience = 0.6;
@@ -74,8 +74,8 @@ public class StarterBot extends LinearOpMode{
     @Override
     public void runOpMode()
     {
-//        FtcDashboard dashboard = FtcDashboard.getInstance();
-//        telemetry = dashboard.getTelemetry();
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
 
         dt.init(hardwareMap);
         cs.init(hardwareMap, false);
@@ -171,11 +171,35 @@ public class StarterBot extends LinearOpMode{
 
             runtime.reset();
 //            SubmersibleGrab(aButtonPressed);
-            HookMacro(yButtonPressed);
+//            HookMacro(yButtonPressed);
             GrabMacro(bButtonPressed);
+            PIDTune(yButtonPressed);
             cs.Update();
         }
 //        cv.StopStream();
+    }
+
+    private void PIDTune(boolean y)
+    {
+        if (y && canStartTune)
+        {
+            normalControl = false;
+            canStartTune = false;
+
+            TeleopMoveCommandY(0.7,0, 0, 0,preciseLenience,2,1,grabHeight,0, 0,0,false, 'G', false);
+            TeleopMoveCommandY(0.7,12, 0, 0,preciseLenience,2,1,grabHeight,0, 0,0,false, 'G', false);
+            TeleopMoveCommandY(0.7,12, 12, 0,preciseLenience,2,1,grabHeight,0, 0,0,false, 'G', false);
+            TeleopMoveCommandY(0.7,0,12,0,preciseLenience,2,1,0,grabHeight,0,0,false,'G',false);
+            TeleopMoveCommandY(0.7,0, 0, 0,preciseLenience,2,1,grabHeight,0, 0,0,false, 'G', false);
+
+            am.SetLocalNeutral(am.GetTargetPosition());
+            normalControl = true;
+        }
+        else if (!y)
+        {
+            am.SetLocalNeutral(am.GetTargetPosition());
+            canStartTune = true;
+        }
     }
 
     private void Rehoming(boolean pressed)
@@ -624,11 +648,9 @@ public class StarterBot extends LinearOpMode{
 
     private void TelemetryPrint()
     {
-        telemetry.addData("counting telemetry", shark.countingTelemetry);
-        telemetry.addData("local offset x", localOffset);
-
         telemetry.addData("error x", shark.GetErrorX());
         telemetry.addData("error y", shark.GetErrorY());
+        telemetry.addData("error h", shark.GetErrorH());
 
         telemetry.addData("output x", shark.GetOutputX());
         telemetry.addData("output y", shark.GetOutputY());
@@ -636,17 +658,26 @@ public class StarterBot extends LinearOpMode{
         telemetry.addData("x position", shark.GetPositionX());
         telemetry.addData("y position", shark.GetPositionY());
         telemetry.addData("h position", shark.GetImuReading());
-        telemetry.addData("orientation", shark.GetOrientation());
-        telemetry.addData("last valid imu reading", shark.GetLastValidIMUReading());
+
+        telemetry.addData("shark completed?", shark.GetBoolsCompleted());
+        telemetry.addData("command completed?", moveCmd.GetCommandState());
+
+        telemetry.update();
+
+//        telemetry.addData("counting telemetry", shark.countingTelemetry);
+//        telemetry.addData("local offset x", localOffset);
+
+//        telemetry.addData("orientation", shark.GetOrientation());
+//        telemetry.addData("last valid imu reading", shark.GetLastValidIMUReading());
 
 //        telemetry.addData("raw localization x", shark.GetLocalizationX());
 //        telemetry.addData("raw localization y", shark.GetLocalizationY());
 //        telemetry.addData("cam is valid", shark.CamIsValid());
-        telemetry.addData("ODO pos", shark.PrintOdometryLocalization());
+//        telemetry.addData("ODO pos", shark.PrintOdometryLocalization());
 //        telemetry.addData("leftWrist", cs.GetWristLPosition());
 //        telemetry.addData("rightWrist",cs.GetWristRPosition());
-        telemetry.addData("target extension", extendPos);
-        telemetry.addData("arm position", am.GetCurrentPosition());
+//        telemetry.addData("target extension", extendPos);
+//        telemetry.addData("arm position", am.GetCurrentPosition());
 //        telemetry.addData("ERROR", am.GetError());
 //        telemetry.addData("PROPORTIONAL", am.GetProportional());
 //        telemetry.addData("INTEGRAL", am.GetIntegral());
@@ -660,13 +691,13 @@ public class StarterBot extends LinearOpMode{
 //        telemetry.addData("cv dist", cv.GetDistance());
 //        telemetry.addData("cv cx", cv.GetCX());
 //        telemetry.addData("cv xOffset", cv.GetXOffset());
-        telemetry.addData("x position", shark.GetPositionX());
+//        telemetry.addData("x position", shark.GetPositionX());
 
-        telemetry.addData("errorX", shark.GetErrorX());
-        telemetry.addData("errorY", shark.GetErrorY());
-        telemetry.addData("autograb zerox", shark.GetAutograbZeroX());
-        telemetry.addData("autograb zeroy", shark.GetAutograbZeroY());
-        telemetry.addData("localWristPos", localWristPos);
+//        telemetry.addData("errorX", shark.GetErrorX());
+//        telemetry.addData("errorY", shark.GetErrorY());
+//        telemetry.addData("autograb zerox", shark.GetAutograbZeroX());
+//        telemetry.addData("autograb zeroy", shark.GetAutograbZeroY());
+//        telemetry.addData("localWristPos", localWristPos);
 //        telemetry.addData("cv points", cv.GetPoints());
 //        telemetry.addData("xMin", cv.GetXMin());
 //        telemetry.addData("xMax", cv.GetXMax());
@@ -677,11 +708,8 @@ public class StarterBot extends LinearOpMode{
 //        telemetry.addData("theta", cv.GetTheta());
 //        telemetry.addData("cv detecting", cv.GetDetecting());
 //        telemetry.addData("using wrist", moveCmd.UsingWrist());
-        telemetry.addData("local roll position", extend.GetRollLocalPosition());
-        telemetry.addData("local pitch position", extend.GetPitchLocalPosition());
-        telemetry.addData("shark compelted?", shark.GetBoolsCompleted());
-        telemetry.addData("command completed?", moveCmd.GetCommandState());
+//        telemetry.addData("local roll position", extend.GetRollLocalPosition());
+//        telemetry.addData("local pitch position", extend.GetPitchLocalPosition());
 //        telemetry.addData("wrapped theta", cv.GetWrappedTheta());
-        telemetry.update();
     }
 }
