@@ -311,7 +311,8 @@ public class SharkDrive {
 
 
         if (axis == 0) {
-            output[1] = output[1] / Math.abs(output[1]) * 0.2;
+//            output[1] = output[1] / Math.abs(output[1]) * 0.2;
+            output[1] *= 0.4;
             completedBools[1] = true;
         } else if (axis == 1) {
             output[0] *= 0.4;
