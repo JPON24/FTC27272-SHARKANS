@@ -117,12 +117,12 @@ public class MoveCommand  {
     public void MoveToPositionCancellable(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, double roll, double pitch, boolean tgtClaw, char tgtWrist, boolean extendClaw)
     {
         // reset for next command
-        command.ResetMap();
+//        command.ResetMap();
         HashMap<Character, Boolean> localCopy = new HashMap<Character,Boolean>();
-
-        command.SetElementFalse('m');
-        command.SetElementFalse('a');
-        command.SetElementFalse('e');
+//
+//        command.SetElementFalse('m');
+//        command.SetElementFalse('a');
+//        command.SetElementFalse('e');
 
         localCopy = command.GetMap();
 
@@ -188,6 +188,17 @@ public class MoveCommand  {
         }
         cs.Update();
     }
+
+    public void InitializeTeleopCommand()
+    {
+        shark.DeactivateBoolsCompleted();
+        command.ResetMap();
+        command.SetElementFalse('m');
+        command.SetElementFalse('a');
+        command.SetElementFalse('e');
+    }
+
+
     public void MoveToPositionCV(double speed, double x, double y, double h, double d, int axis, double speedA, int tgtA, int tgtE, boolean tgtClaw, double roll, double pitch, double cx, double dist, boolean extendClaw, char type, boolean firstDetection)
     {
         // reset for next command
