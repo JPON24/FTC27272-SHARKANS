@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
- import com.qualcomm.robotcore.hardware.CRServo;
+
+//import com.acmerobotics.dashboard.FtcDashboard;
+import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -14,6 +16,7 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 public class MotorTester extends LinearOpMode {
     Extension extension = new Extension();
+//    Limelight lime = new Limelight();
     private DcMotor frontLeft = null;
     private DcMotor frontRight = null;
     private DcMotor backLeft = null;
@@ -22,7 +25,7 @@ public class MotorTester extends LinearOpMode {
     private DcMotor extend = null;
 
     private Servo claw = null;
-    private Servo wristR = null;
+    private Servo wrist = null;
     private Servo wristL = null;
     private Servo extendPitch = null;
     private Servo extendRoll = null;
@@ -30,10 +33,11 @@ public class MotorTester extends LinearOpMode {
 
     private SparkFunOTOS odometry;
 
-//    private Limelight limelight = new Limelight();
-
     @Override
     public void runOpMode() {
+//        FtcDashboard dashboard = FtcDashboard.getInstance();
+//        telemetry = dashboard.getTelemetry();
+
 //        frontLeft = hardwareMap.get(DcMotor.class, "FrontLeft");
 //        frontRight = hardwareMap.get(DcMotor.class, "FrontRight");
 //        backLeft = hardwareMap.get(DcMotor.class, "BackLeft");
@@ -46,18 +50,18 @@ public class MotorTester extends LinearOpMode {
         extendPitch = hardwareMap.get(Servo.class, "extendPitch");
         extendRoll = hardwareMap.get(Servo.class, "extendRoll");
         extendClaw = hardwareMap.get(Servo.class, "extendClaw");
+        wrist = hardwareMap.get(Servo.class, "wrist");
 
         extension.init(hardwareMap);
+//        lime.init(hardwareMap);
 
-//        limelight.init(hardwareMap);
-
+        odometry.resetTracking();
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
         odometry.calibrateImu();
-        odometry.setLinearScalar(1);
+        odometry.setLinearScalar(1.02); // 1.0115 drifted 1 inch left over 100inch movement
         odometry.setAngularScalar(1);
-        odometry.setOffset(new SparkFunOTOS.Pose2D(0.4375,3.625,0));
-        odometry.resetTracking();
+        odometry.setOffset(new SparkFunOTOS.Pose2D(0,0,0)); // 0.4375, 3.625
         odometry.begin();
         
 //        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -84,133 +88,50 @@ public class MotorTester extends LinearOpMode {
         
         waitForStart();
         while (opModeIsActive()) {
-//            extendPitch.setPosition(0);
-//            wristR.setPosition(0);
-//            wristL.setPosition(0);
-//            claw.setPosition(1);
-//            if(gamepad1.x)
-//            {
-//                frontLeft.setPower(1); //frontright
-//            }
-//            else if(gamepad1.a)
-//            {
-//                frontRight.setPower(1); //backright
-//            }
-//            else if(gamepad1.y)
-//            {
-//                backLeft.setPower(1); //frontleft
-//            }
-//            else if(gamepad1.b)
-//            {
-//                backRight.setPower(1); //backleft
-//            }
-//            if (gamepad1.left_bumper)
-//            {
-//                claw.setPosition(0.1);
-//            }
-//            else if (gamepad1.right_bumper)
-//            {
-//                claw.setPosition(0.3);
-//            }
-//
-//            if (gamepad2.x)
-//            {
-//                extend.setPower(-0.6);
-//            }
-//            else if (gamepad2.a)
-//            {
-//                extend.setPower(0.6);
-//            }
 
-            if (gamepad2.y)
-            {
-//                extendRoll.setPosition(0);
-                extendPitch.setPosition(0);
-//                extendClaw.setPosition(0);
-            }
-            else if (gamepad2.b)
-            {
-//                extendRoll.setPosition(1);
-                extendPitch.setPosition(0.33);
-//                extendClaw.setPosition(0.4);
-            }
-
-            if (gamepad1.a)
-            {
-                extension.MoveToPosition(-1200);
-            }
-            else if (gamepad1.b)
-            {
-                extension.MoveToPosition(-100);
-            }
-            else
-            {
-                extension.MoveToPosition(extension.GetExtensionPosition());
-            }
-
-//            if (gamepad1.y)
-//            {
-//                extend.setTargetPosition(-1500);
-//                extend.setPower(0.6);
-//            }
-//            else if (gamepad1.x)
-//            {
-//                extend.setTargetPosition(-100);
-//                extend.setPower(0.6);
-//            }
-
-//            if (gamepad2.x)
-//            {
-//                amL.setPower(-0.1);
-//                amR.setPower(-0.1);
-//            }
-//            else if (gamepad2.a)
-//            {
-//                amL.setPower(0.1);
-//                amR.setPower(0.1);
-//            }
-//            else
-//            {
-//                amL.setPower(0);
-//                amR.setPower(0);
-//            }
-//
 //            if (gamepad2.y)
 //            {
-//                wrist.setPosition(0.5);
-//                // wrist.setPosition(0.3);
+//                extendRoll.setPosition(0);
+////                extendPitch.setPosition(0);
+////                extendClaw.setPosition(0);
 //            }
 //            else if (gamepad2.b)
 //            {
-//                wrist.setPosition(1);
-//                // wrist.setPosition(0);
+//                extendRoll.setPosition(1);
+////                extendPitch.setPosition(0.33);
+////                extendClaw.setPosition(0.4);
+//            }
+//
+//            if (gamepad1.a)
+//            {
+//                extension.MoveToPosition(-1200);
+//            }
+//            else if (gamepad1.b)
+//            {
+//                extension.MoveToPosition(-100);
 //            }
 //            else
 //            {
-//                wrist.setPosition(0);
-//                // wrist.setPower(0);
+//                extension.MoveToPosition(extension.GetExtensionPosition());
 //            }
-//
-//            claw.setPosition(0);
-//
-//            frontLeft.setPower(0);
-//            frontRight.setPower(0);
-//            backLeft.setPower(0);
-//            backRight.setPower(0);
-//
-//            SparkFunOTOS.Pose2D position = limelight.GetLimelightData(true, odometry.getPosition().h);
-//            telemetry.addData("frontLeftPosition", backLeft.getCurrentPosition());
-//            telemetry.addData("odometryx", odometry.getPosition().x);
-//            telemetry.addData("odometryy", odometry.getPosition().y);
-//            telemetry.addData("odometryh", odometry.getPosition().h);
-            telemetry.addData("extension", extension.GetExtensionPosition());
-            telemetry.addData("extension output", extension.GetOutput());
-//            telemetry.addData("x limelight localization", 'position.x);
-//            telemetry.addData("y limelight localization", position.y);
 
-//            telemetry.addData("armLPosition", amL.getCurrentPosition());
-//            telemetry.addData("armRPosition", amR.getCurrentPosition());
-//            telemetry.addData("wrist position", wrist.getPosition());
+            if (gamepad2.a)
+            {
+                wrist.setPosition(1);
+            }
+            if (gamepad2.b)
+            {
+                wrist.setPosition(0);
+            }
+
+
+            // 1.15 error
+            telemetry.addData("odometryx", odometry.getPosition().x);
+            telemetry.addData("odometryy", odometry.getPosition().y);
+            telemetry.addData("odometryh", odometry.getPosition().h);
+//            telemetry.addData("extension", extension.GetExtensionPosition());
+//            telemetry.addData("extension output", extension.GetOutput());
+//            telemetry.addData("limelight localization converted", lime.GetLimelightData(false,odometry.getPosition().h));
             telemetry.update();
         }
     }
