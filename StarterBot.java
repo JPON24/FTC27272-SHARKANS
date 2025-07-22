@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 //import com.acmerobotics.dashboard.FtcDashboard;
 //import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.ftccommon.FtcWifiDirectChannelSelectorActivity;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -18,12 +19,11 @@ public class StarterBot extends LinearOpMode{
     SharkDrive shark = new SharkDrive();
     MoveCommand moveCmd = new MoveCommand();
     ElapsedTime runtime = new ElapsedTime();
-    opencv cv = new opencv();
+//    opencv cv = new opencv();
     Extension extend = new Extension();
-    Limelight lime = new Limelight();
 
     boolean canShift = true;
-    double currentSpeed = 1.0;
+    double currentSpeed = 1;
     double speedInterval = 0.4;
 
     double diffSpeed = 1;
@@ -82,7 +82,6 @@ public class StarterBot extends LinearOpMode{
         moveCmd.init(hardwareMap, false);
 //        cv.init(hardwareMap);
         extend.init(hardwareMap);
-        lime.init(hardwareMap);
 
         waitForStart();
         am.SetArmSpeed(0.45);
@@ -234,47 +233,47 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-    private void SubmersibleGrab(boolean a)
-    {
-        if (a && canStartSubMacro)
-        {
-            normalControl = false;
-            canStartSubMacro = false;
-            cv.SetDetecting(true);
-            boolean shouldReturn = false;
-
-            shouldReturn = TeleopMoveCommandCV(0.8, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'm');
-            cv.SetDetecting(false);
-            if (shouldReturn) {return;}
-
-            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'e');
-            if (shouldReturn) {return;}
-
-            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'r');
-            if (shouldReturn) {return;}
-            sleep(400);
-
-            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'p');
-            if (shouldReturn) {return;}
-            sleep(400);
-
-            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, 'c');
-            if (shouldReturn) {return;}
-            sleep(400);
-
-            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, 'i');
-            if (shouldReturn) {return;}
-
-
-            am.SetLocalNeutral(am.GetTargetPosition());
-            normalControl = true;
-        }
-        else if (!a)
-        {
-            am.SetLocalNeutral(am.GetTargetPosition());
-            canStartSubMacro = true;
-        }
-    }
+//    private void SubmersibleGrab(boolean a)
+//    {
+//        if (a && canStartSubMacro)
+//        {
+//            normalControl = false;
+//            canStartSubMacro = false;
+//            cv.SetDetecting(true);
+//            boolean shouldReturn = false;
+//
+//            shouldReturn = TeleopMoveCommandCV(0.8, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'm');
+//            cv.SetDetecting(false);
+//            if (shouldReturn) {return;}
+//
+//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'e');
+//            if (shouldReturn) {return;}
+//
+//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'r');
+//            if (shouldReturn) {return;}
+//            sleep(400);
+//
+//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'p');
+//            if (shouldReturn) {return;}
+//            sleep(400);
+//
+//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, 'c');
+//            if (shouldReturn) {return;}
+//            sleep(400);
+//
+//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, 'i');
+//            if (shouldReturn) {return;}
+//
+//
+//            am.SetLocalNeutral(am.GetTargetPosition());
+//            normalControl = true;
+//        }
+//        else if (!a)
+//        {
+//            am.SetLocalNeutral(am.GetTargetPosition());
+//            canStartSubMacro = true;
+//        }
+//    }
 
     private void HookMacro(boolean y)
     {
@@ -284,6 +283,7 @@ public class StarterBot extends LinearOpMode{
             canStartHookMacro = false;
             TeleopMoveCommandY(1,localOffset, grabDistance+8, 0-shark.GetLastValidIMUReading(),preciseLenience,0,0.7,grabHeight,0, 0,0,true, 'C', false);
 //            TeleopMoveCommandY(1,localOffset, hookDistance-5, 0-shark.GetLastValidIMUReading(),preciseLenience,1,0.7,grabHeight,0, 0,0,true, 'C', false);
+
             TeleopMoveCommandY(0.5,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1,grabHeight,0, 0,0,true, 'C', false);
             TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,0,true, 'C', false);
             TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,0,false, 'C', false);
@@ -310,6 +310,9 @@ public class StarterBot extends LinearOpMode{
             shouldReturn = TeleopMoveCommandB(1, 40, grabDistance+8, 0-shark.GetLastValidIMUReading(),preciseLenience,2,1, grabHeight, 0,0,0, false, 'G', false);
             if (shouldReturn) {return;}
 
+            SparkFunOTOS.Pose2D overridePos = new SparkFunOTOS.Pose2D(40,grabDistance+8,shark.GetImuReading());
+            shark.OverrideOtosPos(overridePos);
+
             shouldReturn = TeleopMoveCommandB(0.5, 40, grabDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1, grabHeight, 0,0,0, false, 'G', false);
             if (shouldReturn) {return;}
 
@@ -330,83 +333,83 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-    private boolean TeleopMoveCommandCV(double speed, double x, double y, double h, double d, int axis, double speedA, int a, boolean claw, boolean extendClaw, char type)
-    {
-        do
-        {
+//    private boolean TeleopMoveCommandCV(double speed, double x, double y, double h, double d, int axis, double speedA, int a, boolean claw, boolean extendClaw, char type)
+//    {
+//        do
+//        {
+////            TelemetryPrint();
+//            cs.SetClawOpen(claw);
 //            TelemetryPrint();
-            cs.SetClawOpen(claw);
-            TelemetryPrint();
-
-            // set extension to max
-            int e = -1500;
-
-            // fix < 0 problem
-            double offsetDist = cv.GetDistance() - clawLength;
-
-            if (offsetDist < 0)
-            {
-                offsetDist = 0;
-            }
-
-            //  convert extension into 0-1 scale
-            double multiplier = offsetDist / extendLength;
-
-            if (multiplier > 1) { multiplier = 1; }
-
-            e *= multiplier;
-
-            extendPos = e;
-
-            // checks if the object is within reach, if it is do not move
-            double correctDist = cv.GetDistance() - extendLength;
-            if (correctDist < -3)
-            {
-                correctDist = 0;
-            }
-
-            double theta = cv.GetTheta();
-
-            double rollWrist = 0;
-
-            if (theta > 90)
-            {
-                double normalizedTheta = (theta - 90)/90;
-                rollWrist = normalizedTheta * 0.35;
-            }
-            else
-            {
-                double normalizedTheta = theta/90;
-                rollWrist = (normalizedTheta * 0.35) + 0.35;
-            }
-
-            double pitchWrist = 0.33; // 0.15 offset
-
-            double correctXOffset = cv.GetXOffset();
-
-            if (type == 'i')
-            {
-                moveCmd.MoveToPositionCV(0,x,y,h,100,axis,speedA,a,0,claw,0,0, correctXOffset, 0, true, 'e', cv.GetFirstDetection());
-                extend.CloseExtendClaw();
-                extend.UpdateOverride();
-                extend.Update();
-            }
-            else
-            {
-                moveCmd.MoveToPositionCV(speed,x,y,h,d,axis,speedA,a,e,claw,rollWrist,pitchWrist, correctXOffset, correctDist, extendClaw, type, cv.GetFirstDetection());
-            }
-
-            if (!gamepad1.a) {
-                normalControl = true;
-                cv.SetDetecting(false);
-                am.SetLocalNeutral(a);
-                cv.SetFirstDetection(true);
-                return true;
-            }
-        } while (!moveCmd.GetCommandState());
-        cv.SetFirstDetection(true);
-        return false;
-    }
+//
+//            // set extension to max
+//            int e = -1500;
+//
+//            // fix < 0 problem
+//            double offsetDist = cv.GetDistance() - clawLength;
+//
+//            if (offsetDist < 0)
+//            {
+//                offsetDist = 0;
+//            }
+//
+//            //  convert extension into 0-1 scale
+//            double multiplier = offsetDist / extendLength;
+//
+//            if (multiplier > 1) { multiplier = 1; }
+//
+//            e *= multiplier;
+//
+//            extendPos = e;
+//
+//            // checks if the object is within reach, if it is do not move
+//            double correctDist = cv.GetDistance() - extendLength;
+//            if (correctDist < -3)
+//            {
+//                correctDist = 0;
+//            }
+//
+//            double theta = cv.GetTheta();
+//
+//            double rollWrist = 0;
+//
+//            if (theta > 90)
+//            {
+//                double normalizedTheta = (theta - 90)/90;
+//                rollWrist = normalizedTheta * 0.35;
+//            }
+//            else
+//            {
+//                double normalizedTheta = theta/90;
+//                rollWrist = (normalizedTheta * 0.35) + 0.35;
+//            }
+//
+//            double pitchWrist = 0.33; // 0.15 offset
+//
+//            double correctXOffset = cv.GetXOffset();
+//
+//            if (type == 'i')
+//            {
+//                moveCmd.MoveToPositionCV(0,x,y,h,100,axis,speedA,a,0,claw,0,0, correctXOffset, 0, true, 'e', cv.GetFirstDetection());
+//                extend.CloseExtendClaw();
+//                extend.UpdateOverride();
+//                extend.Update();
+//            }
+//            else
+//            {
+//                moveCmd.MoveToPositionCV(speed,x,y,h,d,axis,speedA,a,e,claw,rollWrist,pitchWrist, correctXOffset, correctDist, extendClaw, type, cv.GetFirstDetection());
+//            }
+//
+//            if (!gamepad1.a) {
+//                normalControl = true;
+//                cv.SetDetecting(false);
+//                am.SetLocalNeutral(a);
+//                cv.SetFirstDetection(true);
+//                return true;
+//            }
+//        } while (!moveCmd.GetCommandState());
+//        cv.SetFirstDetection(true);
+//        return false;
+//    }
 
     private void TeleopMoveCommandA(double speed, double x, double y, double h, double d, int axis, double speedA, int a, int e, double roll, double pitch, boolean claw, char wrist, boolean extendClaw)
     {
@@ -425,48 +428,52 @@ public class StarterBot extends LinearOpMode{
 
     private boolean TeleopMoveCommandB(double speed, double x, double y, double h, double d, int axis, double speedA, int a, int e, double roll, double pitch, boolean claw, char wrist, boolean extendClaw)
     {
-        shark.DeactivateBoolsCompleted();
+        shark.OdometryControl(0, x, y, h, d, axis);
+        moveCmd.InitializeTeleopCommand();
         do
         {
             TelemetryPrint();
             cs.SetClawOpen(claw);
-            moveCmd.MoveToPositionCancellable(speed,x,y,h,d,axis,speedA,a,e,roll, pitch, claw,wrist,extendClaw);
+            moveCmd.MoveToPositionCancellable(speed * currentSpeed,x,y,h,d,axis,speedA,a,e,roll, pitch, claw,wrist,extendClaw);
             if (!gamepad1.b) {
                 normalControl = true;
                 am.SetLocalNeutral(a);
                 return true;
             }
         } while (!moveCmd.GetCommandState());
+//        shark.DeactivateBoolsCompleted();
         return false;
     }
 
     private void TeleopMoveCommandY(double speed, double x, double y, double h, double d, int axis, double speedA, int a, int e, double roll, double pitch, boolean claw, char wrist, boolean extendClaw)
     {
-        shark.DeactivateBoolsCompleted();
+        shark.OdometryControl(0, x, y, h, d, axis);
+        moveCmd.InitializeTeleopCommand();
         do
         {
             TelemetryPrint();
             cs.SetClawOpen(claw);
-            moveCmd.MoveToPositionCancellable(speed,x,y,h,d,axis,speedA,a,e,roll, pitch, claw,wrist,extendClaw);
+            moveCmd.MoveToPositionCancellable(speed * currentSpeed,x,y,h,d,axis,speedA,a,e,roll, pitch, claw,wrist,extendClaw);
             if (!gamepad1.y) {
                 normalControl = true;
                 am.SetLocalNeutral(a);
                 return;
             }
         } while (!moveCmd.GetCommandState());
+//        shark.DeactivateBoolsCompleted();
     }
 
-    private void SharkDriveRelocalize()
-    {
-        shark.SetLastLimelightPosition(lime.GetLastPosition());
-        shark.SetLastValidIMUReading();
-        shark.Rehome();
-    }
+//    private void SharkDriveRelocalize()
+//    {
+//        shark.SetLastLimelightPosition(lime.GetLastPosition());
+//        shark.SetLastValidIMUReading();
+//        shark.Rehome();
+//    }
 
-    private void UpdateLimelight()
-    {
-        lime.GetLimelightData(false, shark.GetOrientation());
-    }
+//    private void UpdateLimelight()
+//    {
+//        lime.GetLimelightData(false, shark.GetOrientation());
+//    }
 
     private void ArmSpeedToggle(boolean armToggle)
     {
@@ -623,15 +630,12 @@ public class StarterBot extends LinearOpMode{
         telemetry.addData("y position", shark.GetPositionY());
         telemetry.addData("h position", shark.GetImuReading());
         telemetry.addData("orientation", shark.GetOrientation());
-        telemetry.addData("limelightLocalization", lime.GetLimelightData(false, shark.GetOrientation()));
         telemetry.addData("last valid imu reading", shark.GetLastValidIMUReading());
-        telemetry.addData("direct last limelight position", lime.GetLastPosition());
 
 //        telemetry.addData("raw localization x", shark.GetLocalizationX());
 //        telemetry.addData("raw localization y", shark.GetLocalizationY());
-        telemetry.addData("cam is valid", shark.CamIsValid());
+//        telemetry.addData("cam is valid", shark.CamIsValid());
         telemetry.addData("ODO pos", shark.PrintOdometryLocalization());
-        telemetry.addData("limelight last position", shark.GetLastLimelightPosition());
 //        telemetry.addData("leftWrist", cs.GetWristLPosition());
 //        telemetry.addData("rightWrist",cs.GetWristRPosition());
         telemetry.addData("target extension", extendPos);
@@ -668,6 +672,8 @@ public class StarterBot extends LinearOpMode{
 //        telemetry.addData("using wrist", moveCmd.UsingWrist());
         telemetry.addData("local roll position", extend.GetRollLocalPosition());
         telemetry.addData("local pitch position", extend.GetPitchLocalPosition());
+        telemetry.addData("shark compelted?", shark.GetBoolsCompleted());
+        telemetry.addData("command completed?", moveCmd.GetCommandState());
 //        telemetry.addData("wrapped theta", cv.GetWrappedTheta());
         telemetry.update();
     }
