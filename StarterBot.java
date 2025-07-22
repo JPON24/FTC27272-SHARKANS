@@ -26,6 +26,8 @@ public class StarterBot extends LinearOpMode{
     double currentSpeed = 1;
     double speedInterval = 0.4;
 
+    double macroSpeed = 0.7;
+
     double diffSpeed = 1;
 
     double localOffset = -4;
@@ -281,10 +283,10 @@ public class StarterBot extends LinearOpMode{
         {
             normalControl = false;
             canStartHookMacro = false;
-            TeleopMoveCommandY(1,localOffset, grabDistance+8, 0-shark.GetLastValidIMUReading(),preciseLenience,0,0.7,grabHeight,0, 0,0,true, 'C', false);
+            TeleopMoveCommandY(1,localOffset, grabDistance+8, 0-shark.GetLastValidIMUReading(),preciseLenience,0,0.7,grabHeight+200,0, 0,0,true, 'C', false);
 //            TeleopMoveCommandY(1,localOffset, hookDistance-5, 0-shark.GetLastValidIMUReading(),preciseLenience,1,0.7,grabHeight,0, 0,0,true, 'C', false);
 
-            TeleopMoveCommandY(0.5,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1,grabHeight,0, 0,0,true, 'C', false);
+            TeleopMoveCommandY(0.5,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1,grabHeight+200,0, 0,0,true, 'C', false);
             TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,0,true, 'C', false);
             TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,0,false, 'C', false);
             TeleopMoveCommandY(1,localOffset,hookDistance-8,0-shark.GetLastValidIMUReading(),preciseLenience,1,1,hookHeight,0,0,0,false,'C',false);
@@ -310,7 +312,10 @@ public class StarterBot extends LinearOpMode{
             shouldReturn = TeleopMoveCommandB(1, 40, grabDistance+8, 0-shark.GetLastValidIMUReading(),preciseLenience,2,1, grabHeight, 0,0,0, false, 'G', false);
             if (shouldReturn) {return;}
 
-            SparkFunOTOS.Pose2D overridePos = new SparkFunOTOS.Pose2D(40,grabDistance+8,shark.GetImuReading());
+            dt.FieldOrientedTranslate(0,-macroSpeed/3,0,shark.GetImuReading());
+            sleep(1000);
+
+            SparkFunOTOS.Pose2D overridePos = new SparkFunOTOS.Pose2D(40,0,shark.GetImuReading());
             shark.OverrideOtosPos(overridePos);
 
             shouldReturn = TeleopMoveCommandB(0.5, 40, grabDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1, grabHeight, 0,0,0, false, 'G', false);
@@ -434,7 +439,7 @@ public class StarterBot extends LinearOpMode{
         {
             TelemetryPrint();
             cs.SetClawOpen(claw);
-            moveCmd.MoveToPositionCancellable(speed * currentSpeed,x,y,h,d,axis,speedA,a,e,roll, pitch, claw,wrist,extendClaw);
+            moveCmd.MoveToPositionCancellable(speed * macroSpeed,x,y,h,d,axis,speedA,a,e,roll, pitch, claw,wrist,extendClaw);
             if (!gamepad1.b) {
                 normalControl = true;
                 am.SetLocalNeutral(a);
@@ -453,7 +458,7 @@ public class StarterBot extends LinearOpMode{
         {
             TelemetryPrint();
             cs.SetClawOpen(claw);
-            moveCmd.MoveToPositionCancellable(speed * currentSpeed,x,y,h,d,axis,speedA,a,e,roll, pitch, claw,wrist,extendClaw);
+            moveCmd.MoveToPositionCancellable(speed * macroSpeed,x,y,h,d,axis,speedA,a,e,roll, pitch, claw,wrist,extendClaw);
             if (!gamepad1.y) {
                 normalControl = true;
                 am.SetLocalNeutral(a);
