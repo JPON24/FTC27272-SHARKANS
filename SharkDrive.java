@@ -512,7 +512,7 @@ public class SharkDrive {
             completedBools[i] = false;
         }
     }
-} 
+}
 
 /*
 Congratulations!! You found this useless comment
