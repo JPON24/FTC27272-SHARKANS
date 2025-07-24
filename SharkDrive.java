@@ -48,8 +48,8 @@ public class SharkDrive {
 
     public void init(HardwareMap hwMap, boolean isAuton) {
         kph = 0.34; // 0.34 1.12
-        kih = 0.01; // 0.01
-        kdh = 0.25; // 0.25 0.25
+        kih = 0.1; // 0.01
+        kdh = 0; // 0.25 0.25
 
         last_time = 0;
         odometry = hwMap.get(SparkFunOTOS.class, "otos");
@@ -161,7 +161,7 @@ public class SharkDrive {
 
             iH = integralH;
 
-            output = kph * error + kih * integralH + kdh * derivative;
+            output = SampleConstants.KPH * error + SampleConstants.KIH * integralH + SampleConstants.KDH * derivative;
             dhTime.reset();
 
             previous[2] = error;
@@ -276,15 +276,19 @@ public class SharkDrive {
 
         pos = GetOdometryLocalization();
 
-        if (axis == 3) {
-            angleLenience = 30;
+        if (axis == 3 || axis == 4) {
+            angleLenience = 5;
         } else {
             angleLenience = 60;
         }
 
         errors[0] = tgtX - pos.x;
         errors[1] = tgtY - pos.y;
-        errors[2] = (Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)))) / 10;
+        errors[2] = Math.toDegrees(angleWrap(Math.toRadians(tgtRot - pos.h)));
+
+        completedBools[2] = Math.abs(errors[2]) < angleLenience;
+
+        errors[2] /= 10;
 
 //        if (new ArmLiftMotor().GetLocalNeutral() == 1250) {
 //            TuningUp();
@@ -299,16 +303,8 @@ public class SharkDrive {
         output[1] = pid(errors[1], 1, distanceLenience);
         output[2] = pid(errors[2], 2, angleLenience);
 
-        if (tgtRot == 1) {
-            completedBools[2] = true;
-            output[2] = 0;
-        } else {
-            completedBools[2] = Math.abs(errors[2]) < angleLenience;
-        }
-
         completedBools[0] = Math.abs(errors[0]) < distanceLenience;
         completedBools[1] = Math.abs(errors[1]) < distanceLenience;
-
 
         if (axis == 0) {
 //            output[1] = output[1] / Math.abs(output[1]) * 0.2;
@@ -317,6 +313,18 @@ public class SharkDrive {
         } else if (axis == 1) {
             output[0] *= 0.4;
             completedBools[0] = true;
+        }
+        if (tgtRot == 1){
+            completedBools[2] = true;
+            output[2] = 0;
+        }
+
+        if (axis == 4)
+        {
+            completedBools[0] = true;
+            completedBools[1] = true;
+            output[0] = 0;
+            output[1] = 0;
         }
 
 //        dt.FieldOrientedTranslate(speed * output[0], speed * output[1], speed * output[2], GetOrientation());
@@ -547,6 +555,7 @@ public class SharkDrive {
         }
         integralX = 0;
         integralY = 0;
+        integralH = 0;
         maximumOutputX = 1;
         maximumOutputY = 1;
         return true;
