@@ -1,14 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
+//import com.acmerobotics.dashboard.FtcDashboard;
+//import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-@Config
+//@Config
 @TeleOp
 public class StarterBot extends LinearOpMode{
     //hook offset currently off - five inches from sub
@@ -29,7 +30,7 @@ public class StarterBot extends LinearOpMode{
 
     double diffSpeed = 1;
 
-    double localOffset = 4;
+    double localOffset = 0;
     double localOffsetIncrement = 2;
     double grabDistance = 0; // 11
     double hookDistance = 27; // 43
@@ -71,16 +72,21 @@ public class StarterBot extends LinearOpMode{
 
     double clawLength = 3.5; // inches
 
+    boolean canPitchSwap = true;
+    boolean pitchDown = false;
+    boolean canIncrement = true;
+    boolean canRetract = false;
+
     @Override
     public void runOpMode()
     {
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = dashboard.getTelemetry();
+//        FtcDashboard dashboard = FtcDashboard.getInstance();
+//        telemetry = dashboard.getTelemetry();
 
         dt.init(hardwareMap);
         cs.init(hardwareMap, false);
         am.init(hardwareMap);
-        shark.init(hardwareMap, true);
+        shark.init(hardwareMap, false);
         moveCmd.init(hardwareMap, false);
 //        cv.init(hardwareMap);
         extend.init(hardwareMap);
@@ -91,6 +97,9 @@ public class StarterBot extends LinearOpMode{
         am.Rotate(0,'T');
         am.SetLocalNeutral(50);
         am.Rotate(0,'T');
+
+        double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
+        double normalizedVolts = (1 - volts/14) + volts/14 * 0.857; // reduced to account for volt drops during auton
 
 //        cv.StartStream(telemetry);
         while(opModeIsActive())
@@ -103,7 +112,7 @@ public class StarterBot extends LinearOpMode{
             double targetRotation = gamepad1.right_stick_x;
 
             boolean aButtonPressed = gamepad1.a;
-            boolean xButtonPressed = gamepad1.x;
+//            boolean xButtonPressed = gamepad1.x;
             boolean yButtonPressed = gamepad1.y;
             boolean bButtonPressed = gamepad1.b;
 
@@ -133,7 +142,7 @@ public class StarterBot extends LinearOpMode{
             boolean armToggle = gamepad2.left_bumper;
 
             boolean aButtonPressed2 = gamepad2.a;
-            boolean bButtonPressed2 = gamepad2.b;
+//            boolean bButtonPressed2 = gamepad2.b;
             boolean xButtonPressed2 = gamepad2.x;
             boolean yButtonPressed2 = gamepad2.y;
 
@@ -145,8 +154,7 @@ public class StarterBot extends LinearOpMode{
                 targetPowerY *= currentSpeed;
                 targetRotation *= currentSpeed;
 
-                dt.FieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation, shark.GetOrientation());
-                ResetLocalOffset(dpadUpPressed);
+                dt.FieldOrientedTranslate(targetPowerX,targetPowerY,targetRotation * 0.5, shark.GetOrientation());
                 SpeedShift(leftBumperPressed,rightBumperPressed);
 //
 //                Rehoming(dpadDownPressed);
@@ -157,26 +165,65 @@ public class StarterBot extends LinearOpMode{
                 ClawControl(clawClose,clawOpen);
                 ExtensionClawControl(clawClose, clawOpen);
 
-                ExtensionControl(dpadUpPressed2,dpadDownPressed2);
-                ExtensionManipulatorControl(dpadRightPressed2,dpadLeftPressed2,aButtonPressed2,bButtonPressed2);
+                ResetLocalOffset(leftTriggerPressed);
+                IncrementLocalOffset(rightTriggerPressed);
+
+                ExtensionControl(wristInputY);
+                ExtensionManipulatorControl(wristInputX,aButtonPressed2);
+
+                GrabRehome(aButtonPressed);
+
+                DropOff(dpadUpPressed2);
+                PrepareGrab(dpadDownPressed2);
 
                 if (!canGrab)
                 {
                     ArmControl(-armInput);
                 }
-                DiffControl(wristInputX);
+                DiffControl(dpadLeftPressed2,dpadRightPressed2);
 
                 extend.Update();
             }
 
             runtime.reset();
 //            SubmersibleGrab(aButtonPressed);
-//            HookMacro(yButtonPressed);
+            HookMacro(yButtonPressed);
             GrabMacro(bButtonPressed);
-            PIDTune(yButtonPressed);
+//            PIDTune(yButtonPressed);
             cs.Update();
         }
 //        cv.StopStream();
+    }
+
+    private void PrepareGrab(boolean input)
+    {
+        if (!input) {return;}
+        dt.FieldOrientedTranslate(0,0,0,0);
+        extend.OpenExtendClaw();
+        sleep(250);
+        extend.SetLocalManipulatorState(extend.GetRollLocalPosition(),0.33);
+        extend.UpdateOverride();
+        sleep(250);
+        extend.CloseExtendClaw();
+        extend.UpdateOverride();
+        sleep(250);
+        extend.SetLocalManipulatorState(extend.GetRollLocalPosition(),0);
+        extend.UpdateOverride();
+        sleep(250);
+    }
+
+    private void DropOff(boolean input)
+    {
+        if (!input) {return;}
+        extend.SetLocalManipulatorState(0.6,0);
+        extend.UpdateOverride();
+    }
+
+    private void GrabRehome(boolean temp)
+    {
+        if (temp) {
+            shark.OverrideOtosPos(new SparkFunOTOS.Pose2D(40,0,shark.GetImuReading()));
+        }
     }
 
     private void PIDTune(boolean y)
@@ -227,11 +274,24 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-    private void ResetLocalOffset(boolean dpadUpPressed)
+    private void ResetLocalOffset(double input)
     {
-        if (dpadUpPressed)
+        if (input > 0.8)
         {
-            localOffset = 3;
+            localOffset = 0;
+        }
+    }
+
+    private void IncrementLocalOffset(double input)
+    {
+        if (input > 0.3 && canIncrement)
+        {
+            canIncrement = false;
+            localOffset += localOffsetIncrement;
+        }
+        else if (input <= 0.3)
+        {
+            canIncrement = true;
         }
     }
 
@@ -259,48 +319,6 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-//    private void SubmersibleGrab(boolean a)
-//    {
-//        if (a && canStartSubMacro)
-//        {
-//            normalControl = false;
-//            canStartSubMacro = false;
-//            cv.SetDetecting(true);
-//            boolean shouldReturn = false;
-//
-//            shouldReturn = TeleopMoveCommandCV(0.8, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'm');
-//            cv.SetDetecting(false);
-//            if (shouldReturn) {return;}
-//
-//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'e');
-//            if (shouldReturn) {return;}
-//
-//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'r');
-//            if (shouldReturn) {return;}
-//            sleep(400);
-//
-//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, false, 'p');
-//            if (shouldReturn) {return;}
-//            sleep(400);
-//
-//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, 'c');
-//            if (shouldReturn) {return;}
-//            sleep(400);
-//
-//            shouldReturn = TeleopMoveCommandCV(0, 0, 0, 0,preciseLenience,2,1,grabHeight, false, true, 'i');
-//            if (shouldReturn) {return;}
-//
-//
-//            am.SetLocalNeutral(am.GetTargetPosition());
-//            normalControl = true;
-//        }
-//        else if (!a)
-//        {
-//            am.SetLocalNeutral(am.GetTargetPosition());
-//            canStartSubMacro = true;
-//        }
-//    }
-
     private void HookMacro(boolean y)
     {
         if (y && canStartHookMacro)
@@ -313,7 +331,7 @@ public class StarterBot extends LinearOpMode{
             TeleopMoveCommandY(0.5,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1,grabHeight+200,0, 0,0,true, 'C', false);
             TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,0,true, 'C', false);
             TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,0,false, 'C', false);
-            TeleopMoveCommandY(1,localOffset,hookDistance-8,0-shark.GetLastValidIMUReading(),preciseLenience,1,1,hookHeight,0,0,0,false,'C',false);
+//            TeleopMoveCommandY(1,localOffset,hookDistance-8,0-shark.GetLastValidIMUReading(),preciseLenience,1,1,hookHeight,0,0,0,false,'C',false);
 
             localOffset += localOffsetIncrement;
             am.SetLocalNeutral(am.GetTargetPosition());
@@ -364,83 +382,6 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-//    private boolean TeleopMoveCommandCV(double speed, double x, double y, double h, double d, int axis, double speedA, int a, boolean claw, boolean extendClaw, char type)
-//    {
-//        do
-//        {
-////            TelemetryPrint();
-//            cs.SetClawOpen(claw);
-//            TelemetryPrint();
-//
-//            // set extension to max
-//            int e = -1500;
-//
-//            // fix < 0 problem
-//            double offsetDist = cv.GetDistance() - clawLength;
-//
-//            if (offsetDist < 0)
-//            {
-//                offsetDist = 0;
-//            }
-//
-//            //  convert extension into 0-1 scale
-//            double multiplier = offsetDist / extendLength;
-//
-//            if (multiplier > 1) { multiplier = 1; }
-//
-//            e *= multiplier;
-//
-//            extendPos = e;
-//
-//            // checks if the object is within reach, if it is do not move
-//            double correctDist = cv.GetDistance() - extendLength;
-//            if (correctDist < -3)
-//            {
-//                correctDist = 0;
-//            }
-//
-//            double theta = cv.GetTheta();
-//
-//            double rollWrist = 0;
-//
-//            if (theta > 90)
-//            {
-//                double normalizedTheta = (theta - 90)/90;
-//                rollWrist = normalizedTheta * 0.35;
-//            }
-//            else
-//            {
-//                double normalizedTheta = theta/90;
-//                rollWrist = (normalizedTheta * 0.35) + 0.35;
-//            }
-//
-//            double pitchWrist = 0.33; // 0.15 offset
-//
-//            double correctXOffset = cv.GetXOffset();
-//
-//            if (type == 'i')
-//            {
-//                moveCmd.MoveToPositionCV(0,x,y,h,100,axis,speedA,a,0,claw,0,0, correctXOffset, 0, true, 'e', cv.GetFirstDetection());
-//                extend.CloseExtendClaw();
-//                extend.UpdateOverride();
-//                extend.Update();
-//            }
-//            else
-//            {
-//                moveCmd.MoveToPositionCV(speed,x,y,h,d,axis,speedA,a,e,claw,rollWrist,pitchWrist, correctXOffset, correctDist, extendClaw, type, cv.GetFirstDetection());
-//            }
-//
-//            if (!gamepad1.a) {
-//                normalControl = true;
-//                cv.SetDetecting(false);
-//                am.SetLocalNeutral(a);
-//                cv.SetFirstDetection(true);
-//                return true;
-//            }
-//        } while (!moveCmd.GetCommandState());
-//        cv.SetFirstDetection(true);
-//        return false;
-//    }
 
     private void TeleopMoveCommandA(double speed, double x, double y, double h, double d, int axis, double speedA, int a, int e, double roll, double pitch, boolean claw, char wrist, boolean extendClaw)
     {
@@ -494,18 +435,6 @@ public class StarterBot extends LinearOpMode{
 //        shark.DeactivateBoolsCompleted();
     }
 
-//    private void SharkDriveRelocalize()
-//    {
-//        shark.SetLastLimelightPosition(lime.GetLastPosition());
-//        shark.SetLastValidIMUReading();
-//        shark.Rehome();
-//    }
-
-//    private void UpdateLimelight()
-//    {
-//        lime.GetLimelightData(false, shark.GetOrientation());
-//    }
-
     private void ArmSpeedToggle(boolean armToggle)
     {
         if (armToggle)
@@ -556,13 +485,13 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-    private void ExtensionControl(boolean positive, boolean negative)
+    private void ExtensionControl(double stickInput)
     {
-        if (positive)
+        if (stickInput < -0.1)
         {
             extend.MoveExtend(1,'T');
         }
-        else if (negative)
+        else if (stickInput > 0.1)
         {
             if (extend.GetPitchLocalPosition() == 0.33 && extend.GetExtensionPosition() > extensionSafetyThreshold)
             {
@@ -579,34 +508,50 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-    private void ExtensionManipulatorControl(boolean positiveRoll,boolean negativeRoll,boolean downPitch,boolean upPitch)
+    private void ExtensionManipulatorControl(double rollInput,boolean downPitch)
     {
         double roll = extend.GetRollLocalPosition();
         double pitch = extend.GetPitchLocalPosition();
 
-        // roll
-        if (positiveRoll)
+        double delta = 0;
+        if (rollInput > 0.1)
         {
-            roll += extensionRollSpeed * runtime.seconds();
+            delta = -runtime.seconds() * diffSpeed;
         }
-        else if (negativeRoll)
+        else if (rollInput < -0.1)
         {
-            roll -= extensionRollSpeed * runtime.seconds();
+            delta = runtime.seconds() * diffSpeed;
+        }
+
+        // roll
+        if ((roll + delta >= 0 && localWristPos + delta <= 1))
+        {
+            roll += delta;
         }
 
         roll = Range.clip(roll, 0, 1);
 
-        // pitch
-        if (downPitch)
+        if (downPitch && canPitchSwap)
         {
-            if (extend.GetExtensionPosition() < extensionSafetyThreshold)
+            pitchDown = !pitchDown;
+            canPitchSwap = false;
+
+            // pitch
+            if (pitchDown)
             {
-                pitch = 0.33;
+                if (extend.GetExtensionPosition() < extensionSafetyThreshold)
+                {
+                    pitch = 0.33;
+                }
+            }
+            else
+            {
+                pitch = 0;
             }
         }
-        else if (upPitch)
+        else if (!downPitch)
         {
-            pitch = 0;
+            canPitchSwap = true;
         }
 
         extend.SetLocalManipulatorState(roll, pitch);
@@ -624,13 +569,13 @@ public class StarterBot extends LinearOpMode{
         }
     }
 
-    private void DiffControl(double wristInputX)
+    private void DiffControl(boolean leftInput, boolean rightInput)
     {
-        if (wristInputX > 0.1)
+        if (rightInput)
         {
             UpdateDiffPos(diffSpeed*runtime.seconds());
         }
-        else if (wristInputX < -0.1)
+        else if (leftInput)
         {
             UpdateDiffPos(-diffSpeed*runtime.seconds());
         }
@@ -638,7 +583,7 @@ public class StarterBot extends LinearOpMode{
 
     private void UpdateDiffPos(double delta)
     {
-        if ((localWristPos + delta >= 0 && localWristPos + delta <= 1))
+        if ((localWristPos + delta >= 0 && localWristPos + delta <= 0.65))
         {
             localWristPos += delta;
         }
