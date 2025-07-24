@@ -34,10 +34,10 @@ public class Drivetrain{
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         
-        frontLeft.setDirection(DcMotor.Direction.REVERSE);
-        frontRight.setDirection(DcMotor.Direction.FORWARD);
-        backLeft.setDirection(DcMotor.Direction.REVERSE);
-        backRight.setDirection(DcMotor.Direction.FORWARD);
+        frontLeft.setDirection(DcMotor.Direction.FORWARD);
+        frontRight.setDirection(DcMotor.Direction.REVERSE);
+        backLeft.setDirection(DcMotor.Direction.FORWARD);
+        backRight.setDirection(DcMotor.Direction.REVERSE);
     }
     
     private double angleWrap(double rad)
@@ -101,6 +101,9 @@ public class Drivetrain{
         double frPower = 0;
         double blPower = 0;
         double brPower = 0;
+
+        rotation *= -1;
+
         flPower = power * cos/maxSinCos+rotation;
         frPower = power * sin/maxSinCos-rotation;
         blPower = power * sin/maxSinCos+rotation;
@@ -141,7 +144,9 @@ public class Drivetrain{
         double sin = Math.sin(theta - Math.PI/4);
         double cos = Math.cos(theta - Math.PI/4);
         double max = Math.max(Math.abs(sin),Math.abs(cos));
-        
+
+        rotation *= -1;
+
         double flPower = power * cos/max + rotation;
         double frPower = power * sin/max - rotation;
         double blPower = power * sin/max + rotation;
