@@ -15,7 +15,7 @@ public class ArmLiftMotor {
 
     boolean canUpdateLocalNeutral = true;
 
-    int topLimit = 1800; // old value 1650
+    int topLimit = 1275; // old value 1650
     int bottomLimit = -10;
 
     double previous = 0;
@@ -51,12 +51,24 @@ public class ArmLiftMotor {
         armLiftL.setDirection(DcMotor.Direction.FORWARD); // REVERSE
         armLiftR.setDirection(DcMotor.Direction.REVERSE); // FORWARD
     }
+
+    // learning how enums work lol
+    public enum ArmSpeeds {
+        FAST(0.8),
+        SLOW(0.2);
+
+        public final double speed;
+        ArmSpeeds(double speed)
+        {
+            this.speed = speed;
+        }
+    }
     
     public void ResetEncoders()
     {
         if (armLiftL != null && armLiftR != null)
         {
-            topLimit = 1800;
+            topLimit = 1275;
             bottomLimit = -10;
 
             armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -72,7 +84,7 @@ public class ArmLiftMotor {
         if (armLiftL != null && armLiftR != null)
         {
             topLimit = 10;
-            bottomLimit = -1800;
+            bottomLimit = -1275;
 
             armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
