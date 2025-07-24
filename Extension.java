@@ -24,7 +24,7 @@ public class Extension {
     int bottomLimit = -50;
 
     double localPitchPos = 0;
-    double localRollPos = 0;
+    double localRollPos = 0.6;
 
     double localClawPosition = 0;
     double closeClawPosition = 0.4;
@@ -33,7 +33,7 @@ public class Extension {
     double lastError = 0;
     double output = 0;
 
-    double errorCrunchConstant = 25.0;
+    double errorCrunchConstant = 12.5;
 
     double servoLenience = 0.01;
 
@@ -55,7 +55,7 @@ public class Extension {
 
         kp = 0.1; // 0.1
         ki = 0; // 0
-        kd = 0.02; // 0.01
+        kd = 0.0; // 0.01
     }
 
     public void ResetEncoders() {
@@ -101,7 +101,7 @@ public class Extension {
 
     public void Update()
     {
-        if (runtime.milliseconds() > 0.125)
+        if (runtime.seconds() > 0.125)
         {
             runtime.reset();
             SetManipulatorState();
@@ -118,8 +118,8 @@ public class Extension {
     private double PID(double error)
     {
         double proportional = kp * error;
-        integral += error * pidDT.milliseconds();
-        double derivative = (error - lastError) / pidDT.milliseconds();
+        integral += error * pidDT.seconds();
+        double derivative = (error - lastError) / pidDT.seconds();
 
         double output = (proportional) + (integral * ki) + (derivative * kd);
 
@@ -196,6 +196,10 @@ public class Extension {
     public double GetLocalClawPosition() { return localClawPosition; }
 
     public int GetExtensionPosition() {return extension.getCurrentPosition();}
+
+    public int GetBottomLimit() { return bottomLimit; }
+
+    public int GetTopLimit() { return topLimit; }
 
     public boolean GetExtendClawAtPosition(boolean tgt)
     {
