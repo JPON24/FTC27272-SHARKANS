@@ -10,13 +10,11 @@ public class ClawServo{
     
     private Servo claw = null;
 
-    private Servo wristR = null;
-    private Servo wristL = null;
+    private Servo wrist = null;
 
     private double clawPos = 0.0;
 
-    private double wristPosL = 0;
-    private double wristPosR = 0;
+    private double wristPos = 0;
 
     private char wristMode = 'D';
 
@@ -24,8 +22,7 @@ public class ClawServo{
     
     public void init(HardwareMap hwMap, boolean auton)
     {
-        wristR = hwMap.get(Servo.class, "wristR");
-        wristL = hwMap.get(Servo.class, "wristL");
+        wrist = hwMap.get(Servo.class, "wrist");
         claw = hwMap.get(Servo.class, "claw");
         am.init(hwMap);
         this.auton = auton;
@@ -35,11 +32,11 @@ public class ClawServo{
     {
         if (temp)
         {
-            clawPos = 1; //initially
+            clawPos = 0.35; //initially
         }
         else
         {
-            clawPos = 0.6;
+            clawPos = 0;
         }
     }
 
@@ -50,55 +47,49 @@ public class ClawServo{
 
         if (wristMode == 'G')
         {
-            wristPosL = 0;
-            wristPosR = 0;
+            wristPos = 0;
+        }
+        else if (wristMode == 'C')
+        {
+            wristPos = 0.65;
         }
         else if (wristMode == 'B')
         {
-            wristPosL = 0.96; // 1
-            wristPosR = 0.4; // 0.555
+            wristPos = 0.96; // 1
         }
         else if (wristMode == 'S')
         {
-            wristPosL = 0.6;
-            wristPosR = 0.8;
+            wristPos = 0.6;
         }
         else if (wristMode == 'M')
         {
-            wristPosL = 0.55;
-            wristPosR = 0.55;
+            wristPos = 0.55;
         }
         else if (wristMode == 'D')
         {
-            wristPosL = 0.2;
-            wristPosR = 0.2;
+            wristPos = 0.2;
         }
         else if (wristMode == 'P')
         {
-            wristPosL = 0.44;
-            wristPosR = 0.99;
+            wristPos = 0.44;
         }
         else if (wristMode == 'T')
         {
-            wristPosL = 0.5;
-            wristPosR = 0.97;
+            wristPos = 0.5;
         }
         else if (wristMode == 'N')
         {
-            wristPosL = 0.12;
-            wristPosR = 0.61;
+            wristPos = 0.12;
         }
         else
         {
-            wristPosL = 0;
-            wristPosR = 0;
+            wristPos = 0;
         }
     }
 
-    public void SpecifyDiffPos(double wristL, double wristR)
+    public void SpecifyDiffPos(double position)
     {
-        wristPosL = wristL;
-        wristPosR = wristR;
+        wristPos = position;
     }
 
     public void Update() {
@@ -106,9 +97,9 @@ public class ClawServo{
         {
             if (auton)
             {
-                if (wristL != null && wristR != null)
+                if (wrist != null)
                 {
-                    SetDiffPos(wristPosL,wristPosR);
+                    SetDiffPos(wristPos);
                 }
             }
             if (claw != null)
@@ -124,12 +115,11 @@ public class ClawServo{
         MoveToPositionDiff();
     }
 
-    public void SetDiffPos(double positionL, double positionR)
+    public void SetDiffPos(double position)
     {
-        if (wristL != null && wristR != null)
+        if (wrist != null)
         {
-            wristL.setPosition(positionL);
-            wristR.setPosition(positionR);
+            wrist.setPosition(position);
         }
     }
     
@@ -147,14 +137,9 @@ public class ClawServo{
     {
         return wristMode;
     }
-    
-    public double GetWristLPosition()
-    {
-        return wristL.getPosition();
-    }
 
-    public double GetWristRPosition()
+    public double GetWristPosition()
     {
-        return wristR.getPosition();
+        return wrist.getPosition();
     }
 }
