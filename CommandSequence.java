@@ -29,8 +29,11 @@ public class CommandSequence extends LinearOpMode
     double preciseLenience = 0.6;
     double arcLenience = 10;
 
-    double circleYOffset = 4.75;
-    int pushExtendDist = -1400;
+    double circleXOffset = 34 + 2;
+    double circleYOffset = 30;
+    double robotHalfLength = 7.5;
+
+    int pushExtendDist = -1421;
 
     // push circle radius = 25.75 inches
 
@@ -55,17 +58,22 @@ public class CommandSequence extends LinearOpMode
         dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
         sleep(300);
 
-//        moveCmd.MoveToPosition(speed,36,24 + circleYOffset,0,preciseLenience,2,1,lowMoveHeight, 0,0,0,false,'G');
+        moveCmd.MoveToPosition(speed,40,24,0,preciseLenience,2,1,lowMoveHeight, 0,0,0,false,'G');
+        moveCmd.MoveToPosition(speed,40,56,0,preciseLenience,1,1,lowMoveHeight, 0,0,0,false,'G');
 //
 ////        Push(0);
 ////        Push(10);
+        LateralPush(0);
+        moveCmd.MoveToPosition(speed, 48,56,0,preciseLenience,1,1,lowMoveHeight, 0,0,0,false,'G');
+        LateralPush(10);
+
 //
 //        moveCmd.MoveToPosition(speed,52,44,0,preciseLenience,2,0.5,lowMoveHeight, 0,0,0,false,'G'); //5
 //        moveCmd.MoveToPosition(speed,58,44,0,preciseLenience,2,0.5,lowMoveHeight, 0,0,0,false,'G'); //6
 //        moveCmd.MoveToPosition(speed,58,grabDistance+8,0,preciseLenience,1,0.5,grabHeight, 0,0,0,false,'G'); //6
 
 //        Grab(18);
-        Grab(0);
+        Grab(18);
         Hook(2);
 
         Grab(0);
@@ -74,7 +82,7 @@ public class CommandSequence extends LinearOpMode
         Grab(0);
         Hook(10);
 
-        moveCmd.MoveToPosition(speed,48,grabDistance+8,0,preciseLenience,2,1,lowMoveHeight, 0,0,0,false,'G');
+        moveCmd.MoveToPosition(speed,48,grabDistance+8,0,preciseLenience,2,0.5,50, 0,0,0,false,'G');
         moving = false;
     }
 
@@ -111,8 +119,22 @@ public class CommandSequence extends LinearOpMode
     // could try rotational push for speed
     private void Push(double offset)
     {
-        moveCmd.MoveToPosition(speed,36 + offset,24 + circleYOffset,15,preciseLenience,3,1,lowMoveHeight, pushExtendDist,0.3,0.33,false,'G');
-        moveCmd.MoveToPosition(speed,36 + offset,24 + circleYOffset,150,preciseLenience,3,1,lowMoveHeight, pushExtendDist,0.3,0.33,false,'G'); //6
+        moveCmd.MoveToPosition(speed,circleXOffset + offset,circleYOffset-robotHalfLength,-30,preciseLenience,3,1,lowMoveHeight, pushExtendDist,0.05,0,false,'G');
+        moveCmd.MoveToPosition(0,circleXOffset + offset,circleYOffset-robotHalfLength,-30,arcLenience,2,1,lowMoveHeight, pushExtendDist,0.05,0.33,false,'G');
+        sleep(200);
+        moveCmd.MoveToPosition(0,circleXOffset + offset,circleYOffset-robotHalfLength,-30,arcLenience,2,1,lowMoveHeight, pushExtendDist,0.05,0.33,true,'G');
+        sleep(200);
+
+        moveCmd.MoveToPosition(speed,circleXOffset + offset,circleYOffset-robotHalfLength,-150,preciseLenience,4,1,lowMoveHeight, pushExtendDist,0.05,0.33,true,'G'); //6
+        moveCmd.MoveToPosition(0,circleXOffset + offset,circleYOffset-robotHalfLength,-150,arcLenience,2,1,lowMoveHeight, pushExtendDist,0.05,0.33,false,'G'); //6
+        sleep(200);
+        moveCmd.MoveToPosition(speed,circleXOffset + offset,circleYOffset-robotHalfLength,-30,preciseLenience,4,1,lowMoveHeight, pushExtendDist,0.05,0,false,'G'); //6
+    }
+
+    private void LateralPush(double offset)
+    {
+        moveCmd.MoveToPosition(speed, 48+offset,56,0,preciseLenience,2,1,lowMoveHeight, 0,0,0,false,'G');
+        moveCmd.MoveToPosition(speed, 48+offset,20,0,preciseLenience,1,1,lowMoveHeight, 0,0,0,false,'G');
     }
 
     private void BasicPark()
@@ -219,6 +241,20 @@ public class CommandSequence extends LinearOpMode
         }
     }
 
+    private void PushTest()
+    {
+        Push(0);
+        Push(10);
+        moving = false;
+    }
+
+    private void HoldPosition()
+    {
+        shark.OdometryControl(speed,0,0,0,0.6,3);
+        telemetry.addData("shark imu", shark.GetImuReading());
+        telemetry.update();
+    }
+
     @Override
     public void runOpMode()
     {
@@ -230,8 +266,8 @@ public class CommandSequence extends LinearOpMode
         cs.init(hardwareMap, true);
         am.init(hardwareMap);
 
-        double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
-        // removed for maximum speed possible
+//        double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
+//        // removed for maximum speed possible
 //        double normalizedVolts = (1 - volts/14) + volts/14 * 0.857; // reduced to account for volt drops during auton
 //        speed *= normalizedVolts;
 
@@ -245,6 +281,10 @@ public class CommandSequence extends LinearOpMode
 //                NetZoneAuto();
 
                 SpecimenSequence();
+
+//                PushTest();
+//                HoldPosition();
+
 //                BasketSequence();
 //                TestSequenceUp();
 
