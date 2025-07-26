@@ -23,8 +23,8 @@ public class Extension {
     int topLimit = -1500; // old value 1650
     int bottomLimit = -50;
 
-    double localPitchPos = 0;
-    double localRollPos = 0.6;
+    double localPitchPos = 0.3;
+    double localRollPos = 0.63;
 
     double localClawPosition = 0;
     double closeClawPosition = 0.4;
