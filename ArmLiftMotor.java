@@ -27,7 +27,7 @@ public class ArmLiftMotor {
 
     int setpoint = 0;
     
-    public void init(HardwareMap hwMap)
+    public void init(HardwareMap hwMap, boolean isAuton)
     {
         kp = 0.2; //0.2
         ki = 0.1; //0.8
@@ -35,7 +35,10 @@ public class ArmLiftMotor {
         armLiftL = hwMap.get(DcMotor.class, "armLiftL");
         armLiftL.setTargetPosition(0);
 
-        armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (isAuton)
+        {
+            armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
         armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 //        armLiftL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         armLiftL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -43,7 +46,10 @@ public class ArmLiftMotor {
         armLiftR = hwMap.get(DcMotor.class, "armLiftR");
         armLiftR.setTargetPosition(0);
 
-        armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if (isAuton)
+        {
+            armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        }
         armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 //        armLiftR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         armLiftR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
