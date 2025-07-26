@@ -23,7 +23,7 @@ public class MoveCommand  {
     {
         dt.init(hwMap);
         cs.init(hwMap, true);
-        am.init(hwMap);
+        am.init(hwMap, false);
         extend.init(hwMap);
         shark.init(hwMap, isAuton);
     }
@@ -57,6 +57,15 @@ public class MoveCommand  {
         cs.SetClawOpen(tgtClaw);
         am.SetArmSpeed(speedA);
         extend.SetLocalManipulatorState(roll, pitch);
+
+        if (tgtClaw)
+        {
+            extend.CloseExtendClaw();
+        }
+        else
+        {
+            extend.OpenExtendClaw();
+        }
 
         timeout.reset();
 
