@@ -56,8 +56,19 @@ public class SharkDrive {
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
         odometry.calibrateImu();
-        odometry.setAngularScalar(0.987);
-        odometry.setLinearScalar(1.052);
+        odometry.setAngularScalar(0.989); // 0.987
+        // -37 (clockwise, so 37)
+        odometry.setLinearScalar(0.972); // 1.052
+        /*
+        49.875/52 slow
+        0.959
+        49.875/51.17 medium
+        0.975
+        49.875/50.739 fast
+        0.983
+
+        == 0.972
+         */
         odometry.setOffset(new SparkFunOTOS.Pose2D(0, 0, 0));
 
         if (isAuton) {
