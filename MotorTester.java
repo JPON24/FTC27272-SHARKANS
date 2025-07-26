@@ -17,6 +17,8 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 public class MotorTester extends LinearOpMode {
     Extension extension = new Extension();
 //    Limelight lime = new Limelight();
+    public DcMotor armLiftL = null;
+    public DcMotor armLiftR = null;
     private DcMotor frontLeft = null;
     private DcMotor frontRight = null;
     private DcMotor backLeft = null;
@@ -54,6 +56,25 @@ public class MotorTester extends LinearOpMode {
 
         extension.init(hardwareMap);
 //        lime.init(hardwareMap);
+
+        armLiftL = hardwareMap.get(DcMotor.class, "armLiftL");
+        armLiftL.setTargetPosition(0);
+
+        armLiftL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armLiftL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        armLiftL.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armLiftL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        armLiftR = hardwareMap.get(DcMotor.class, "armLiftR");
+        armLiftR.setTargetPosition(0);
+
+        armLiftR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armLiftR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        armLiftR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armLiftR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        armLiftL.setDirection(DcMotor.Direction.FORWARD); // REVERSE
+        armLiftR.setDirection(DcMotor.Direction.REVERSE); // FORWARD
 
         odometry.resetTracking();
         odometry.setLinearUnit(DistanceUnit.INCH);
@@ -123,12 +144,17 @@ public class MotorTester extends LinearOpMode {
             {
                 wrist.setPosition(0);
             }
+            extendPitch.setPosition(0.05);
+            extendClaw.setPosition(0);
+            extendRoll.setPosition(0);
 
 
             // 1.15 error
             telemetry.addData("odometryx", odometry.getPosition().x);
             telemetry.addData("odometryy", odometry.getPosition().y);
             telemetry.addData("odometryh", odometry.getPosition().h);
+            telemetry.addData("armLiftL", armLiftL.getCurrentPosition());
+            telemetry.addData("armLiftR", armLiftR.getCurrentPosition());
 //            telemetry.addData("extension", extension.GetExtensionPosition());
 //            telemetry.addData("extension output", extension.GetOutput());
 //            telemetry.addData("limelight localization converted", lime.GetLimelightData(false,odometry.getPosition().h));
