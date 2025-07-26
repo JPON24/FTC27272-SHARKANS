@@ -35,6 +35,9 @@ public class CommandSequence extends LinearOpMode
 
     int pushExtendDist = -1421;
 
+    double pitchUpPos = 0.3;
+    double pitchDownPos = 0.63;
+
     // push circle radius = 25.75 inches
 
     private void ContinueMovement()
@@ -50,21 +53,23 @@ public class CommandSequence extends LinearOpMode
 
     private void SpecimenSequence()
     {
-        moveCmd.MoveToPosition(speed,-2,hookDistance,0,preciseLenience,1,1,lowMoveHeight, 0,0,0,true,'C'); //5
-        moveCmd.MoveToPosition(0,-2,hookDistance,0,arcLenience,2,1,hookHeight, 0,0,0,true,'C'); //5
+        moveCmd.MoveToPosition(0,0,0,0,arcLenience,2,1,lowMoveHeight, 0,0,pitchUpPos,true,'C'); //5
+
+        moveCmd.MoveToPosition(speed,-2,25,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,true,'C'); //5
+        moveCmd.MoveToPosition(0,-2,hookDistance,0,arcLenience,2,1,hookHeight, 0,0,pitchUpPos,true,'C'); //5
 //        sleep(200);
-        moveCmd.MoveToPosition(0,-2,hookDistance,0,arcLenience,2,0.5,hookHeight, 0,0,0,false,'C'); //5
+        moveCmd.MoveToPosition(0,-2,hookDistance,0,arcLenience,2,0.5,hookHeight, 0,0,pitchUpPos,false,'C'); //5
         sleep(200);
         dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
         sleep(300);
 
-        moveCmd.MoveToPosition(speed,40,24,0,preciseLenience,2,1,lowMoveHeight, 0,0,0,false,'G');
-        moveCmd.MoveToPosition(speed,40,56,0,preciseLenience,1,1,lowMoveHeight, 0,0,0,false,'G');
+        moveCmd.MoveToPosition(speed,36,24,0,preciseLenience,2,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
+        moveCmd.MoveToPosition(speed,36,48,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
 //
 ////        Push(0);
 ////        Push(10);
         LateralPush(0);
-        moveCmd.MoveToPosition(speed, 48,56,0,preciseLenience,1,1,lowMoveHeight, 0,0,0,false,'G');
+        moveCmd.MoveToPosition(speed, 46,48,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
         LateralPush(10);
 
 //
@@ -75,33 +80,37 @@ public class CommandSequence extends LinearOpMode
 //        Grab(18);
         Grab(18);
         Hook(2);
+        dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
+        sleep(300);
 
         Grab(0);
         Hook(6);
+        dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
+        sleep(300);
 
         Grab(0);
         Hook(10);
 
-        moveCmd.MoveToPosition(speed,48,grabDistance+8,0,preciseLenience,2,0.5,50, 0,0,0,false,'G');
+//        moveCmd.MoveToPosition(speed,48,grabDistance+8,0,preciseLenience,2,0.5,50, 0,0,pitchUpPos,false,'G');
         moving = false;
     }
 
     private void Hook(int offset) // add offset constant
     {
-        moveCmd.MoveToPosition(speed, 0 + offset, grabDistance+12, 0,preciseLenience,0,1,lowMoveHeight,0, 0,0,true, 'C');
-        moveCmd.MoveToPosition(speed, 0 + offset, hookDistance, 0,preciseLenience,1,1,lowMoveHeight,0, 0,0,true, 'C');
+        moveCmd.MoveToPosition(speed, 0 + offset, grabDistance+12, 0,preciseLenience,0,1,lowMoveHeight,0, 0,pitchUpPos,true, 'C');
+        moveCmd.MoveToPosition(speed, 0 + offset, hookDistance, 0,preciseLenience,1,1,lowMoveHeight,0, 0,pitchUpPos,true, 'C');
 
-        moveCmd.MoveToPosition(0, 0 + offset, hookDistance, 0,arcLenience,2,1, hookHeight,0, 0,0,true, 'C');
+        moveCmd.MoveToPosition(0, 0 + offset, hookDistance, 0,arcLenience,2,1, hookHeight,0, 0,pitchUpPos,true, 'C');
 //        sleep(200);
-        moveCmd.MoveToPosition(0, 0 + offset, hookDistance, 0, arcLenience,1,1,hookHeight,0, 0,0,false, 'C');
+        moveCmd.MoveToPosition(0, 0 + offset, hookDistance, 0, arcLenience,1,1,hookHeight,0, 0,pitchUpPos,false, 'C');
         sleep(200);
-        dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
-        sleep(300);
+//        dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
+//        sleep(300);
     }
 
     private void Grab(double offset)
     {
-        moveCmd.MoveToPosition(speed, 40 + offset, grabDistance + 8, 0,preciseLenience,2,1, grabHeight, 0, 0,0,false, 'G');
+        moveCmd.MoveToPosition(speed, 40 + offset, grabDistance + 8, 0,preciseLenience,2,1, grabHeight, 0, 0,pitchUpPos,false, 'G');
 //        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,preciseLenience, 2,1,grabHeight, 0, 0,0,false, 'G');
 
         dt.FieldOrientedTranslate(0,-0.35,0,shark.GetImuReading());
@@ -110,31 +119,31 @@ public class CommandSequence extends LinearOpMode
         SparkFunOTOS.Pose2D overridePos = new SparkFunOTOS.Pose2D(shark.GetPositionX(),0,shark.GetImuReading());
         shark.OverrideOtosPos(overridePos);
 
-        moveCmd.MoveToPosition(0, 40 + offset, grabDistance, 0,arcLenience, 2,1,grabHeight, 0, 0,0,true, 'G');
+        moveCmd.MoveToPosition(0, 40 + offset, grabDistance, 0,arcLenience, 2,1,grabHeight, 0, 0,pitchUpPos,true, 'G');
         sleep(400);
-        moveCmd.MoveToPosition(0, 40 + offset, grabDistance,0,arcLenience,2,1,lowMoveHeight,0, 0,0,true, 'G');
+        moveCmd.MoveToPosition(0, 40 + offset, grabDistance,0,arcLenience,2,1,lowMoveHeight,0, 0,pitchUpPos,true, 'G');
 //        moveCmd.MoveToPosition(speed,42 + offset,grabDistance,0,0,-850,true,'G'); //8
     }
 
     // could try rotational push for speed
     private void Push(double offset)
     {
-        moveCmd.MoveToPosition(speed,circleXOffset + offset,circleYOffset-robotHalfLength,-30,preciseLenience,3,1,lowMoveHeight, pushExtendDist,0.05,0,false,'G');
-        moveCmd.MoveToPosition(0,circleXOffset + offset,circleYOffset-robotHalfLength,-30,arcLenience,2,1,lowMoveHeight, pushExtendDist,0.05,0.33,false,'G');
+        moveCmd.MoveToPosition(speed,circleXOffset + offset,circleYOffset-robotHalfLength,-30,preciseLenience,3,1,lowMoveHeight, pushExtendDist,0.05,pitchUpPos,false,'G');
+        moveCmd.MoveToPosition(0,circleXOffset + offset,circleYOffset-robotHalfLength,-30,arcLenience,2,1,lowMoveHeight, pushExtendDist,0.05,pitchDownPos,false,'G');
         sleep(200);
-        moveCmd.MoveToPosition(0,circleXOffset + offset,circleYOffset-robotHalfLength,-30,arcLenience,2,1,lowMoveHeight, pushExtendDist,0.05,0.33,true,'G');
+        moveCmd.MoveToPosition(0,circleXOffset + offset,circleYOffset-robotHalfLength,-30,arcLenience,2,1,lowMoveHeight, pushExtendDist,0.05,pitchDownPos,true,'G');
         sleep(200);
 
-        moveCmd.MoveToPosition(speed,circleXOffset + offset,circleYOffset-robotHalfLength,-150,preciseLenience,4,1,lowMoveHeight, pushExtendDist,0.05,0.33,true,'G'); //6
-        moveCmd.MoveToPosition(0,circleXOffset + offset,circleYOffset-robotHalfLength,-150,arcLenience,2,1,lowMoveHeight, pushExtendDist,0.05,0.33,false,'G'); //6
+        moveCmd.MoveToPosition(speed,circleXOffset + offset,circleYOffset-robotHalfLength,-150,preciseLenience,4,1,lowMoveHeight, pushExtendDist,0.05,pitchDownPos,true,'G'); //6
+        moveCmd.MoveToPosition(0,circleXOffset + offset,circleYOffset-robotHalfLength,-150,arcLenience,2,1,lowMoveHeight, pushExtendDist,0.05,pitchDownPos,false,'G'); //6
         sleep(200);
-        moveCmd.MoveToPosition(speed,circleXOffset + offset,circleYOffset-robotHalfLength,-30,preciseLenience,4,1,lowMoveHeight, pushExtendDist,0.05,0,false,'G'); //6
+        moveCmd.MoveToPosition(speed,circleXOffset + offset,circleYOffset-robotHalfLength,-30,preciseLenience,4,1,lowMoveHeight, pushExtendDist,0.05,pitchUpPos,false,'G'); //6
     }
 
     private void LateralPush(double offset)
     {
-        moveCmd.MoveToPosition(speed, 48+offset,56,0,preciseLenience,2,1,lowMoveHeight, 0,0,0,false,'G');
-        moveCmd.MoveToPosition(speed, 48+offset,20,0,preciseLenience,1,1,lowMoveHeight, 0,0,0,false,'G');
+        moveCmd.MoveToPosition(speed, 46+offset,48,0,preciseLenience,2,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
+        moveCmd.MoveToPosition(speed, 46+offset,15,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
     }
 
     private void BasicPark()
@@ -162,7 +171,7 @@ public class CommandSequence extends LinearOpMode
     private void TestSequenceUpX()
     {
         shark.TuningUp();
-        moveCmd.MoveToPosition(speed,0,0,0,0.5,2,1,1275,0,0,0,false,'/');
+        moveCmd.MoveToPosition(speed,0,0,0,0.5,2,1,1275,0,0,pitchUpPos,false,'/');
         while (true)
         {
             shark.OdometryControl(1,12,0,0,0.5,2);
@@ -173,7 +182,7 @@ public class CommandSequence extends LinearOpMode
     private void TestSequenceUpY()
     {
         shark.TuningUp();
-        moveCmd.MoveToPosition(speed,0,0,0,0.5,2,1,1275,0,0,0,false,'/');
+        moveCmd.MoveToPosition(speed,0,0,0,0.5,2,1,1275,0,0,pitchUpPos,false,'/');
         while (true)
         {
             shark.OdometryControl(1,0,12,0,0.5,2);
@@ -184,7 +193,7 @@ public class CommandSequence extends LinearOpMode
     private void TestSequenceUpXY()
     {
         shark.TuningUp();
-        moveCmd.MoveToPosition(speed,0,0,0,0.5,2,1,1275,0,0,0,false,'/');
+        moveCmd.MoveToPosition(speed,0,0,0,0.5,2,1,1275,0,0,pitchUpPos,false,'/');
         while (true)
         {
             shark.OdometryControl(1,12,12,0,0.5,2);
@@ -215,31 +224,31 @@ public class CommandSequence extends LinearOpMode
 
     private void RotationSequence()
     {
-        moveCmd.MoveToPosition(0,0,0,0,10,2,1,1275,0,0,0,false,'/');
+        moveCmd.MoveToPosition(0,0,0,0,10,2,1,1275,0,0,pitchUpPos,false,'/');
         while (true)
         {
-            moveCmd.MoveToPosition(speed,0,0,180,1,2,0.5,1275,0,0,0,false,'/');
+            moveCmd.MoveToPosition(speed,0,0,180,1,2,0.5,1275,0,0,pitchUpPos,false,'/');
         }
     }
 
-    private void IntegralTest()
-    {
-        for (int i = 0; i < 5; i++)
-        {
-            moveCmd.MoveToPosition(speed,0,12,0,0.5,2,0,0,0,0,0,false,'/');
-            moveCmd.MoveToPosition(speed,0,0,0,0.5,2,0,0,0,0,0,false,'/');
-        }
-        for (int i = 0; i < 5; i++)
-        {
-            moveCmd.MoveToPosition(speed,12,0,0,0.5,2,0,0,0,0,0,false,'/');
-            moveCmd.MoveToPosition(speed,0,0,0,0.5,2,0,0,0,0,0,false,'/');
-        }
-        while (true)
-        {
-            shark.OdometryControl(1,0,0,0,0.5,2);
-            UpdateTelemetry();
-        }
-    }
+//    private void IntegralTest()
+//    {
+//        for (int i = 0; i < 5; i++)
+//        {
+//            moveCmd.MoveToPosition(speed,0,12,0,0.5,2,0,0,0,0,0,false,'/');
+//            moveCmd.MoveToPosition(speed,0,0,0,0.5,2,0,0,0,0,0,false,'/');
+//        }
+//        for (int i = 0; i < 5; i++)
+//        {
+//            moveCmd.MoveToPosition(speed,12,0,0,0.5,2,0,0,0,0,0,false,'/');
+//            moveCmd.MoveToPosition(speed,0,0,0,0.5,2,0,0,0,0,0,false,'/');
+//        }
+//        while (true)
+//        {
+//            shark.OdometryControl(1,0,0,0,0.5,2);
+//            UpdateTelemetry();
+//        }
+//    }
 
     private void PushTest()
     {
@@ -264,7 +273,7 @@ public class CommandSequence extends LinearOpMode
         moveCmd.init(hardwareMap, true);
         shark.init(hardwareMap,true);
         cs.init(hardwareMap, true);
-        am.init(hardwareMap);
+        am.init(hardwareMap, true);
 
 //        double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
 //        // removed for maximum speed possible
