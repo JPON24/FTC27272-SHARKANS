@@ -6,14 +6,14 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 /*
  * Some additional constants for testing.
  */
-//@Config
+@Config
 public class SampleConstants {
 //    public static DcMotorSimple.Direction DIR = DcMotorSimple.Direction.FORWARD;
 //    public static boolean FF_ENABLED = false;
 
     public static double KPX = 0.36;
     public static double KPY = 0.3;
-    public static double KDX = 0.2;
+    public static double KDX = 0.24;
     public static double KDY = 0.2;
 
     public static double KPH = 0.29;
