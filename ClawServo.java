@@ -24,7 +24,7 @@ public class ClawServo{
     {
         wrist = hwMap.get(Servo.class, "wrist");
         claw = hwMap.get(Servo.class, "claw");
-        am.init(hwMap);
+        am.init(hwMap, false);
         this.auton = auton;
     }
     
