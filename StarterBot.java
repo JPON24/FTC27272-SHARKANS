@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
-//import com.acmerobotics.dashboard.FtcDashboard;
-//import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -33,7 +33,7 @@ public class StarterBot extends LinearOpMode{
     double localOffset = 0;
     double localOffsetIncrement = 2;
     double grabDistance = 0; // 11
-    double hookDistance = 27; // 43
+    double hookDistance = 29; // 43
 
     boolean canShiftArm = true;
 
@@ -77,15 +77,18 @@ public class StarterBot extends LinearOpMode{
     boolean canIncrement = true;
     boolean canRetract = false;
 
+    double pitchUpPos = 0.3;
+    double pitchDownPos = 0.63;
+
     @Override
     public void runOpMode()
     {
-//        FtcDashboard dashboard = FtcDashboard.getInstance();
-//        telemetry = dashboard.getTelemetry();
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
 
         dt.init(hardwareMap);
         cs.init(hardwareMap, false);
-        am.init(hardwareMap);
+        am.init(hardwareMap, false);
         shark.init(hardwareMap, false);
         moveCmd.init(hardwareMap, false);
 //        cv.init(hardwareMap);
@@ -98,8 +101,8 @@ public class StarterBot extends LinearOpMode{
         am.SetLocalNeutral(50);
         am.Rotate(0,'T');
 
-        double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
-        double normalizedVolts = (1 - volts/14) + volts/14 * 0.857; // reduced to account for volt drops during auton
+//        double volts = hardwareMap.getAll(VoltageSensor.class).get(0).getVoltage();
+//        double normalizedVolts = (1 - volts/14) + volts/14 * 0.857; // reduced to account for volt drops during auton
 
 //        cv.StartStream(telemetry);
         while(opModeIsActive())
@@ -187,9 +190,9 @@ public class StarterBot extends LinearOpMode{
 
             runtime.reset();
 //            SubmersibleGrab(aButtonPressed);
-            HookMacro(yButtonPressed);
+//            HookMacro(yButtonPressed);
             GrabMacro(bButtonPressed);
-//            PIDTune(yButtonPressed);
+            PIDTune(yButtonPressed);
             cs.Update();
         }
 //        cv.StopStream();
@@ -201,13 +204,13 @@ public class StarterBot extends LinearOpMode{
         dt.FieldOrientedTranslate(0,0,0,0);
         extend.OpenExtendClaw();
         sleep(250);
-        extend.SetLocalManipulatorState(extend.GetRollLocalPosition(),0.33);
+        extend.SetLocalManipulatorState(extend.GetRollLocalPosition(),pitchDownPos);
         extend.UpdateOverride();
         sleep(250);
         extend.CloseExtendClaw();
         extend.UpdateOverride();
         sleep(250);
-        extend.SetLocalManipulatorState(extend.GetRollLocalPosition(),0);
+        extend.SetLocalManipulatorState(extend.GetRollLocalPosition(),pitchUpPos);
         extend.UpdateOverride();
         sleep(250);
     }
@@ -233,11 +236,11 @@ public class StarterBot extends LinearOpMode{
             normalControl = false;
             canStartTune = false;
 
-            TeleopMoveCommandY(0.7,0, 0, 0,preciseLenience,2,1,grabHeight,0, 0,0,false, 'G', false);
-            TeleopMoveCommandY(0.7,12, 0, 0,preciseLenience,2,1,grabHeight,0, 0,0,false, 'G', false);
-            TeleopMoveCommandY(0.7,12, 12, 0,preciseLenience,2,1,grabHeight,0, 0,0,false, 'G', false);
-            TeleopMoveCommandY(0.7,0,12,0,preciseLenience,2,1,0,grabHeight,0,0,false,'G',false);
-            TeleopMoveCommandY(0.7,0, 0, 0,preciseLenience,2,1,grabHeight,0, 0,0,false, 'G', false);
+            TeleopMoveCommandY(0.7,0, 0, 0,preciseLenience,2,1,grabHeight,0, 0,pitchUpPos,false, 'G', false);
+            TeleopMoveCommandY(0.7,12, 0, 0,preciseLenience,2,1,grabHeight,0, 0,pitchUpPos,false, 'G', false);
+            TeleopMoveCommandY(0.7,12, 12, 0,preciseLenience,2,1,grabHeight,0, 0,pitchUpPos,false, 'G', false);
+            TeleopMoveCommandY(0.7,0,12,0,preciseLenience,2,1,0,grabHeight,0,pitchUpPos,false,'G',false);
+            TeleopMoveCommandY(0.7,0, 0, 0,preciseLenience,2,1,grabHeight,0, 0,pitchUpPos,false, 'G', false);
 
             am.SetLocalNeutral(am.GetTargetPosition());
             normalControl = true;
@@ -325,12 +328,12 @@ public class StarterBot extends LinearOpMode{
         {
             normalControl = false;
             canStartHookMacro = false;
-            TeleopMoveCommandY(1,localOffset, grabDistance+8, 0-shark.GetLastValidIMUReading(),preciseLenience,0,0.7,grabHeight+200,0, 0,0,true, 'C', false);
+            TeleopMoveCommandY(1,localOffset, grabDistance+12, 0-shark.GetLastValidIMUReading(),preciseLenience,0,1,grabHeight+200,0, 0,pitchUpPos,true, 'C', false);
 //            TeleopMoveCommandY(1,localOffset, hookDistance-5, 0-shark.GetLastValidIMUReading(),preciseLenience,1,0.7,grabHeight,0, 0,0,true, 'C', false);
 
-            TeleopMoveCommandY(0.5,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1,grabHeight+200,0, 0,0,true, 'C', false);
-            TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,0,true, 'C', false);
-            TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,0,false, 'C', false);
+            TeleopMoveCommandY(macroSpeed,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1,grabHeight+200,0, 0,pitchUpPos,true, 'C', false);
+            TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,pitchUpPos,true, 'C', false);
+            TeleopMoveCommandY(0,localOffset, hookDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1,hookHeight,0, 0,pitchUpPos,false, 'C', false);
 //            TeleopMoveCommandY(1,localOffset,hookDistance-8,0-shark.GetLastValidIMUReading(),preciseLenience,1,1,hookHeight,0,0,0,false,'C',false);
 
             localOffset += localOffsetIncrement;
@@ -351,11 +354,11 @@ public class StarterBot extends LinearOpMode{
             normalControl = false;
             canStartGrabMacro = false;
             boolean shouldReturn = false;
-            shouldReturn = TeleopMoveCommandB(1, 40, grabDistance+8, 0-shark.GetLastValidIMUReading(),preciseLenience,2,1, grabHeight, 0,0,0, false, 'G', false);
+            shouldReturn = TeleopMoveCommandB(1, 40, grabDistance+8, 0-shark.GetLastValidIMUReading(),preciseLenience,2,1, grabHeight, 0,0,pitchUpPos, false, 'G', false);
             if (shouldReturn) {return;}
 
-            dt.FieldOrientedTranslate(0,-macroSpeed/3,0,shark.GetImuReading());
-            sleep(1000);
+            dt.FieldOrientedTranslate(0,-0.35,0,shark.GetImuReading());
+            sleep(750);
 
             if (!gamepad1.b) {return;}
 
@@ -365,11 +368,11 @@ public class StarterBot extends LinearOpMode{
 //            shouldReturn = TeleopMoveCommandB(0.5, 40, grabDistance, 0-shark.GetLastValidIMUReading(),preciseLenience,1,1, grabHeight, 0,0,0, false, 'G', false);
 //            if (shouldReturn) {return;}
 
-            shouldReturn = TeleopMoveCommandB(0, 40, grabDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1, grabHeight, 0,0,0, true, 'G', false);
+            shouldReturn = TeleopMoveCommandB(0, 40, grabDistance, 0-shark.GetLastValidIMUReading(),arcLenience,2,1, grabHeight, 0,0,pitchUpPos, true, 'G', false);
             if (shouldReturn) {return;}
             sleep(400);
 
-            shouldReturn = TeleopMoveCommandB(0, 40, grabDistance, 0-shark.GetLastValidIMUReading(), arcLenience,2,1, grabHeight + 200, 0,0,0, true, 'G', false);
+            shouldReturn = TeleopMoveCommandB(0, 40, grabDistance, 0-shark.GetLastValidIMUReading(), arcLenience,2,1, grabHeight + 200, 0,0,pitchUpPos, true, 'G', false);
             if (shouldReturn) {return;}
 
             am.SetLocalNeutral(am.GetTargetPosition());
@@ -493,7 +496,7 @@ public class StarterBot extends LinearOpMode{
         }
         else if (stickInput > 0.1)
         {
-            if (extend.GetPitchLocalPosition() == 0.33 && extend.GetExtensionPosition() > extensionSafetyThreshold)
+            if (extend.GetPitchLocalPosition() == pitchDownPos && extend.GetExtensionPosition() > extensionSafetyThreshold)
             {
                 extend.MoveExtend(0, 'T');
             }
@@ -541,12 +544,12 @@ public class StarterBot extends LinearOpMode{
             {
                 if (extend.GetExtensionPosition() < extensionSafetyThreshold)
                 {
-                    pitch = 0.33;
+                    pitch = pitchDownPos;
                 }
             }
             else
             {
-                pitch = 0;
+                pitch = pitchUpPos;
             }
         }
         else if (!downPitch)
