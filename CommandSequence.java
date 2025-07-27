@@ -18,10 +18,10 @@ public class CommandSequence extends LinearOpMode
     ArmLiftMotor am = new ArmLiftMotor();
 
     boolean moving = true;
-    double speed = 0.7; // 1.1
+    double speed = 0.75; // 0.7
 
     double grabDistance = 0; // old 4.5
-    double hookDistance = 27; // 22.5
+    double hookDistance = 25; // 22.5
     int grabHeight = 60;
     int lowMoveHeight = grabHeight + 200;
     int hookHeight = 1100;
@@ -64,12 +64,12 @@ public class CommandSequence extends LinearOpMode
         sleep(300);
 
         moveCmd.MoveToPosition(speed,36,24,0,preciseLenience,2,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
-        moveCmd.MoveToPosition(speed,36,48,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
+        moveCmd.MoveToPosition(speed,36,46,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
 //
 ////        Push(0);
 ////        Push(10);
         LateralPush(0);
-        moveCmd.MoveToPosition(speed, 46,48,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
+        moveCmd.MoveToPosition(speed, 46,46,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
         LateralPush(10);
 
 //
@@ -114,7 +114,7 @@ public class CommandSequence extends LinearOpMode
 //        moveCmd.MoveToPosition(1, 40 + offset, grabDistance, 0,preciseLenience, 2,1,grabHeight, 0, 0,0,false, 'G');
 
         dt.FieldOrientedTranslate(0,-0.35,0,shark.GetImuReading());
-        sleep(750);
+        sleep(550);
 
         SparkFunOTOS.Pose2D overridePos = new SparkFunOTOS.Pose2D(shark.GetPositionX(),0,shark.GetImuReading());
         shark.OverrideOtosPos(overridePos);
@@ -142,7 +142,7 @@ public class CommandSequence extends LinearOpMode
 
     private void LateralPush(double offset)
     {
-        moveCmd.MoveToPosition(speed, 46+offset,48,0,preciseLenience,2,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
+        moveCmd.MoveToPosition(speed, 46+offset,46,0,preciseLenience,2,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
         moveCmd.MoveToPosition(speed, 46+offset,15,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
     }
 
