@@ -190,9 +190,9 @@ public class StarterBot extends LinearOpMode{
 
             runtime.reset();
 //            SubmersibleGrab(aButtonPressed);
-//            HookMacro(yButtonPressed);
+            HookMacro(yButtonPressed);
             GrabMacro(bButtonPressed);
-            PIDTune(yButtonPressed);
+//            PIDTune(yButtonPressed);
             cs.Update();
         }
 //        cv.StopStream();
