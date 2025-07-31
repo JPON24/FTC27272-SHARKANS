@@ -38,6 +38,8 @@ public class CommandSequence extends LinearOpMode
     double pitchUpPos = 0.3;
     double pitchDownPos = 0.63;
 
+    double xAutoOffset = 4.75;
+
     // push circle radius = 25.75 inches
 
     private void ContinueMovement()
@@ -55,22 +57,22 @@ public class CommandSequence extends LinearOpMode
     {
         moveCmd.MoveToPosition(0,0,0,0,arcLenience,2,1,lowMoveHeight, 0,0,pitchUpPos,true,'C'); //5
 
-        moveCmd.MoveToPosition(speed,-2,25,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,true,'C'); //5
-        moveCmd.MoveToPosition(0,-2,hookDistance,0,arcLenience,2,1,hookHeight, 0,0,pitchUpPos,true,'C'); //5
+        moveCmd.MoveToPosition(speed,-2-xAutoOffset,25,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,true,'C'); //5
+        moveCmd.MoveToPosition(0,-2-xAutoOffset,hookDistance,0,arcLenience,2,1,hookHeight, 0,0,pitchUpPos,true,'C'); //5
 //        sleep(200);
-        moveCmd.MoveToPosition(0,-2,hookDistance,0,arcLenience,2,0.5,hookHeight, 0,0,pitchUpPos,false,'C'); //5
+        moveCmd.MoveToPosition(0,-2-xAutoOffset,hookDistance,0,arcLenience,2,0.5,hookHeight, 0,0,pitchUpPos,false,'C'); //5
         sleep(200);
         dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
         sleep(300);
 
-        moveCmd.MoveToPosition(speed,36,24,0,preciseLenience,2,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
-        moveCmd.MoveToPosition(speed,36,46,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
+        moveCmd.MoveToPosition(speed,36-xAutoOffset,24,0,preciseLenience,2,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
+        moveCmd.MoveToPosition(speed,36-xAutoOffset,46,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
 //
 ////        Push(0);
 ////        Push(10);
-        LateralPush(0);
-        moveCmd.MoveToPosition(speed, 46,46,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
-        LateralPush(10);
+        LateralPush(0-xAutoOffset);
+        moveCmd.MoveToPosition(speed, 46-xAutoOffset,46,0,preciseLenience,1,1,lowMoveHeight, 0,0,pitchUpPos,false,'G');
+        LateralPush(10-xAutoOffset);
 
 //
 //        moveCmd.MoveToPosition(speed,52,44,0,preciseLenience,2,0.5,lowMoveHeight, 0,0,0,false,'G'); //5
@@ -78,24 +80,24 @@ public class CommandSequence extends LinearOpMode
 //        moveCmd.MoveToPosition(speed,58,grabDistance+8,0,preciseLenience,1,0.5,grabHeight, 0,0,0,false,'G'); //6
 
 //        Grab(18);
-        Grab(18);
-        Hook(2);
+        Grab(18-xAutoOffset);
+        Hook(2-xAutoOffset);
         dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
         sleep(300);
 
-        Grab(0);
-        Hook(6);
+        Grab(0-xAutoOffset);
+        Hook(6-xAutoOffset);
         dt.FieldOrientedTranslate(0,-1,0,shark.GetImuReading());
         sleep(300);
 
-        Grab(0);
-        Hook(10);
+        Grab(0-xAutoOffset);
+        Hook(10-xAutoOffset);
 
 //        moveCmd.MoveToPosition(speed,48,grabDistance+8,0,preciseLenience,2,0.5,50, 0,0,pitchUpPos,false,'G');
         moving = false;
     }
 
-    private void Hook(int offset) // add offset constant
+    private void Hook(double offset) // add offset constant
     {
         moveCmd.MoveToPosition(speed, 0 + offset, grabDistance+12, 0,preciseLenience,0,1,lowMoveHeight,0, 0,pitchUpPos,true, 'C');
         moveCmd.MoveToPosition(speed, 0 + offset, hookDistance, 0,preciseLenience,1,1,lowMoveHeight,0, 0,pitchUpPos,true, 'C');
