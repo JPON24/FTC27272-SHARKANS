@@ -83,8 +83,8 @@ public class StarterBot extends LinearOpMode{
     @Override
     public void runOpMode()
     {
-        FtcDashboard dashboard = FtcDashboard.getInstance();
-        telemetry = dashboard.getTelemetry();
+//        FtcDashboard dashboard = FtcDashboard.getInstance();
+//        telemetry = dashboard.getTelemetry();
 
         dt.init(hardwareMap);
         cs.init(hardwareMap, false);
@@ -168,7 +168,8 @@ public class StarterBot extends LinearOpMode{
                 ClawControl(clawClose,clawOpen);
                 ExtensionClawControl(clawClose, clawOpen);
 
-                ResetLocalOffset(leftTriggerPressed);
+                PrepareAscent(leftTriggerPressed);
+//                ResetLocalOffset(leftTriggerPressed);
                 IncrementLocalOffset(rightTriggerPressed);
 
                 ExtensionControl(wristInputY);
@@ -176,7 +177,7 @@ public class StarterBot extends LinearOpMode{
 
                 GrabRehome(aButtonPressed);
 
-                DropOff(dpadUpPressed2);
+//                DropOff(dpadUpPressed2);
                 PrepareGrab(dpadDownPressed2);
 
                 if (!canGrab)
@@ -198,6 +199,16 @@ public class StarterBot extends LinearOpMode{
 //        cv.StopStream();
     }
 
+    private void PrepareAscent(double input)
+    {
+        if (input > 0.8)
+        {
+            extend.SetLocalManipulatorState(0,0.1);
+//            extend.MoveToPosition(0);s
+            extend.UpdateOverride();
+        }
+    }
+
     private void PrepareGrab(boolean input)
     {
         if (!input) {return;}
@@ -206,6 +217,7 @@ public class StarterBot extends LinearOpMode{
         sleep(250);
         extend.SetLocalManipulatorState(extend.GetRollLocalPosition(),pitchDownPos);
         extend.UpdateOverride();
+
         sleep(250);
         extend.CloseExtendClaw();
         extend.UpdateOverride();
@@ -440,17 +452,18 @@ public class StarterBot extends LinearOpMode{
 
     private void ArmSpeedToggle(boolean armToggle)
     {
+        // removing enum
         if (armToggle)
         {
             if (!canShiftArm) { return; }
-            if (am.GetArmSpeed() == ArmLiftMotor.ArmSpeeds.FAST.speed)
+            if (am.GetArmSpeed() == 1)
             {
-                am.SetArmSpeed(ArmLiftMotor.ArmSpeeds.SLOW.speed);
+                am.SetArmSpeed(0.45);
                 canShiftArm = false;
             }
-            else if (am.GetArmSpeed() == ArmLiftMotor.ArmSpeeds.SLOW.speed)
+            else if (am.GetArmSpeed() == 0.45)
             {
-                am.SetArmSpeed(ArmLiftMotor.ArmSpeeds.FAST.speed);
+                am.SetArmSpeed(1);
                 canShiftArm = false;
             }
         }
@@ -609,6 +622,9 @@ public class StarterBot extends LinearOpMode{
 
         telemetry.addData("shark completed?", shark.GetBoolsCompleted());
         telemetry.addData("command completed?", moveCmd.GetCommandState());
+
+        telemetry.addData("arm speed", am.GetArmSpeed());
+        telemetry.addData("can arm shift", canShiftArm);
 
         telemetry.update();
 
