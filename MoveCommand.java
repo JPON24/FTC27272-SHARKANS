@@ -77,10 +77,16 @@ public class MoveCommand  {
                 // otherwise, set it to false and stop moving it 
                 switch (key) {
                     case 'm':
-                        if (shark.GetBoolsCompleted()) {
+                        if (shark.GetStopBoolsCompleted()) {
                             shark.OdometryControl(0, tgtX, tgtY, rot, d, axis);
                             command.SetElementTrue('m');
                             // dt.FieldOrientedTranslate(0,0,0,0);
+                            break;
+                        }
+                        else if (shark.GetBoolsCompleted())
+                        {
+                            shark.OdometryControl(speed, tgtX, tgtY, rot, d, axis);
+                            command.SetElementTrue('m');
                             break;
                         }
                         else
