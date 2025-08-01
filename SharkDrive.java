@@ -23,6 +23,7 @@ public class SharkDrive {
     double lastValidIMUReading = 0;
 
     boolean[] completedBools = new boolean[3];
+    boolean[] completedStopBools = new boolean[3];
 
     double deltaTime, last_time;
     double integralX, integralY, integralH = 0;
@@ -56,9 +57,9 @@ public class SharkDrive {
         odometry.setLinearUnit(DistanceUnit.INCH);
         odometry.setAngularUnit(AngleUnit.DEGREES);
         odometry.calibrateImu();
-        odometry.setAngularScalar(0.989); // 0.987
+        odometry.setAngularScalar(0.987); // 0.987 0.989
         // -37 (clockwise, so 37)
-        odometry.setLinearScalar(0.972); // 1.052
+        odometry.setLinearScalar(1.052); // 1.052 0.972
         /*
         49.875/52 slow
         0.959
@@ -317,12 +318,16 @@ public class SharkDrive {
         completedBools[0] = Math.abs(errors[0]) < distanceLenience;
         completedBools[1] = Math.abs(errors[1]) < distanceLenience;
 
+        completedStopBools[0] = Math.abs(errors[0]) < 0.6;
+        completedStopBools[1] = Math.abs(errors[1]) < 0.6;
+
         if (axis == 0) {
 //            output[1] = output[1] / Math.abs(output[1]) * 0.2;
-            output[1] *= 0.4;
+            output[1] *= 0;
+//            output[2] *= 0;
             completedBools[1] = true;
         } else if (axis == 1) {
-            output[0] *= 0.4;
+            output[0] *= 0;
             completedBools[0] = true;
         }
         if (tgtRot == 1){
@@ -572,6 +577,23 @@ public class SharkDrive {
         return true;
     }
 
+    public boolean GetStopBoolsCompleted()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (!completedStopBools[i])
+            {
+                return false;
+            }
+        }
+        integralX = 0;
+        integralY = 0;
+        integralH = 0;
+        maximumOutputX = 1;
+        maximumOutputY = 1;
+        return true;
+    }
+
     public void DeactivateBoolsCompleted()
     {
         for (int i = 0; i < 3; i++)
@@ -579,6 +601,7 @@ public class SharkDrive {
             errors[i] = 0;
             output[i] = 0;
             completedBools[i] = false;
+            completedStopBools[i] = false;
         }
     }
 }
